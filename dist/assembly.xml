@@ -1,0 +1,48 @@
+<!--
+Assembly descriptor for the full SFTP distribution.
+-->
+<assembly>
+  <id>sftp</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>..</directory>
+      <outputDirectory>.</outputDirectory>
+          <excludes>
+              <exclude>target/**</exclude>
+              <exclude>dist/**</exclude>
+          </excludes>
+    </fileSet>
+  </fileSets>
+  <dependencySets>
+    <!-- Mule libraries -->
+    <dependencySet>
+      <outputDirectory>lib/user</outputDirectory>
+      <outputFileNameMapping>${artifactId}.${extension}</outputFileNameMapping>
+      <scope>runtime</scope>
+      <includes>
+        <!-- Transports -->
+        <include>org.mule.transports:mule-transport-sftp</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>lib/user</outputDirectory>
+      <outputFileNameMapping>${artifactId}.${extension}</outputFileNameMapping>
+      <scope>test</scope>
+      <includes>
+        <include>org.mule.tests:mule-tests-functional</include>
+      </includes>
+    </dependencySet>
+    <!-- Non-Mule libraries -->
+    <dependencySet>
+      <outputDirectory>lib/opt</outputDirectory>
+      <scope>runtime</scope>
+      <includes>
+        <!-- Libraries -->
+        <include>com.jcraft:jsch</include>
+      </includes>
+    </dependencySet>
+  </dependencySets>
+</assembly>
