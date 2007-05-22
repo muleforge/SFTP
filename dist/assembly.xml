@@ -13,20 +13,22 @@ Assembly descriptor for the full SFTP distribution.
           <excludes>
               <exclude>target/**</exclude>
               <exclude>dist/**</exclude>
+              <exclude>README</exclude>
+              <exclude>.project</exclude>
+              <exclude>.classpath</exclude>
           </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>../target</directory>
+      <outputDirectory>.</outputDirectory>
+          <includes>
+              <include>*.jar</include>
+          </includes>
     </fileSet>
   </fileSets>
   <dependencySets>
     <!-- Mule libraries -->
-    <dependencySet>
-      <outputDirectory>lib/user</outputDirectory>
-      <outputFileNameMapping>${artifactId}.${extension}</outputFileNameMapping>
-      <scope>runtime</scope>
-      <includes>
-        <!-- Transports -->
-        <include>org.mule.transports:mule-transport-sftp</include>
-      </includes>
-    </dependencySet>
+
     <dependencySet>
       <outputDirectory>lib/user</outputDirectory>
       <outputFileNameMapping>${artifactId}.${extension}</outputFileNameMapping>
