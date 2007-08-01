@@ -52,5 +52,4 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <version>0.1.29</version>
     </dependency>
   </dependencies>
-
 </project>
