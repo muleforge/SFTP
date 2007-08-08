@@ -8,7 +8,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   <packaging>jar</packaging>
   <version>1.3.3</version>
   <name>SFTP Transport</name>
-  <description>Allows Mule to communicate over SFTP
+  <description>Allows Mule to communicate over SFTP 
   protocols</description>
   <dependencies>
     <dependency>
