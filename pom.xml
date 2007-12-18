@@ -78,11 +78,16 @@
 			<artifactId>mule-tests-functional</artifactId>
 			<version>${muleVersion}</version>
 		</dependency>
-                <dependency>
-                        <groupId>jsch</groupId>
-                        <artifactId>jsch</artifactId>
-                        <version>0.1.29</version>
-                </dependency>
+        <dependency>
+            <groupId>org.mule</groupId>
+            <artifactId>mule-core</artifactId>
+            <version>${muleVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>jsch</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.29</version>
+        </dependency>
 	</dependencies>
 	
 </project>
