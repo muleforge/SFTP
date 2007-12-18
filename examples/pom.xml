@@ -5,7 +5,7 @@
   <groupId>org.mule.samples.sftp</groupId>
   <artifactId>mule-example-sftp</artifactId>
   <packaging>jar</packaging>
-  <version>1.3.3</version>
+  <version>1.4.4-SNAPSHOT</version>
   <name>SFTP Example</name>
   <description>SFTP Example Applications</description>
   <dependencies>

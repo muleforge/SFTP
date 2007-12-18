@@ -10,13 +10,14 @@
 
 package org.mule.providers.sftp.transformers;
 
-import org.apache.commons.io.IOUtils;
-import org.mule.config.i18n.Message;
+import org.mule.config.i18n.MessageFactory;
 import org.mule.transformers.AbstractTransformer;
 import org.mule.umo.transformer.TransformerException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+
+import org.apache.commons.io.IOUtils;
 
 /**
  * TODO
@@ -70,7 +71,7 @@ public class InputStreamToByteArray extends AbstractTransformer
         } 
         else
         {
-            throw new TransformerException(Message.createStaticMessage("Message is not an instance of java.io.InputStream"), this);
+            throw new TransformerException(MessageFactory.createStaticMessage("Message is not an instance of java.io.InputStream"), this);
         }
     }
  

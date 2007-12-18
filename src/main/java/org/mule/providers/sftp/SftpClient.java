@@ -65,9 +65,15 @@ public class SftpClient
 
 		try
 		{
-			if (wd.startsWith("/"))
+            
+            if (!wd.startsWith(home))
+            {
+                 wd = home + wd;
+            }
+            
+			if (wd.startsWith("/~"))
 			{
-				wd = home + wd;
+				 wd = home + wd.substring( 2, wd.length());
 			}
 			c.cd(wd);
 		} catch (final SftpException e)

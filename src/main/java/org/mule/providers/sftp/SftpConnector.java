@@ -11,13 +11,17 @@
 package org.mule.providers.sftp;
 
 
-import org.mule.providers.AbstractServiceEnabledConnector;
+import org.mule.providers.AbstractConnector;
 import org.mule.providers.file.FilenameParser;
 import org.mule.providers.file.SimpleFilenameParser;
 import org.mule.umo.UMOComponent;
+import org.mule.umo.UMOException;
 import org.mule.umo.endpoint.UMOEndpoint;
 import org.mule.umo.endpoint.UMOEndpointURI;
+import org.mule.umo.lifecycle.InitialisationException;
 import org.mule.umo.provider.UMOMessageReceiver;
+
+import java.util.Map;
 
 
 /**
@@ -31,9 +35,10 @@ import org.mule.umo.provider.UMOMessageReceiver;
  * 4. Leverages sftp stat to determine if a file size changes (simpler and also less memory intensive)
  * 
  */
-public class SftpConnector extends AbstractServiceEnabledConnector
+public class SftpConnector extends AbstractConnector
 {
 
+    public static final String PROPERTY_POLLING_FREQUENCY = "pollingFrequency";    
     public static final String PROPERTY_DIRECTORY = "directory";
     public static final String PROPERTY_OUTPUT_PATTERN = "outputPattern";
     public static final String PROPERTY_FILENAME = "filename";
@@ -42,6 +47,8 @@ public class SftpConnector extends AbstractServiceEnabledConnector
     public static final String PROPERTY_FILE_EXTENSION = "fileExtension";
     public static final String PROPERTY_INCLUDE_SUBFOLDERS = "includeSubfolders";
 
+    public static final int DEFAULT_POLLING_FREQUENCY = 1000;
+    
     private FilenameParser filenameParser = new SimpleFilenameParser();
 
     private long pollingFrequency;
@@ -50,16 +57,28 @@ public class SftpConnector extends AbstractServiceEnabledConnector
 
     public String getProtocol()
     {
-        return "SFTP";
+        return "sftp";
     }
 
 	public UMOMessageReceiver createReceiver(UMOComponent component, UMOEndpoint endpoint) throws Exception
     {
-        return serviceDescriptor.createMessageReceiver(this, component, endpoint, new Object[]{});
+                
+        long polling = pollingFrequency;
+        Map props = endpoint.getProperties();
+        if ( props != null ) {
+            // Override properties on the endpoint for the specific endpoint
+            String tempPolling = ( String ) props.get( PROPERTY_POLLING_FREQUENCY );
+            if ( tempPolling != null ) {
+                polling = Long.parseLong( tempPolling );
+            }
+        }
+        if ( polling <= 0 ) {
+            polling = DEFAULT_POLLING_FREQUENCY;
+        }
+        logger.debug( "set polling frequency to " + polling );
+        return serviceDescriptor.createMessageReceiver( this, component, endpoint,
+                new Object[]{new Long( polling )} );
     }
-
-    
-    
 
     public long getPollingFrequency()
     {
@@ -115,6 +134,54 @@ public class SftpConnector extends AbstractServiceEnabledConnector
         client.changeWorkingDirectory(endpointURI.getPath());
         
         return client;
+    }
+
+    /* (non-Javadoc)
+     * @see org.mule.providers.AbstractConnector#doConnect()
+     */
+    protected void doConnect() throws Exception {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.mule.providers.AbstractConnector#doDisconnect()
+     */
+    protected void doDisconnect() throws Exception {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.mule.providers.AbstractConnector#doDispose()
+     */
+    protected void doDispose() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.mule.providers.AbstractConnector#doInitialise()
+     */
+    protected void doInitialise() throws InitialisationException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.mule.providers.AbstractConnector#doStart()
+     */
+    protected void doStart() throws UMOException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.mule.providers.AbstractConnector#doStop()
+     */
+    protected void doStop() throws UMOException {
+        // TODO Auto-generated method stub
+        
     }
 
     

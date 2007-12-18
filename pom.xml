@@ -6,9 +6,9 @@
 	<groupId>org.mule.transports</groupId>
 	<artifactId>mule-transport-sftp</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.4.4-SNAPSHOT</version>
 	<properties>
-		<muleVersion>1.3.3</muleVersion>
+		<muleVersion>1.4.4-SNAPSHOT</muleVersion>
 	</properties>
 	<distributionManagement>
 		<repository>
@@ -72,12 +72,7 @@
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-module-client</artifactId>
 			<version>${muleVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.tests</groupId>
-			<artifactId>mule-tests-core</artifactId>
-			<version>${muleVersion}</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>org.mule.tests</groupId>
 			<artifactId>mule-tests-functional</artifactId>

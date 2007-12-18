@@ -11,17 +11,14 @@
 package org.mule.providers.sftp;
 
 import org.mule.MuleException;
-import org.mule.config.i18n.Message;
+import org.mule.config.i18n.MessageFactory;
 import org.mule.providers.AbstractMessageDispatcher;
-import org.mule.providers.file.FilenameParser;
-import org.mule.providers.file.SimpleFilenameParser;
 import org.mule.umo.UMOEvent;
 import org.mule.umo.UMOException;
 import org.mule.umo.UMOMessage;
 import org.mule.umo.endpoint.UMOImmutableEndpoint;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -68,7 +65,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 		Object data = event.getTransformedMessage();
 		String filename = (String) event
-				.getProperty(SftpConnector.PROPERTY_FILENAME);
+				.getProperty(SftpConnector.PROPERTY_FILENAME, true);
 		
 		SftpConnector sftpConnector = (SftpConnector) connector;
 
@@ -109,7 +106,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		} else
 		{
 			throw new MuleException(
-					Message.createStaticMessage("Unxpected message type: java.io.InputStream or byte[] expected "));
+					MessageFactory.createStaticMessage("Unxpected message type: java.io.InputStream or byte[] expected "));
 
 		}
 
@@ -155,5 +152,21 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
             pattern = connector.getOutputPattern();
         }
         return connector.getFilenameParser().getFilename(message, pattern);
+    }
+
+    /* (non-Javadoc)
+     * @see org.mule.providers.AbstractMessageDispatcher#doConnect()
+     */
+    protected void doConnect() throws Exception {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.mule.providers.AbstractMessageDispatcher#doReceive(long)
+     */
+    protected UMOMessage doReceive( long timeout ) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
