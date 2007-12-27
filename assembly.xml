@@ -4,6 +4,8 @@ Assembly descriptor for the full SFTP distribution.
 <assembly>
   <id>sftp</id>
   <formats>
+    <format>tar.bz2</format>
+    <format>tar.gz</format>
     <format>zip</format>
   </formats>
   <fileSets>
