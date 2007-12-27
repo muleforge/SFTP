@@ -16,6 +16,7 @@ Assembly descriptor for the full SFTP distribution.
               <exclude>README</exclude>
               <exclude>.project</exclude>
               <exclude>.classpath</exclude>
+              <exclude>.mule</exclude>
           </excludes>
     </fileSet>
     <fileSet>
