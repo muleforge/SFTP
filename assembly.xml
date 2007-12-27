@@ -8,8 +8,8 @@ Assembly descriptor for the full SFTP distribution.
   </formats>
   <fileSets>
     <fileSet>
-      <directory>..</directory>
-      <outputDirectory>.</outputDirectory>
+      <directory>.</directory>
+      <outputDirectory></outputDirectory>
           <excludes>
               <exclude>target/**</exclude>
               <exclude>dist/**</exclude>
@@ -19,8 +19,8 @@ Assembly descriptor for the full SFTP distribution.
           </excludes>
     </fileSet>
     <fileSet>
-      <directory>../target</directory>
-      <outputDirectory>.</outputDirectory>
+      <directory>target</directory>
+      <outputDirectory></outputDirectory>
           <includes>
               <include>*.jar</include>
           </includes>
