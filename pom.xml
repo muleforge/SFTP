@@ -4,7 +4,7 @@
 	<groupId>org.mule.transports</groupId>
 	<artifactId>mule-transport-sftp</artifactId>
 	<packaging>jar</packaging>
-	<version>1.4.3</version>
+	<version>1.4.3-SNAPSHOT</version>
 	
 	<properties>
 		<muleVersion>1.4.3</muleVersion>
