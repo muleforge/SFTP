@@ -12,6 +12,16 @@
 	<properties>
 		<muleVersion>1.4.3</muleVersion>
 	</properties>
+
+	<scm>
+		<connection>
+			scm:svn:http://svn.muleforge.org/${artifactId}/trunk
+		</connection>
+		<developerConnection>
+			scm:svn:https://svn.muleforge.org/${artifactId}/trunk
+		</developerConnection>
+		<url>http://svn.${artifactId}.muleforge.org/</url>
+	</scm>
 	
 	<repositories>
 		<repository>
