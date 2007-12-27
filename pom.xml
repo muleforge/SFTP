@@ -1,26 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mule.transports</groupId>
 	<artifactId>mule-transport-sftp</artifactId>
 	<packaging>jar</packaging>
-	<version>1.4.3-SNAPSHOT</version>
+	<version>1.4.3</version>
 	
 	<properties>
 		<muleVersion>1.4.3</muleVersion>
 	</properties>
 
 	<scm>
-		<connection>
-			scm:svn:http://svn.muleforge.org/${artifactId}/trunk
-		</connection>
-		<developerConnection>
-			scm:svn:https://svn.muleforge.org/${artifactId}/trunk
-		</developerConnection>
-		<url>http://svn.${artifactId}.muleforge.org/</url>
+		<connection>scm:svn:http://svn.muleforge.org/mule-transport-sftp/tags/1.4.3</connection>
+		<developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-sftp/tags/1.4.3</developerConnection>
+		<url>http://svn.mule-transport-sftp.muleforge.org/tags/1.4.3</url>
 	</scm>
 	
 	<repositories>
@@ -112,6 +105,14 @@
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 			</plugin>
+                        <plugin>
+                          <groupId>org.apache.maven.plugins</groupId>
+                          <artifactId>maven-release-plugin</artifactId>
+                          <configuration>
+                            <arguments>-Dmaven.test.skip.exec=true</arguments>
+                            <useReleaseProfile>false</useReleaseProfile>
+                          </configuration>
+                        </plugin>
 		</plugins>
 	</build>
 	
