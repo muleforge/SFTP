@@ -4,19 +4,20 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.io.IOUtils;
-import org.mule.transport.sftp.LargeFileReceiveFunctionalTestCase;
-import org.mule.umo.UMOEventContext;
-import org.mule.umo.UMOMessage;
-import org.mule.umo.lifecycle.Callable;
+import javax.naming.event.EventContext;
 
-public class ReceiveLargeFileTestHelperComponent implements Callable
+import org.apache.commons.io.IOUtils;
+import org.mule.api.MuleEventContext;
+import org.mule.api.MuleMessage;
+import org.mule.transport.sftp.LargeFileReceiveFunctionalTestCase;
+
+public class ReceiveLargeFileTestHelperComponent implements org.mule.api.lifecycle.Callable
 {
 
 	
-	public Object onCall(UMOEventContext context) throws Exception
+	public Object onCall(MuleEventContext context) throws Exception
     {
-    	UMOMessage m = context.getMessage();
+    	MuleMessage m = context.getMessage();
     	
     	String filename = (String) m.getProperty("originalFilename");
     	

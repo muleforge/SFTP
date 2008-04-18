@@ -44,7 +44,7 @@ public class LargeFileReceiveFunctionalTestCase extends FunctionalTestCase
         MuleClient client = new MuleClient();  
      
         //Download each file, stop when no other files are received.
-        while( client.receive("vm://test.download",TIMEOUT) != null)
+        while( client.request("vm://test.download",TIMEOUT) != null)
         {
             ;     	
         }

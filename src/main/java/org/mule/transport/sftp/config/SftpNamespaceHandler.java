@@ -7,21 +7,21 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.transport.$transportid.config;
+package org.mule.transport.sftp.config;
 
 import org.mule.config.spring.parsers.generic.OrphanDefinitionParser;
-import org.mule.transport.$transportid.$transportidConnector;
+import org.mule.transport.sftp.SftpConnector;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
- * Registers a Bean Definition Parser for handling <code><$transportid:connector></code> elements.
+ * Registers a Bean Definition Parser for handling <code><sftp:connector></code> elements.
  *
  */
-public class $transportidNamespaceHandler extends NamespaceHandlerSupport
+public class SftpNamespaceHandler extends NamespaceHandlerSupport
 {
     public void init()
     {
-        registerBeanDefinitionParser("connector", new OrphanDefinitionParser($transportidConnector.class, true));
+        registerBeanDefinitionParser("connector", new OrphanDefinitionParser(SftpConnector.class, true));
     }
 }

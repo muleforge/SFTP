@@ -10,9 +10,9 @@
 
 package org.mule.transport.sftp.transformers;
 
+import org.mule.api.transformer.TransformerException;
 import org.mule.config.i18n.MessageFactory;
-import org.mule.transformers.AbstractTransformer;
-import org.mule.umo.transformer.TransformerException;
+import org.mule.transformer.AbstractTransformer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;

@@ -8,13 +8,13 @@
  * LICENSE.txt file.
  */
 
-package org.mule.transport.$transportid;
+package org.mule.transport.sftp;
 
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.tck.AbstractMuleTestCase;
 
 
-public class $transportidConnectorFactoryTestCase extends AbstractMuleTestCase
+public class SftpConnectorFactoryTestCase extends AbstractMuleTestCase
 {
 
     /* For general guidelines on writing transports see
@@ -26,7 +26,7 @@ public class $transportidConnectorFactoryTestCase extends AbstractMuleTestCase
                 .lookupEndpointFactory().getInboundEndpoint(getEndpointURI());
         assertNotNull(endpoint);
         assertNotNull(endpoint.getConnector());
-        assertTrue(endpoint.getConnector() instanceof $transportidConnector);
+        assertTrue(endpoint.getConnector() instanceof SftpConnector);
         assertEquals(getEndpointURI(), endpoint.getEndpointURI().getAddress());
     }
     

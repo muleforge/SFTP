@@ -8,18 +8,17 @@
  * LICENSE.txt file.
  */
 
-package org.mule.transport.$transportid;
+package org.mule.transport.sftp;
 
 import com.mockobjects.dynamic.Mock;
 import org.mule.transport.AbstractConnector;
-import org.mule.transport.$transportid.$transportidMessageReceiver;
-import org.mule.tck.providers.AbstractMessageReceiverTestCase;
+import org.mule.transport.AbstractMessageReceiverTestCase;
 import org.mule.api.service.Service;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.transport.MessageReceiver;
 
 
-public class $transportidMessageReceiverTestCase extends AbstractMessageReceiverTestCase
+public class SftpMessageReceiverTestCase extends AbstractMessageReceiverTestCase
 {
 
     /* For general guidelines on writing transports see
@@ -29,7 +28,8 @@ public class $transportidMessageReceiverTestCase extends AbstractMessageReceiver
     {
         Mock mockService = new Mock(Service.class);
         mockService.expectAndReturn("getResponseTransformer", null);
-        return new $transportidMessageReceiver(endpoint.getConnector(), (Service) mockService.proxy(), endpoint, 1000);
+       
+        return new SftpMessageReceiver((SftpConnector) endpoint.getConnector(), (Service) mockService.proxy(), endpoint, 1000);
     }
 
     public InboundEndpoint getEndpoint() throws Exception

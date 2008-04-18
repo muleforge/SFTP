@@ -7,14 +7,14 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.transport.$transportid;
+package org.mule.transport.sftp;
 
 import org.mule.tck.FunctionalTestCase;
 
 /**
  * TODO
  */
-public class $transportidNamespaceHandlerTestCase extends FunctionalTestCase
+public class SftpNamespaceHandlerTestCase extends FunctionalTestCase
 {
     protected String getConfigResources()
     {
@@ -24,7 +24,7 @@ public class $transportidNamespaceHandlerTestCase extends FunctionalTestCase
 
     public void test$transportidConfig() throws Exception
     {
-        $transportidConnector c = ($transportidConnector) muleContext.getRegistry().lookupConnector("$transportidConnector");
+        SftpConnector c = (SftpConnector) muleContext.getRegistry().lookupConnector("$transportidConnector");
         assertNotNull(c);
         assertTrue(c.isConnected());
         assertTrue(c.isStarted());

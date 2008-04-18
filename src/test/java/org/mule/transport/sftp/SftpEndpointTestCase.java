@@ -8,14 +8,14 @@
  * LICENSE.txt file.
  */
 
-package org.mule.transport.$transportid;
+package org.mule.transport.sftp;
 
 import org.mule.endpoint.MuleEndpointURI;
 import org.mule.tck.AbstractMuleTestCase;
 import org.mule.api.endpoint.EndpointURI;
 
 
-public class $transportidEndpointTestCase extends AbstractMuleTestCase
+public class SftpEndpointTestCase extends AbstractMuleTestCase
 {
 
     /* For general guidelines on writing transports see

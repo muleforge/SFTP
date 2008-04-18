@@ -8,13 +8,13 @@
  * LICENSE.txt file.
  */
 
-package org.mule.transport.$transportid;
+package org.mule.transport.sftp;
 
 import org.mule.transport.AbstractConnectorTestCase;
 import org.mule.api.service.Service;
 import org.mule.api.transport.Connector;
 
-public class $transportidConnectorTestCase extends AbstractConnectorTestCase
+public class SftpConnectorTestCase extends AbstractConnectorTestCase
 {
 
     /* For general guidelines on writing transports see
@@ -25,7 +25,7 @@ public class $transportidConnectorTestCase extends AbstractConnectorTestCase
         /* IMPLEMENTATION NOTE: Create and initialise an instance of your
            connector here. Do not actually call the connect method. */
 
-        $transportidConnector c = new $transportidConnector();
+        SftpConnector c = new SftpConnector();
         c.setName("Test");
         // TODO Set any additional properties on the connector here
         return c;

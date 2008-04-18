@@ -8,12 +8,12 @@
  * LICENSE.txt file.
  */
 
-package org.mule.transport.$transportid.i18n;
+package org.mule.transport.sftp.i18n;
 
 import org.mule.config.i18n.Message;
 import org.mule.config.i18n.MessageFactory;
 
-public class $transportidMessages extends MessageFactory
+public class SftpMessages extends MessageFactory
 {
     private static final String BUNDLE_PATH = getBundlePath("$transportid");
 	
