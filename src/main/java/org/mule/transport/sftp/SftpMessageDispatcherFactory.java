@@ -10,10 +10,10 @@
 
 package org.mule.transport.sftp;
 
-import org.mule.providers.AbstractMessageDispatcherFactory;
-import org.mule.umo.UMOException;
-import org.mule.umo.endpoint.UMOImmutableEndpoint;
-import org.mule.umo.provider.UMOMessageDispatcher;
+import org.mule.transport.AbstractMessageDispatcherFactory;
+import org.mule.api.MuleException;
+import org.mule.api.endpoint.OutboundEndpoint;
+import org.mule.api.transport.MessageDispatcher;
 
 /**
  * Creates a SftpMessageDispatcher
@@ -21,9 +21,9 @@ import org.mule.umo.provider.UMOMessageDispatcher;
 public class SftpMessageDispatcherFactory extends AbstractMessageDispatcherFactory
 {
 
-    public UMOMessageDispatcher create(UMOImmutableEndpoint umoImmutableEndpoint) throws UMOException
+    public MessageDispatcher create(OutboundEndpoint endpoint) throws MuleException
     {
-        return new SftpMessageDispatcher(umoImmutableEndpoint);
+        return new SftpMessageDispatcher(endpoint);
     }
     
 }

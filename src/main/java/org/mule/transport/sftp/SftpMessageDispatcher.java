@@ -3,20 +3,18 @@
  * --------------------------------------------------------------------------------------
  * Copyright (c) MuleSource, Inc.  All rights reserved.  http://www.mulesource.com
  *
- * The software in this package is published under the terms of the MuleSource MPL
+ * The software in this package is published under the terms of the CPAL v1.0
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
 
 package org.mule.transport.sftp;
 
-import org.mule.MuleException;
-import org.mule.config.i18n.MessageFactory;
-import org.mule.providers.AbstractMessageDispatcher;
-import org.mule.umo.UMOEvent;
-import org.mule.umo.UMOException;
-import org.mule.umo.UMOMessage;
-import org.mule.umo.endpoint.UMOImmutableEndpoint;
+
+import org.mule.transport.AbstractMessageDispatcher;
+import org.mule.api.MuleEvent;
+import org.mule.api.MuleMessage;
+import org.mule.api.endpoint.OutboundEndpoint;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -32,25 +30,23 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 	private SftpConnector connector;
 
-	public SftpMessageDispatcher(UMOImmutableEndpoint umoImmutableEndpoint)
+    public SftpMessageDispatcher(OutboundEndpoint endpoint)
 	{
-		super(umoImmutableEndpoint);
-		connector = (SftpConnector) umoImmutableEndpoint.getConnector();
+        super(endpoint);
+		connector = (SftpConnector) endpoint.getConnector();
 	}
 
-	protected void doConnect(UMOImmutableEndpoint umoImmutableEndpoint)
-			throws Exception
-	{
-		//no op
-	}
-
+    protected void doConnect() throws Exception 
+    {
+        //no op
+        
+    }
 	protected void doDisconnect() throws Exception
 	{
 		//no op
 	}
 
-	protected UMOMessage doReceive(UMOImmutableEndpoint umoImmutableEndpoint,
-			long l) throws Exception
+	protected MuleMessage doReceive(long l) throws Exception
 	{
 		throw new UnsupportedOperationException("doReceive");
 	}
@@ -60,10 +56,11 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		//no op
 	}
 
-	protected void doDispatch(UMOEvent event) throws Exception
+	protected void doDispatch(MuleEvent event) throws Exception
 	{
 
-		Object data = event.getTransformedMessage();
+		
+		Object data = event.transformMessage();
 		String filename = (String) event
 				.getProperty(SftpConnector.PROPERTY_FILENAME, true);
 		
@@ -73,7 +70,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		//endpoint or connector
         if (filename == null)
         {
-        	UMOMessage message = event.getMessage();
+        	MuleMessage message = event.getMessage();
         	
             String outPattern = (String)endpoint.getProperty(SftpConnector.PROPERTY_OUTPUT_PATTERN);
             if (outPattern == null)
@@ -105,8 +102,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 		} else
 		{
-			throw new MuleException(
-					MessageFactory.createStaticMessage("Unxpected message type: java.io.InputStream or byte[] expected "));
+			throw new IllegalArgumentException("Unxpected message type: java.io.InputStream or byte[] expected ");
 
 		}
 
@@ -117,8 +113,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		try
 		{
 
-			client = sftpConnector.createSftpClient(endpoint
-					.getEndpointURI());
+			client = sftpConnector.createSftpClient(endpoint.getEndpointURI());
 
 			// send file over sftp
 			client.storeFile(filename, inputStream);
@@ -134,18 +129,18 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 	}
 
-	protected UMOMessage doSend(UMOEvent event) throws Exception
+	protected MuleMessage doSend(MuleEvent event) throws Exception
 	{
 		doDispatch(event);
 		return event.getMessage();
 	}
 
-	public Object getDelegateSession() throws UMOException
+	public Object getDelegateSession() throws Exception
 	{
 		return null;
 	}
 
-    private String generateFilename(UMOMessage message, String pattern)
+    private String generateFilename(MuleMessage message, String pattern)
     {
         if (pattern == null)
         {
@@ -154,19 +149,5 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
         return connector.getFilenameParser().getFilename(message, pattern);
     }
 
-    /* (non-Javadoc)
-     * @see org.mule.providers.AbstractMessageDispatcher#doConnect()
-     */
-    protected void doConnect() throws Exception {
-        // TODO Auto-generated method stub
-        
-    }
 
-    /* (non-Javadoc)
-     * @see org.mule.providers.AbstractMessageDispatcher#doReceive(long)
-     */
-    protected UMOMessage doReceive( long timeout ) throws Exception {
-        // TODO Auto-generated method stub
-        return null;
-    }
 }

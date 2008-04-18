@@ -11,15 +11,16 @@
 package org.mule.transport.sftp;
 
 
-import org.mule.providers.AbstractConnector;
-import org.mule.providers.file.FilenameParser;
-import org.mule.providers.file.SimpleFilenameParser;
-import org.mule.umo.UMOComponent;
-import org.mule.umo.UMOException;
-import org.mule.umo.endpoint.UMOEndpoint;
-import org.mule.umo.endpoint.UMOEndpointURI;
-import org.mule.umo.lifecycle.InitialisationException;
-import org.mule.umo.provider.UMOMessageReceiver;
+import org.mule.api.MuleException;
+import org.mule.api.endpoint.EndpointURI;
+import org.mule.api.endpoint.InboundEndpoint;
+import org.mule.api.lifecycle.InitialisationException;
+import org.mule.api.service.Service;
+import org.mule.api.transport.MessageReceiver;
+import org.mule.transport.AbstractConnector;
+import org.mule.transport.file.FilenameParser;
+import org.mule.transport.file.SimpleFilenameParser;
+
 
 import java.util.Map;
 
@@ -60,22 +61,25 @@ public class SftpConnector extends AbstractConnector
         return "sftp";
     }
 
-	public UMOMessageReceiver createReceiver(UMOComponent component, UMOEndpoint endpoint) throws Exception
+	public MessageReceiver createReceiver(Service component, InboundEndpoint endpoint) throws Exception
     {
                 
         long polling = pollingFrequency;
-        Map props = endpoint.getProperties();
-        if ( props != null ) {
-            // Override properties on the endpoint for the specific endpoint
-            String tempPolling = ( String ) props.get( PROPERTY_POLLING_FREQUENCY );
-            if ( tempPolling != null ) {
-                polling = Long.parseLong( tempPolling );
-            }
+         
+
+        // Override properties on the endpoint for the specific endpoint
+        String tempPolling = ( String ) endpoint.getProperty( PROPERTY_POLLING_FREQUENCY );
+        if ( tempPolling != null ) 
+        {
+            polling = Long.parseLong( tempPolling );
         }
-        if ( polling <= 0 ) {
+        
+        if ( polling <= 0 ) 
+        {
             polling = DEFAULT_POLLING_FREQUENCY;
         }
         logger.debug( "set polling frequency to " + polling );
+        
         return serviceDescriptor.createMessageReceiver( this, component, endpoint,
                 new Object[]{new Long( polling )} );
     }
@@ -122,12 +126,13 @@ public class SftpConnector extends AbstractConnector
      
     }
 
-    public SftpClient createSftpClient(UMOEndpointURI endpointURI)  throws Exception
+    public SftpClient createSftpClient(EndpointURI endpointURI)  throws Exception
     {
         SftpClient client = new SftpClient();
         
         client.connect(endpointURI.getHost());
-        client.login(endpointURI.getUsername(), endpointURI.getPassword());
+
+        client.login(endpointURI.getUser(), endpointURI.getPassword());
 
         logger.info("Successfully connected to: " + endpointURI);
         
@@ -171,7 +176,7 @@ public class SftpConnector extends AbstractConnector
     /* (non-Javadoc)
      * @see org.mule.providers.AbstractConnector#doStart()
      */
-    protected void doStart() throws UMOException {
+    protected void doStart() throws MuleException {
         // TODO Auto-generated method stub
         
     }
@@ -179,7 +184,7 @@ public class SftpConnector extends AbstractConnector
     /* (non-Javadoc)
      * @see org.mule.providers.AbstractConnector#doStop()
      */
-    protected void doStop() throws UMOException {
+    protected void doStop() throws MuleException {
         // TODO Auto-generated method stub
         
     }

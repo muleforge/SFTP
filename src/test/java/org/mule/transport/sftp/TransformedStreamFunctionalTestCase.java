@@ -11,9 +11,9 @@
 
 package org.mule.transport.sftp;
 
-import org.mule.extras.client.MuleClient;
+import org.mule.api.MuleMessage;
+import org.mule.module.client.MuleClient;
 import org.mule.tck.FunctionalTestCase;
-import org.mule.umo.UMOMessage;
 
 /**
  * <code>TransformedStreamFunctionalTestCase</code> tests using the InputStreamToByteArray
@@ -44,9 +44,9 @@ public class TransformedStreamFunctionalTestCase extends FunctionalTestCase
     	
         MuleClient client = new MuleClient();  
  
-        UMOMessage m;  
+        MuleMessage m;  
         
-        while( (m = client.receive("vm://test.download",TIMEOUT)) != null)
+        while( (m = client.request("vm://test.download",TIMEOUT)) != null)
         {
             assertTrue(m.getPayload() instanceof byte[]);    	
         }       

@@ -9,13 +9,15 @@
  */
 package org.mule.transport.sftp;
 
-import org.mule.impl.MuleMessage;
-import org.mule.providers.AbstractPollingMessageReceiver;
-import org.mule.umo.UMOComponent;
-import org.mule.umo.UMOMessage;
-import org.mule.umo.endpoint.UMOEndpoint;
-import org.mule.umo.lifecycle.InitialisationException;
-import org.mule.umo.provider.UMOMessageAdapter;
+
+import org.mule.DefaultMuleMessage;
+import org.mule.api.MuleMessage;
+import org.mule.api.endpoint.InboundEndpoint;
+import org.mule.api.lifecycle.CreateException;
+import org.mule.api.service.Service;
+import org.mule.api.transport.MessageAdapter;
+import org.mule.transport.AbstractPollingMessageReceiver;
+
 
 import java.io.FilenameFilter;
 import java.io.InputStream;
@@ -31,8 +33,8 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
     // private String fileExtension;
     protected final FilenameFilter filenameFilter;
 
-    public SftpMessageReceiver( org.mule.transport.sftp.SftpConnector connector, UMOComponent component,
-            UMOEndpoint endpoint, long frequency ) throws InitialisationException {
+    public SftpMessageReceiver( SftpConnector connector, Service component,
+            InboundEndpoint endpoint, long frequency ) throws CreateException {
         
         super( connector, component, endpoint );
 
@@ -128,9 +130,9 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
 
         logger.debug( "Routing file: " + path );
 
-        UMOMessageAdapter msgAdapter = connector.getMessageAdapter( inputStream );
+        MessageAdapter msgAdapter = connector.getMessageAdapter( inputStream );
         msgAdapter.setProperty( SftpConnector.PROPERTY_ORIGINAL_FILENAME, path );
-        UMOMessage message = new MuleMessage( msgAdapter );
+        MuleMessage message = new DefaultMuleMessage( msgAdapter );
         routeMessage( message, endpoint.isSynchronous() );
 
     }
