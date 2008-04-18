@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xsd:schema xmlns="http://www.mulesource.org/schema/mule/$transportid/${m"
+<xsd:schema xmlns="http://www.mulesource.org/schema/mule/sftp/2.0"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:mule="http://www.mulesource.org/schema/mule/core/${m"
-            targetNamespace="http://www.mulesource.org/schema/mule/$transportid/${m"
+            xmlns:mule="http://www.mulesource.org/schema/mule/core/2.0"
+            targetNamespace="http://www.mulesource.org/schema/mule/sftp/2.0"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified">
 
@@ -10,9 +10,10 @@
     <xsd:import namespace="http://www.springframework.org/schema/beans"
                 schemaLocation="http://www.springframework.org/schema/beans"/>
 
-    <xsd:import namespace="http://www.mulesource.org/schema/mule/core/${m"/>
+    <xsd:import namespace="http://www.mulesource.org/schema/mule/core/2.0"
+                schemaLocation="http://www.mulesource.org/schema/mule/core/2.0/mule.xsd" />
 
-    <xsd:element name="connector" type="$transportidConnectorType" substitutionGroup="mule:abstract-connector">
+    <xsd:element name="connector" type="sftpConnectorType" substitutionGroup="mule:abstract-connector">
         <xsd:annotation>
             <xsd:documentation>
                 SFTP connectivity
@@ -21,39 +22,105 @@
     </xsd:element>
 
 
-    <xsd:complexType name="test2ConnectorType">
+    <xsd:complexType name="sftpConnectorType">
         <xsd:complexContent>
             <xsd:extension base="mule:connectorType">
-            <!--
-
-            TODO for simple property types you can just add xsd:attribute elements here
-            For complex properties with multiple values you can add custom elements and register
-            a definition parser with $transportidNamespaceHandler.
-
-            For example -
-
-            <xsd:attribute name="swizzleSize" type="mule:substitutableInt">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Sets the amount of swizzle available for your twizzle
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:attribute>
-
-            Note the type of the attribute is mule:substitutableInt.  For non-string simple
-            types you should use mule:substitutableBoolean, mule:substitutableLong, etc since
-            these types allow property placeholders to be used instead of the actual value.
-            The property can then be set according to the properties available to the MUle instance. i.e
-
-            <$transportid:connector name="smallTwizzler" swizzlerSize="${small.swizzle}"/>
-
-            where small.swizzle is set in a properties files or system property.  This makes it easy
-            to use the same config file for differnet environments such as Developement, UAT and Production
-
-            -->
-
+                <xsd:sequence minOccurs="0" maxOccurs="1">
+                    <xsd:element ref="abstract-filenameParser"/>
+                </xsd:sequence>
+                <xsd:attributeGroup ref="inboundAttributes"/>
+                <xsd:attributeGroup ref="outboundAttributes"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
 
+    <xsd:element name="inbound-endpoint" type="inboundEndpointType" substitutionGroup="mule:abstract-inbound-endpoint"/>
+    <xsd:complexType name="inboundEndpointType">
+        <xsd:complexContent>
+            <xsd:extension base="mule:inboundEndpointType">
+                <xsd:attributeGroup ref="addressAttributes"/>
+                <xsd:attributeGroup ref="inboundAttributes"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="outbound-endpoint" type="outboundEndpointType" substitutionGroup="mule:abstract-outbound-endpoint"/>
+    <xsd:complexType name="outboundEndpointType">
+        <xsd:complexContent>
+            <xsd:extension base="mule:outboundEndpointType">
+                <xsd:attributeGroup ref="addressAttributes"/>
+                <xsd:attributeGroup ref="outboundAttributes"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="endpoint" type="globalEndpointType" substitutionGroup="mule:abstract-global-endpoint"/>
+    <xsd:complexType name="globalEndpointType">
+        <xsd:complexContent>
+            <xsd:extension base="mule:globalEndpointType">
+                <xsd:attributeGroup ref="addressAttributes"/>
+                <xsd:attributeGroup ref="inboundAttributes"/>
+                <xsd:attributeGroup ref="outboundAttributes"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:attributeGroup name="inboundAttributes">
+        <xsd:attribute name="pollingFrequency" type="mule:substitutableLong">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The frequency in milliseconds that the read directory should be checked.
+                    Note that the read directory is specified by the endpoint of the listening component.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:attributeGroup>
+
+    <xsd:attributeGroup name="outboundAttributes">
+        <xsd:attribute name="outputPattern" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The pattern to use when writing a file to disk.
+                    This can use the patterns supported by the filename-parser configured for this connector                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:attributeGroup>
+    <xsd:attributeGroup name="addressAttributes">
+        <xsd:attribute name="path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    A file location.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="user" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    A username.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="password" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    A password.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="host" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    An IP address (eg www.mulesource.com, localhost, 127.0.0.1).
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="port" type="mule:substitutablePortNumber">
+            <xsd:annotation>
+                <xsd:documentation>
+                    A port number.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:attributeGroup>
+    <xsd:element name="abstract-filenameParser" abstract="true" type="file:filenameParserType"/>
 </xsd:schema>
