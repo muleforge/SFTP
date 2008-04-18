@@ -9,7 +9,7 @@
  */
 
 
-package org.mule.providers.sftp;
+package org.mule.transport.sftp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -20,6 +20,7 @@ import java.util.HashMap;
 import org.apache.commons.io.IOUtils;
 import org.mule.extras.client.MuleClient;
 import org.mule.tck.FunctionalTestCase;
+import org.mule.transport.sftp.SftpConnector;
 import org.mule.umo.UMOMessage;
 
 /**

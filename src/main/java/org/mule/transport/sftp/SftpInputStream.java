@@ -1,4 +1,4 @@
-package org.mule.providers.sftp;
+package org.mule.transport.sftp;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -7,7 +7,7 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.providers.sftp;
+package org.mule.transport.sftp;
 
 import org.mule.impl.MuleMessage;
 import org.mule.providers.AbstractPollingMessageReceiver;
@@ -31,7 +31,7 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
     // private String fileExtension;
     protected final FilenameFilter filenameFilter;
 
-    public SftpMessageReceiver( org.mule.providers.sftp.SftpConnector connector, UMOComponent component,
+    public SftpMessageReceiver( org.mule.transport.sftp.SftpConnector connector, UMOComponent component,
             UMOEndpoint endpoint, long frequency ) throws InitialisationException {
         
         super( connector, component, endpoint );

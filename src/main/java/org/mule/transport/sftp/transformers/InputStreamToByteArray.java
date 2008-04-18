@@ -8,7 +8,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.providers.sftp.transformers;
+package org.mule.transport.sftp.transformers;
 
 import org.mule.config.i18n.MessageFactory;
 import org.mule.transformers.AbstractTransformer;

@@ -8,7 +8,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.providers.sftp;
+package org.mule.transport.sftp;
 
 import org.mule.MuleException;
 import org.mule.config.i18n.MessageFactory;

@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.mule.providers.sftp.LargeFileReceiveFunctionalTestCase;
+import org.mule.transport.sftp.LargeFileReceiveFunctionalTestCase;
 import org.mule.umo.UMOEventContext;
 import org.mule.umo.UMOMessage;
 import org.mule.umo.lifecycle.Callable;

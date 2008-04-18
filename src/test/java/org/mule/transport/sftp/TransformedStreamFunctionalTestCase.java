@@ -9,7 +9,7 @@
  */
 
 
-package org.mule.providers.sftp;
+package org.mule.transport.sftp;
 
 import org.mule.extras.client.MuleClient;
 import org.mule.tck.FunctionalTestCase;

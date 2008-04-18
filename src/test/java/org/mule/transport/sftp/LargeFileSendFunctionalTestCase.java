@@ -9,13 +9,14 @@
  */
 
 
-package org.mule.providers.sftp;
+package org.mule.transport.sftp;
 
 import java.io.FileInputStream;
 import java.util.HashMap;
 
 import org.mule.extras.client.MuleClient;
 import org.mule.tck.FunctionalTestCase;
+import org.mule.transport.sftp.SftpConnector;
 
 /**
  * <code>LargeFileSendFunctionalTestCase</code> tests sending a large file message
