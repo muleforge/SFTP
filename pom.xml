@@ -1,27 +1,40 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mule.transports</groupId>
 	<artifactId>mule-transport-sftp</artifactId>
 	<packaging>jar</packaging>
-	<version>1.4.4-SNAPSHOT</version>
+   <name>Mule SFTP Transport</name>
+   <version>2.0.1-SNAPSHOT</version>
+   <description>SFTP connectivity</description>
 	
 	<properties>
-		<muleVersion>1.4.3</muleVersion>
+       <mule.version>2.0.1-SNAPSHOT</mule.version>
 	</properties>
 
+   <!-- Mule Forge Configuration -->
+   <issueManagement>
+       <system>Jira</system>
+       <url>http://mule.mulesource.org/jira/browse/SFTP</url>
+   </issueManagement>
 	<scm>
-		<connection>scm:svn:http://svn.muleforge.org/mule-transport-sftp/tags/1.4.3</connection>
-		<developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-sftp/tags/1.4.3</developerConnection>
-		<url>http://svn.mule-transport-sftp.muleforge.org/tags/1.4.3</url>
+       <connection>scm:svn:http://svn.muleforge.org/mule-transport-sftp/branches/mule-2.0.x</connection>
+       <developerConnection>scm:svn:https://svn.muleforge.org/mule-transport-sftp/</developerConnection>
+
+		<url>http://svn.mule-transport-sftp.muleforge.org/branches/mule-2.0.x</url>
 	</scm>
+   <ciManagement>
+       <system>Bamboo</system>
+       <url>http://bamboo.muleforge.org/browse/SFTP-FORGE</url>
+       <notifiers/>
+   </ciManagement>
+
+
+
 	
-	<repositories>
-		<repository>
-			<id>muleforce.codehaus.releases</id>
-			<url>http://snapshots.repository.codehaus.org/</url>
-		</repository>
-	</repositories>
 	
 	<distributionManagement>
 		<repository>
@@ -37,54 +50,27 @@
 			<url>dav:https://dav.muleforge.org/${artifactId}/</url>
 		</site>
 	</distributionManagement>
-	
-	
-	<name>SFTP Transport</name>
-	<description>Send and Receive Mule Messages over SFTP</description>
-	
-	<dependencies>
-	
-		<dependency>
-			<groupId>org.mule.transports</groupId>
-			<artifactId>mule-transport-vm</artifactId>
-			<version>${muleVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.transports</groupId>
-			<artifactId>mule-transport-tcp</artifactId>
-			<version>${muleVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.transports</groupId>
-			<artifactId>mule-transport-file</artifactId>
-			<version>${muleVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.transports</groupId>
-			<artifactId>mule-transport-stream</artifactId>
-			<version>${muleVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.modules</groupId>
-			<artifactId>mule-module-client</artifactId>
-			<version>${muleVersion}</version>
-		</dependency>		
-		<dependency>
-			<groupId>org.mule.tests</groupId>
-			<artifactId>mule-tests-functional</artifactId>
-			<version>${muleVersion}</version>
-		</dependency>
-        <dependency>
-            <groupId>org.mule</groupId>
-            <artifactId>mule-core</artifactId>
-            <version>${muleVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>jsch</groupId>
-            <artifactId>jsch</artifactId>
-            <version>0.1.29</version>
-        </dependency>
-	</dependencies>
+
+   <repositories>
+       <repository>
+           <id>ch-dep</id>
+           <name>Codehaus Dependencies</name>
+           <url>http://dist.codehaus.org/mule/dependencies/maven2</url>
+           <layout>default</layout>
+       </repository>
+       <repository>
+           <!-- local repository for this transport. Users can upload dependencies here when the artifact
+                is not available on any other repository. Its the users' responsibility to make sure that no
+                licenses are violated by uploading dependencies to this location
+           -->
+           <id>${thransportId}-deps</id>
+           <name>$transportid Dependencies</name>
+           <url>http://dist.muleforge.org/${artifactId}/dependencies/maven2</url>
+           <snapshots>
+               <enabled>false</enabled>
+           </snapshots>
+       </repository>
+   </repositories>
 	
 	<build>
 		<extensions>
@@ -115,5 +101,43 @@
                         </plugin>
 		</plugins>
 	</build>
+	<dependencies>
+	
+		<dependency>
+			<groupId>org.mule.transports</groupId>
+			<artifactId>mule-transport-vm</artifactId>
+			<version>${mule.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.transports</groupId>
+			<artifactId>mule-transport-tcp</artifactId>
+			<version>${mule.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.transports</groupId>
+			<artifactId>mule-transport-file</artifactId>
+			<version>${mule.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-client</artifactId>
+			<version>${mule.version}</version>
+		</dependency>		
+		<dependency>
+			<groupId>org.mule.tests</groupId>
+			<artifactId>mule-tests-functional</artifactId>
+			<version>${mule.version}</version>
+		</dependency>
+        <dependency>
+            <groupId>org.mule</groupId>
+            <artifactId>mule-core</artifactId>
+            <version>${mule.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jsch</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.29</version>
+        </dependency>
+	</dependencies>
 	
 </project>
