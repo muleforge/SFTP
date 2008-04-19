@@ -1,49 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE mule-configuration PUBLIC "-//SymphonySoft //DTD mule-configuration XML V1.0//EN"
-"http://www.symphonysoft.com/dtds/mule/mule-configuration.dtd">
-<mule-configuration id="SFTP_TEST" version="1.0">
-	<description>Sftp testing.</description>
+<mule xmlns="http://www.mulesource.org/schema/mule/core/2.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:sftp="http://www.mulesource.org/schema/mule/sftp/2.0"
+	xmlns:vm="http://www.mulesource.org/schema/mule/vm/2.0"
+	xsi:schemaLocation="
+               http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+               http://www.mulesource.org/schema/mule/core/2.0 http://www.mulesource.org/schema/mule/core/2.0/mule.xsd
+               http://www.mulesource.org/schema/mule/sftp/2.0 http://svn.muleforge.org/mule-transport-sftp/branches/mule-2.0.x/src/main/resources/META-INF/mule-sftp.xsd
+               http://www.mulesource.org/schema/mule/vm/2.0 http://www.mulesource.org/schema/mule/vm/2.0/mule-vm.xsd">
 
-	<mule-environment-properties synchronous="true" />
-	
-	
-	<!-- SFTP-connector -->
-	<connector name="sftpConnector"
-		className="org.mule.providers.sftp.SftpConnector">
-		<properties>
-			<property name="pollingFrequency" value="500000"/>
-			<property name="autoDelete" value="true"/>
-		</properties>
-	</connector>
-	
-	<connector name="vmQueue" className="org.mule.providers.vm.VMConnector">
-		<properties>
-			<property name="queueEvents" value="true"/>
-		</properties>
-	</connector>
-	
-	
-	<!-- MODEL -->
-	<model name="testSftp">
+	<sftp:connector name="sftp" pollingFrequency="2000">
+		<custom-exception-strategy
+			class="org.mule.tck.functional.QuietExceptionStrategy" />
+	</sftp:connector>
 
-	<mule-descriptor name="sftpDownload"
-		implementation="org.mule.providers.sftp.components.ReceiveLargeFileTestHelperComponent">
-		<inbound-router>
-				<endpoint address="sftp://mule:test123@localhost/files/sftp-source" 
-					connector="sftpConnector">
-				<filter pattern="*.zip"
-					className="org.mule.providers.file.filters.FilenameWildcardFilter"/>
-			</endpoint>
-		</inbound-router>
-		<outbound-router>
-		     <router className="org.mule.routing.outbound.OutboundPassThroughRouter">
-				<endpoint address="vm://test.download" connector="vmQueue"/>
-		     </router>
-		</outbound-router>
-	</mule-descriptor>
+    <vm:connector name="VMQueue" queueEvents="true">
+        <vm:queueProfile persistent="true" maxOutstandingMessages="10"/>
+    </vm:connector>
 
-
+	<model name="main">
+		<service name="testComponent">
+			<inbound>
+				<sftp:inbound-endpoint
+					address="sftp://test:test123@localhost/data" />
+			</inbound>
+			<outbound>
+				<outbound-pass-through-router>
+					<vm:outbound-endpoint path="test.download" />
+				</outbound-pass-through-router>
+			</outbound>
+		</service>
 	</model>
-</mule-configuration>
+
+</mule>
+
 
 

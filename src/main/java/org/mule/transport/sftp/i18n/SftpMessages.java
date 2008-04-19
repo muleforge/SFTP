@@ -15,7 +15,7 @@ import org.mule.config.i18n.MessageFactory;
 
 public class SftpMessages extends MessageFactory
 {
-    private static final String BUNDLE_PATH = getBundlePath("$transportid");
+    private static final String BUNDLE_PATH = getBundlePath("sftp");
 	
     /*
     public static Message exampleMessage()

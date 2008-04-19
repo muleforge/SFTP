@@ -105,7 +105,8 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
         } catch ( Exception e ) {
             throw e;
         } finally {
-            client.disconnect();
+        	if( client != null )
+                client.disconnect();
         }
 
     }
