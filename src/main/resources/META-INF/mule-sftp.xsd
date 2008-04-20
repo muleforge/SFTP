@@ -78,6 +78,13 @@
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="autoDelete" type="mule:substitutableBoolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Whether to delete the file after reading it
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:attributeGroup>
 
     <xsd:attributeGroup name="outboundAttributes">

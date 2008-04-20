@@ -11,6 +11,14 @@
 
 package org.mule.transport.sftp;
 
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.mule.api.MuleMessage;
 import org.mule.module.client.MuleClient;
 import org.mule.tck.FunctionalTestCase;
 
@@ -23,10 +31,9 @@ import org.mule.tck.FunctionalTestCase;
 
 public class LargeFileReceiveFunctionalTestCase extends FunctionalTestCase
 {
+	   
+	private static final Log logger = LogFactory.getLog(LargeFileReceiveFunctionalTestCase.class);
 	
-	//Where to save the file locally
-	public static final String FILEPATH = "/tmp/";
-    
 	//Increase this to be a little larger than expected download time
 	protected static final long TIMEOUT = 500000;
 	
@@ -36,24 +43,52 @@ public class LargeFileReceiveFunctionalTestCase extends FunctionalTestCase
     }
 
     
-    //Place one or more large files in a remote sftp directory.  This file
-    //will be downloaded to FILEPATH.
+    //Downloads large file in the remote directory specified in config
     public void testReceiveLargeFile() throws Exception
     {
     	
         MuleClient client = new MuleClient();  
+
         
-        //Download each file, stop when no other files are received.
-        while( client.request("vm://test.download", TIMEOUT) != null)
+        MuleMessage m = client.request("vm://test.download", TIMEOUT);
+
+        if( m!= null )
         {
-            ;     	
+        	String filename = (String) m.getProperty("originalFilename");
+        	
+        	InputStream inputStream = (InputStream) m.getPayload();
+        	
+        	FileOutputStream fos = new FileOutputStream("/tmp/" + filename);
+        	
+        	capture(inputStream,fos);
         }
-        
-        //We've passed the test if there's no OOM :)
+    	
+        //To do: match remote and local file sizes.  Manually check file in /tmp in meantime.
              
 
     }
 
-    
+	private void capture(InputStream inputStream, OutputStream outputStream)
+	    throws Exception
+	{
+
+		try
+		{
+
+			byte[] buffer = new byte[1024];
+			int len;
+			while ((len = inputStream.read(buffer)) > 0)
+			{
+				//System.out.println("downloading chunk of " + len);
+				outputStream.write(buffer, 0, len);
+			}
+
+		} finally
+		{
+			IOUtils.closeQuietly(inputStream);
+			IOUtils.closeQuietly(outputStream);
+		}
+
+    } 
 
 }
