@@ -38,7 +38,7 @@ public class LargeFileSendFunctionalTestCase extends FunctionalTestCase
 
     
     //Place a large file in the directory specified by FILEPATH + FILENAME 
-    //(file should be bigger than heap size of jvm running this test)
+ 
     public void testSendLargeFile() throws Exception
     {
     	
