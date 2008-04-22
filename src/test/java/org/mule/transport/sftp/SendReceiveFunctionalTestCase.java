@@ -44,7 +44,21 @@ public class SendReceiveFunctionalTestCase extends FunctionalTestCase
         return "mule-send-receive-test-config.xml";
     }
 
-      
+    public void testSendAndReceiveMultipleFiles() throws Exception
+    {
+    	sendFiles = new ArrayList();
+    	
+    	sendFiles.add("file1");
+    	sendFiles.add("file2");
+    	sendFiles.add("file3");
+    	sendFiles.add("file4");
+    	sendFiles.add("file5");
+    	sendFiles.add("file6");
+    	sendFiles.add("file7");
+    	sendFiles.add("file8");
+  	
+    	sendAndReceiveFiles();
+    }  
 
     public void testSendAndReceiveSingleFile() throws Exception
     {
@@ -54,24 +68,7 @@ public class SendReceiveFunctionalTestCase extends FunctionalTestCase
     	
     	sendAndReceiveFiles();
     }
-       
-  
-    public void testSendAndReceiveMultipleFiles() throws Exception
-    {
-    	sendFiles = new ArrayList();
-    	
-    	sendFiles.add("file created on " + new Date());
-    	sendFiles.add("file created on " + new Date());
-    	sendFiles.add("file created on " + new Date());
-    	sendFiles.add("file created on " + new Date());
-    	sendFiles.add("file created on " + new Date());
-    	sendFiles.add("file created on " + new Date());
-    	sendFiles.add("file created on " + new Date());
-    	sendFiles.add("file created on " + new Date());    	
-    	
-    	
-    	sendAndReceiveFiles();
-    }   
+        
  
     
     //Test Mule-1477 (an old VFS Connector issue, but test anyway).
@@ -92,7 +89,7 @@ public class SendReceiveFunctionalTestCase extends FunctionalTestCase
         for( int i = 0; i < sendFiles.size(); i++)
         {
             HashMap props = new HashMap(1);
-            props.put(SftpConnector.PROPERTY_FILENAME,System.currentTimeMillis() + ".txt");
+            props.put(SftpConnector.PROPERTY_FILENAME,sendFiles.get(i) + ".txt");
         	
             client.send("vm://test.upload",sendFiles.get(i),props);        	
         }
@@ -110,6 +107,7 @@ public class SendReceiveFunctionalTestCase extends FunctionalTestCase
         	String fileText = getStringFromInputStream( (InputStream) m.getPayload() );
             assertNotNull(fileText);
         	
+            logger.info("Received file: " + fileText);
             
         	if( sendFiles.contains(fileText))
         	{

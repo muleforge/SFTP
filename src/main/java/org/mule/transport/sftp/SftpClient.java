@@ -196,7 +196,7 @@ public class SftpClient
 			return c.get(fileName);
 		} catch (SftpException e)
 		{
-			throw new IOException(e.getMessage());
+			throw new IOException(e.getMessage() + ".  Filename is " + fileName);
 		}
 	}
 
