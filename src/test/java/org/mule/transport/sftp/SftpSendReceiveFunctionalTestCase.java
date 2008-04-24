@@ -30,7 +30,7 @@ import org.mule.transport.sftp.SftpConnector;
  * 
  */
 
-public class SendReceiveFunctionalTestCase extends FunctionalTestCase
+public class SftpSendReceiveFunctionalTestCase extends FunctionalTestCase
 {
 
 	private static final long TIMEOUT = 30000;

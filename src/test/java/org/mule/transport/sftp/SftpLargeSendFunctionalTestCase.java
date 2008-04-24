@@ -25,7 +25,7 @@ import org.mule.transport.sftp.SftpConnector;
  * 
  */
 
-public class LargeFileSendFunctionalTestCase extends FunctionalTestCase
+public class SftpLargeSendFunctionalTestCase extends FunctionalTestCase
 {
 
 	protected static final String FILEPATH = "/tmp/";

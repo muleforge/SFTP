@@ -13,7 +13,6 @@ package org.mule.transport.sftp;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -29,10 +28,10 @@ import org.mule.tck.FunctionalTestCase;
  * 
  */
 
-public class LargeFileReceiveFunctionalTestCase extends FunctionalTestCase
+public class SftpLargeReceiveFunctionalTestCase extends FunctionalTestCase
 {
 	   
-	private static final Log logger = LogFactory.getLog(LargeFileReceiveFunctionalTestCase.class);
+	private static final Log logger = LogFactory.getLog(SftpLargeReceiveFunctionalTestCase.class);
 	
 	//Increase this to be a little larger than expected download time
 	protected static final long TIMEOUT = 500000;
