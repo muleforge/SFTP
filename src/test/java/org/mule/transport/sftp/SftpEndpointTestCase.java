@@ -25,18 +25,12 @@ public class SftpEndpointTestCase extends AbstractMuleTestCase
     {
         // TODO test creating and asserting Endpoint values eg
 
-        /*
-        EndpointURI url = new MuleEndpointURI("tcp://localhost:7856");
-        assertEquals("tcp", url.getScheme());
-        assertEquals("tcp://localhost:7856", url.getAddress());
+        EndpointURI url = new MuleEndpointURI("sftp://ms/data");
+        assertEquals("sftp", url.getScheme());
         assertNull(url.getEndpointName());
-        assertEquals(7856, url.getPort());
-        assertEquals("localhost", url.getHost());
-        assertEquals("tcp://localhost:7856", url.getAddress());
+        assertEquals("ms", url.getHost());
         assertEquals(0, url.getParams().size());
-        */
 
-        throw new UnsupportedOperationException("testValidEndpointURI");
     }
 
 }

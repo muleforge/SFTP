@@ -18,13 +18,12 @@ public class SftpNamespaceHandlerTestCase extends FunctionalTestCase
 {
     protected String getConfigResources()
     {
-        //TODO You'll need to edit this file to configure the properties specific to your transport
-        return "$transportid-namespace-config.xml";
+        return "sftp-namespace-config.xml";
     }
 
-    public void test$transportidConfig() throws Exception
+    public void testSftpConfig() throws Exception
     {
-        SftpConnector c = (SftpConnector) muleContext.getRegistry().lookupConnector("$transportidConnector");
+        SftpConnector c = (SftpConnector) muleContext.getRegistry().lookupConnector("sftpConnector");
         assertNotNull(c);
         assertTrue(c.isConnected());
         assertTrue(c.isStarted());

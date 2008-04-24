@@ -33,14 +33,12 @@ public class SftpConnectorTestCase extends AbstractConnectorTestCase
 
     public String getTestEndpointURI()
     {
-        // TODO Return a valid endpoint for you transport here
-        throw new UnsupportedOperationException("getTestEndpointURI");
+        return "sftp://ms/data";
     }
 
     public Object getValidMessage() throws Exception
     {
-        // TODO Return an valid message for your transport
-        throw new UnsupportedOperationException("getValidMessage");
+        return "payload";
     }
 
 
@@ -48,6 +46,11 @@ public class SftpConnectorTestCase extends AbstractConnectorTestCase
     {
         // TODO test setting and retrieving any custom properties on the
         // Connector as necessary
+    }
+    
+    public void testConnectorMessageRequesterFactory()
+    {
+        //No MessageRequesterFactory	
     }
 
 }

@@ -1,14 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesource.org/schema/mule/core/${m"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:$transportid="http://www.mulesource.org/schema/mule/$transportid/${m"
-    xsi:schemaLocation="
-       http://www.mulesource.org/schema/mule/core/${m http://www.mulesource.org/schema/mule/core/${m/mule.xsd
-       http://www.mulesource.org/schema/mule/$transportid/${m http://www.mulesource.org/schema/mule/$transportid/${m/mule-$transportid.xsd">
+<mule xmlns="http://www.mulesource.org/schema/mule/core/2.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:sftp="http://www.mulesource.org/schema/mule/sftp/2.0"
+	xmlns:vm="http://www.mulesource.org/schema/mule/vm/2.0"
+	xsi:schemaLocation="
+               http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+               http://www.mulesource.org/schema/mule/core/2.0 http://www.mulesource.org/schema/mule/core/2.0/mule.xsd
+               http://www.mulesource.org/schema/mule/sftp/2.0 http://svn.muleforge.org/mule-transport-sftp/branches/mule-2.0.x/src/main/resources/META-INF/mule-sftp.xsd
+               http://www.mulesource.org/schema/mule/vm/2.0 http://www.mulesource.org/schema/mule/vm/2.0/mule-vm.xsd">
 
-    <$transportid:connector name="$transportidConnector">
+    <sftp:connector name="sftpConnector">
         <!-- TODO Add connector specific properties here and then assert that 
              they have been set in org.mule.transport.$transportid.$transportidNamespaceHandlerTestCase -->
-    </$transportid:connector>
+    </sftp:connector>
 
 </mule>

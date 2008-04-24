@@ -32,9 +32,7 @@ public class SftpConnectorFactoryTestCase extends AbstractMuleTestCase
     
     public String getEndpointURI() 
     {
-        // TODO return a valid endpoint URI string for your transport
-        // i.e. tcp://localhost:1234
-        throw new UnsupportedOperationException("getEndpointURI");
+        return "sftp://ms/data";
     }
 
 }
