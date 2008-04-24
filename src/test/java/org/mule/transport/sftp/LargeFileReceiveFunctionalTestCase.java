@@ -60,7 +60,8 @@ public class LargeFileReceiveFunctionalTestCase extends FunctionalTestCase
         	
         	FileOutputStream fos = new FileOutputStream("/tmp/" + filename);
         	
-        	capture(inputStream,fos);
+        	IOUtils.copyLarge(inputStream, fos);
+
         }
     	
         //To do: match remote and local file sizes.  Manually check file in /tmp in meantime.
@@ -68,27 +69,6 @@ public class LargeFileReceiveFunctionalTestCase extends FunctionalTestCase
 
     }
 
-	private void capture(InputStream inputStream, OutputStream outputStream)
-	    throws Exception
-	{
 
-		try
-		{
-
-			byte[] buffer = new byte[1024];
-			int len;
-			while ((len = inputStream.read(buffer)) > 0)
-			{
-				//System.out.println("downloading chunk of " + len);
-				outputStream.write(buffer, 0, len);
-			}
-
-		} finally
-		{
-			IOUtils.closeQuietly(inputStream);
-			IOUtils.closeQuietly(outputStream);
-		}
-
-    } 
 
 }
