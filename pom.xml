@@ -63,8 +63,8 @@
                 is not available on any other repository. Its the users' responsibility to make sure that no
                 licenses are violated by uploading dependencies to this location
            -->
-           <id>${thransportId}-deps</id>
-           <name>$transportid Dependencies</name>
+           <id>sftp-deps</id>
+           <name>Sftp Dependencies</name>
            <url>http://dist.muleforge.org/${artifactId}/dependencies/maven2</url>
            <snapshots>
                <enabled>false</enabled>
