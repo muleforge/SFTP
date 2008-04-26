@@ -27,7 +27,8 @@ public class SftpNamespaceHandlerTestCase extends FunctionalTestCase
         assertNotNull(c);
         assertTrue(c.isConnected());
         assertTrue(c.isStarted());
-
+        assertTrue(c.isAutoDelete());
+        assertEquals(c.getPollingFrequency(),15000);
         //TODO Assert specific properties are configured correctly
 
 
