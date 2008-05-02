@@ -8,11 +8,11 @@
 	<artifactId>mule-transport-sftp</artifactId>
 	<packaging>jar</packaging>
    <name>Mule SFTP Transport</name>
-   <version>2.0.1-SNAPSHOT</version>
+   <version>2.0.1</version>
    <description>SFTP connectivity</description>
 	
 	<properties>
-       <mule.version>2.0.1-SNAPSHOT</mule.version>
+       <mule.version>2.0.1</mule.version>
 	</properties>
 
    <!-- Mule Forge Configuration -->
