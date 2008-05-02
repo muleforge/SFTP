@@ -27,7 +27,7 @@
 			<outbound>
 				<outbound-pass-through-router>
 				<sftp:outbound-endpoint
-					address="sftp://mule:muleforge@ms/data"/>					
+					address="sftp://mule:muleforge@ms/data3"/>					
 				</outbound-pass-through-router>
 			</outbound>
 		</service>
