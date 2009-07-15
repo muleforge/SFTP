@@ -9,9 +9,7 @@
  */
 package org.mule.transport.sftp;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -112,9 +110,47 @@ public class SftpClient
 		} catch (JSchException e)
 		{
 			throw new IOException(e.getMessage());
+		} catch (SftpException e)
+		{
+		  throw new IOException(e.getMessage());
 		}
-		return true;
+    return true;
 	}
+
+  public boolean login(String user, String identityFile, String passphrase) throws IOException {
+    try
+		{
+      if(passphrase == null || "".equals(passphrase)) {
+        jsch.addIdentity(new File(identityFile).getAbsolutePath());
+      } else {
+        jsch.addIdentity(new File(identityFile).getAbsolutePath(), passphrase);
+      }
+
+			session = jsch.getSession(user, host);
+			Properties hash = new Properties();
+			hash.put(STRICT_HOST_KEY_CHECKING, "no");
+			session.setConfig(hash);
+			session.setPort(port);
+			session.connect();
+			if ((fingerPrint != null)
+					&& !session.getHostKey().getFingerPrint(jsch).equals(
+							fingerPrint))
+			{
+				throw new RuntimeException("Invalid Fingerprint");
+			}
+			Channel channel = session.openChannel(CHANNEL_SFTP);
+			channel.connect();
+			c = (ChannelSftp) channel;
+			home = c.pwd();
+		} catch (JSchException e)
+		{
+			throw new IOException(e.getMessage());
+		} catch (SftpException e)
+    {
+      throw new IOException(e.getMessage());
+    }
+    return true;
+  }
 
 	public void connect(String uri) throws IOException
 	{

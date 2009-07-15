@@ -36,10 +36,10 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		connector = (SftpConnector) endpoint.getConnector();
 	}
 
-    protected void doConnect() throws Exception 
+    protected void doConnect() throws Exception
     {
         //no op
-        
+
     }
 	protected void doDisconnect() throws Exception
 	{
@@ -59,19 +59,19 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 	protected void doDispatch(MuleEvent event) throws Exception
 	{
 
-		
+
 		Object data = event.transformMessage();
-		String filename = (String) event
-				.getProperty(SftpConnector.PROPERTY_FILENAME, true);
-		
+    String filename = (String) event
+				.getProperty(SftpConnector.PROPERTY_FILENAME);
+
 		SftpConnector sftpConnector = (SftpConnector) connector;
 
-		//If no name specified, set filename according to output pattern specified on 
+		//If no name specified, set filename according to output pattern specified on
 		//endpoint or connector
         if (filename == null)
         {
         	MuleMessage message = event.getMessage();
-        	
+
             String outPattern = (String)endpoint.getProperty(SftpConnector.PROPERTY_OUTPUT_PATTERN);
             if (outPattern == null)
             {
@@ -81,27 +81,27 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
             filename = generateFilename(message, outPattern);
         }
 
-        //byte[], String, or InputStream payloads supported.  
-        
+        //byte[], String, or InputStream payloads supported.
+
 		byte[] buf;
 		InputStream inputStream;
-		
+
 		if (data instanceof byte[])
 		{
 			buf = (byte[]) data;
 			inputStream = new ByteArrayInputStream(buf);
-		} 
+		}
 		else if (data instanceof InputStream)
 		{
 			inputStream = (InputStream) data;
 
-		} 
+		}
 		else if (data instanceof String)
 		{
 			inputStream = new ByteArrayInputStream(((String) data).getBytes());
 
 		} else
-		{ 
+		{
 			throw new IllegalArgumentException("Unxpected message type: java.io.InputStream or byte[] expected ");
 
 		}
@@ -121,7 +121,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			client.storeFile(filename, inputStream);
 
             logger.info("Successfullt wrote file, done.");
-		} 
+		}
 		catch (Exception e)
 		{
 		    logger.error("Unexpected exception attempting to write file, message was: " + e.getMessage(), e);
@@ -138,7 +138,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		    {
 		        logger.warn("Unexpected null SFTPClient instance - operation probably failed ...");
 		    }
-		    
+
 			inputStream.close();
 
 		}

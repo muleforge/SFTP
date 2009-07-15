@@ -33,4 +33,17 @@ public class SftpEndpointTestCase extends AbstractMuleTestCase
 
     }
 
+  public void testValidEndpointURIWithUserAndPasswd() throws Exception {
+    EndpointURI url = new MuleEndpointURI("sftp://user1:passwd1@localhost:4242/data2");
+    assertEquals("sftp", url.getScheme());
+    assertEquals("localhost", url.getHost());
+    assertEquals(4242, url.getPort());
+    assertEquals("passwd1", url.getPassword());
+    assertEquals("user1", url.getUser());
+
+    assertEquals(0, url.getParams().size());
+
+  }
+
+
 }

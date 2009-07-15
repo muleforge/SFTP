@@ -22,24 +22,21 @@ import org.mule.transport.file.FilenameParser;
 import org.mule.transport.file.SimpleFilenameParser;
 
 
-import java.util.Map;
-
-
 /**
  * <code>SftpConnector</code> sends and receives file messages over sftp using jsch library
  * Improves on SFTP with VFS Connector in the following ways:
  * 1. Streams files instead of reading them into memory.  The SftpMessageReceiver is a "non-materializing stream receiver"
  *    which does not read the file to memory.  The SftpMessageDispatcher also never materializes the stream and delegates
  *    the jsch library for materialization.
- * 3. Uses jsch library directly instead of using VFS as middle-man. 
- * 3. More explicit connection lifefecyle management.  
+ * 3. Uses jsch library directly instead of using VFS as middle-man.
+ * 3. More explicit connection lifefecyle management.
  * 4. Leverages sftp stat to determine if a file size changes (simpler and also less memory intensive)
- * 
+ *
  */
 public class SftpConnector extends AbstractConnector
 {
 
-    public static final String PROPERTY_POLLING_FREQUENCY = "pollingFrequency";    
+    public static final String PROPERTY_POLLING_FREQUENCY = "pollingFrequency";
     public static final String PROPERTY_DIRECTORY = "directory";
     public static final String PROPERTY_OUTPUT_PATTERN = "outputPattern";
     public static final String PROPERTY_FILENAME = "filename";
@@ -47,39 +44,47 @@ public class SftpConnector extends AbstractConnector
     public static final String PROPERTY_SELECT_EXPRESSION = "selectExpression";
     public static final String PROPERTY_FILE_EXTENSION = "fileExtension";
     public static final String PROPERTY_INCLUDE_SUBFOLDERS = "includeSubfolders";
+    public static final String IDENTITY_FILE = "identityFile";
+    public static final String PASS_PHRASE = "passphrase";
 
     public static final int DEFAULT_POLLING_FREQUENCY = 1000;
-    
+
     private FilenameParser filenameParser = new SimpleFilenameParser();
 
     private long pollingFrequency;
     private boolean autoDelete = true;
     private String outputPattern;
 
-    public String getProtocol()
+    private String identityFile;
+    private String passphrase;
+
+  public String getProtocol()
     {
         return "sftp";
     }
 
 	public MessageReceiver createReceiver(Service component, InboundEndpoint endpoint) throws Exception
     {
-                
+
         long polling = pollingFrequency;
-         
+
+        // Store the identityFile and the passphrase
+        identityFile = ( String ) endpoint.getProperty( IDENTITY_FILE );
+        passphrase = ( String ) endpoint.getProperty( PASS_PHRASE );
 
         // Override properties on the endpoint for the specific endpoint
         String tempPolling = ( String ) endpoint.getProperty( PROPERTY_POLLING_FREQUENCY );
-        if ( tempPolling != null ) 
+        if ( tempPolling != null )
         {
             polling = Long.parseLong( tempPolling );
         }
-        
-        if ( polling <= 0 ) 
+
+        if ( polling <= 0 )
         {
             polling = DEFAULT_POLLING_FREQUENCY;
         }
         logger.debug( "set polling frequency to " + polling );
-        
+
         return serviceDescriptor.createMessageReceiver( this, component, endpoint,
                 new Object[]{new Long( polling )} );
     }
@@ -95,7 +100,7 @@ public class SftpConnector extends AbstractConnector
     }
 
 
-	public FilenameParser getFilenameParser() 
+	public FilenameParser getFilenameParser()
 	{
 		return filenameParser;
 	}
@@ -105,12 +110,12 @@ public class SftpConnector extends AbstractConnector
 		this.filenameParser = filenameParser;
 	}
 
-	public String getOutputPattern() 
+	public String getOutputPattern()
 	{
 		return outputPattern;
 	}
 
-	public void setOutputPattern(String outputPattern) 
+	public void setOutputPattern(String outputPattern)
 	{
 		this.outputPattern = outputPattern;
 	}
@@ -123,29 +128,50 @@ public class SftpConnector extends AbstractConnector
     public void setAutoDelete(boolean autoDelete)
     {
         this.autoDelete = autoDelete;
-     
+
     }
 
-    public SftpClient createSftpClient(EndpointURI endpointURI)  throws Exception
+
+  public String getIdentityFile() {
+    return identityFile;
+  }
+
+  public void setIdentityFile(String identityFile) {
+    this.identityFile = identityFile;
+  }
+
+  public String getPassphrase() {
+    return passphrase;
+  }
+
+  public void setPassphrase(String passphrase) {
+    this.passphrase = passphrase;
+  }
+
+  public SftpClient createSftpClient(EndpointURI endpointURI)  throws Exception
     {
         SftpClient client = new SftpClient();
-        
+
         final int uriPort = endpointURI.getPort();
-        if (uriPort == 0)
+        if (uriPort == -1)
         {
-            logger.info("Cnnecting to host: " + endpointURI.getHost());
+            logger.info("Connecting to host: " + endpointURI.getHost());
             client.connect(endpointURI.getHost());
         }
         else
         {
-            logger.info("Cnnecting to host: " + endpointURI.getHost() + ", on port: " + String.valueOf(uriPort));
+            logger.info("Connecting to host: " + endpointURI.getHost() + ", on port: " + String.valueOf(uriPort));
             client.connect(endpointURI.getHost(), endpointURI.getPort());
         }
 
+      if(identityFile != null) {
+        client.login(endpointURI.getUser(), getIdentityFile(), getPassphrase());
+      } else {
         client.login(endpointURI.getUser(), endpointURI.getPassword());
+      }
 
         logger.info("Successfully connected to: " + endpointURI);
-        
+
         client.changeWorkingDirectory(endpointURI.getPath());
 
         logger.info("Successfully changed working directory to: " + endpointURI.getPath());
@@ -158,7 +184,7 @@ public class SftpConnector extends AbstractConnector
      */
     protected void doConnect() throws Exception {
         // TODO Auto-generated method stub
-        
+
     }
 
     /* (non-Javadoc)
@@ -166,7 +192,7 @@ public class SftpConnector extends AbstractConnector
      */
     protected void doDisconnect() throws Exception {
         // TODO Auto-generated method stub
-        
+
     }
 
     /* (non-Javadoc)
@@ -174,7 +200,7 @@ public class SftpConnector extends AbstractConnector
      */
     protected void doDispose() {
         // TODO Auto-generated method stub
-        
+
     }
 
     /* (non-Javadoc)
@@ -182,7 +208,7 @@ public class SftpConnector extends AbstractConnector
      */
     protected void doInitialise() throws InitialisationException {
         // TODO Auto-generated method stub
-        
+
     }
 
     /* (non-Javadoc)
@@ -190,7 +216,7 @@ public class SftpConnector extends AbstractConnector
      */
     protected void doStart() throws MuleException {
         // TODO Auto-generated method stub
-        
+
     }
 
     /* (non-Javadoc)
@@ -198,12 +224,8 @@ public class SftpConnector extends AbstractConnector
      */
     protected void doStop() throws MuleException {
         // TODO Auto-generated method stub
-        
+
     }
-
-    
-
-
 
 
 }
