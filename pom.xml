@@ -10,7 +10,7 @@
    <name>Mule SFTP Transport</name>
    <version>2.0.1</version>
    <description>SFTP connectivity</description>
-	
+
 	<properties>
        <mule.version>2.0.1</mule.version>
 	</properties>
@@ -34,13 +34,13 @@
 
 
 
-	
-	
+
+
 	<distributionManagement>
 		<repository>
 			<id>muleforge.webdav.releases</id>
 			<url>dav:https://dav.muleforge.org/repository/${artifactId}/</url>
-		</repository>		
+		</repository>
 		<snapshotRepository>
 			<id>muleforge.webdav.snapshots</id>
 			<url>dav:https://dav.muleforge.org/snapshots.repository/${artifactId}/</url>
@@ -71,7 +71,7 @@
            </snapshots>
        </repository>
    </repositories>
-	
+
 	<build>
 		<extensions>
 			<extension>
@@ -99,10 +99,18 @@
                             <useReleaseProfile>false</useReleaseProfile>
                           </configuration>
                         </plugin>
+
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>org.mule.transports</groupId>
 			<artifactId>mule-transport-vm</artifactId>
@@ -122,7 +130,7 @@
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-module-client</artifactId>
 			<version>${mule.version}</version>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.mule.tests</groupId>
 			<artifactId>mule-tests-functional</artifactId>
@@ -139,5 +147,5 @@
             <version>0.1.29</version>
         </dependency>
 	</dependencies>
-	
+
 </project>

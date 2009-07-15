@@ -29,14 +29,14 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 /**
  * <code>SftpClient</code> Wrapper around jsch sftp library.  Provides access to
  * basic sftp commands.
- * 
+ *
  */
 
 public class SftpClient
 {
 
     private Log logger = LogFactory.getLog(getClass());
-    
+
 	public static final String CHANNEL_SFTP = "sftp";
 
 	public static final String STRICT_HOST_KEY_CHECKING = "StrictHostKeyChecking";
@@ -65,20 +65,24 @@ public class SftpClient
 
 		try
 		{
-            
+
             if (!wd.startsWith(home))
             {
                  wd = home + wd;
             }
-            
+
 			if (wd.startsWith("/~"))
 			{
 				 wd = home + wd.substring( 2, wd.length());
 			}
+
+			logger.info("Attempting to cwd to: " + wd);
 			c.cd(wd);
-		} catch (final SftpException e)
+		}
+		catch (SftpException e)
 		{
 			e.printStackTrace();
+			logger.error("CWD attempt failed, message was: " + e.getMessage(), e);
 			throw new IOException(e.getMessage());
 		}
 		return true;
@@ -121,6 +125,19 @@ public class SftpClient
 	{
 		this.host = uri;
 		this.port = port;
+	}
+
+	public boolean rename(String filename, String dest) throws IOException
+	{
+        try
+        {
+            c.rename(filename, dest);
+        }
+        catch (SftpException e)
+        {
+            throw new IOException(e.getMessage());
+        }
+        return true;
 	}
 
 	public boolean deleteFile(String fileName) throws IOException
@@ -217,10 +234,12 @@ public class SftpClient
 		try
 		{
 			logger.debug("Sending to SFTP service: Stream = " + stream + " , filename = " + fileName);
-			
+
 			c.put(stream, fileName);
-		} catch (SftpException e)
+		}
+		catch (SftpException e)
 		{
+		    logger.error("Error writing data over SFTP service, error was: " + e.getMessage(), e);
 			throw new IOException(e.getMessage());
 		}
 

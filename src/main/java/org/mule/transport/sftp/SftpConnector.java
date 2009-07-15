@@ -130,14 +130,26 @@ public class SftpConnector extends AbstractConnector
     {
         SftpClient client = new SftpClient();
         
-        client.connect(endpointURI.getHost());
+        final int uriPort = endpointURI.getPort();
+        if (uriPort == 0)
+        {
+            logger.info("Cnnecting to host: " + endpointURI.getHost());
+            client.connect(endpointURI.getHost());
+        }
+        else
+        {
+            logger.info("Cnnecting to host: " + endpointURI.getHost() + ", on port: " + String.valueOf(uriPort));
+            client.connect(endpointURI.getHost(), endpointURI.getPort());
+        }
 
         client.login(endpointURI.getUser(), endpointURI.getPassword());
 
         logger.info("Successfully connected to: " + endpointURI);
         
         client.changeWorkingDirectory(endpointURI.getPath());
-        
+
+        logger.info("Successfully changed working directory to: " + endpointURI.getPath());
+
         return client;
     }
 

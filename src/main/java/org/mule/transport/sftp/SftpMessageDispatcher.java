@@ -101,7 +101,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			inputStream = new ByteArrayInputStream(((String) data).getBytes());
 
 		} else
-		{
+		{ 
 			throw new IllegalArgumentException("Unxpected message type: java.io.InputStream or byte[] expected ");
 
 		}
@@ -115,14 +115,30 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 			client = sftpConnector.createSftpClient(endpoint.getEndpointURI());
 
+			logger.info("Connection setup successful, writing file.");
+
 			// send file over sftp
 			client.storeFile(filename, inputStream);
 
+            logger.info("Successfullt wrote file, done.");
 		} 
+		catch (Exception e)
+		{
+		    logger.error("Unexpected exception attempting to write file, message was: " + e.getMessage(), e);
+		    throw e;
+		}
 		finally
 		{
-
-			client.disconnect();
+		    if (client != null)
+		    {
+		        // If the connection fails, the client will be null, otherwise disconnect.
+		        client.disconnect();
+		    }
+		    else
+		    {
+		        logger.warn("Unexpected null SFTPClient instance - operation probably failed ...");
+		    }
+		    
 			inputStream.close();
 
 		}
