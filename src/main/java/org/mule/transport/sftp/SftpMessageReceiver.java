@@ -35,7 +35,7 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
 
     public SftpMessageReceiver( SftpConnector connector, Service component,
             InboundEndpoint endpoint, long frequency ) throws CreateException {
-        
+
         super( connector, component, endpoint );
 
         this.setFrequency( frequency );
@@ -95,8 +95,12 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
                 }
 
                 // See if the file is still growing, leave it alone if it is
-                if ( !hasChanged( files[i], client ) ) {
-                    completedFiles.add( files[i] );
+                if ( !hasChanged( files[i], client ) )
+                {
+//                    logger.debug("marking file [" + files[i] + "] as in transit.");
+//                    client.rename(files[i], files[i] + ".transtit");
+//                    completedFiles.add( files[i]  + ".transtit" );
+                    completedFiles.add( files[i]);
                 }
 
             }
@@ -156,7 +160,7 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.mule.providers.AbstractMessageReceiver#doDispose()
      */
     protected void doDispose() {
