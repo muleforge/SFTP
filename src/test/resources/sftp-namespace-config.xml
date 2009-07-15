@@ -13,6 +13,8 @@
 	<sftp:connector name="sftpConnector"
 		            pollingFrequency="15000"
 		            autoDelete="true"
+                    fileAge="1234"
+                    tempDir="uploading"
 		            >
 
 	</sftp:connector>

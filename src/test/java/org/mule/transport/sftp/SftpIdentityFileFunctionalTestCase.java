@@ -29,82 +29,79 @@ import java.util.Map;
 /**
  * <code>LargeFileReceiveFunctionalTestCase</code> tests receiving a large file message
  * from an sftp service.
+ *
+ * @author Lennart Häggkvist
  */
+public class SftpIdentityFileFunctionalTestCase extends AbstractSftpTestCase
+{
+	private static final Log logger = LogFactory.getLog(SftpIdentityFileFunctionalTestCase.class);
 
-public class SftpIdentityFileFunctionalTestCase extends AbstractSftpTestCase {
+	private static final int DEFAULT_TIMEOUT = 10000;
 
-  private static final Log logger = LogFactory.getLog(SftpIdentityFileFunctionalTestCase.class);
+	//Increase this to be a little larger than expected download time
+	protected static final long TIMEOUT = 500000;
+	private static final String INBOUND_ENDPOINT_NAME = "inboundEndpoint";
 
-  private static final int DEFAULT_TIMEOUT = 10000;
-
-  //Increase this to be a little larger than expected download time
-  protected static final long TIMEOUT = 500000;
-
-  protected String getConfigResources() {
-    return "mule-sftp-identity-file-config.xml";
-  }
-
-
-  //Downloads large file in the remote directory specified in config
-  public void testIdentityFile() throws Exception {
-    final CountDownLatch latch = new CountDownLatch(1);
-    final AtomicReference message = new AtomicReference();
-    final AtomicInteger loopCount = new AtomicInteger(0);
-
-    EventCallback callback = new EventCallback() {
-      public synchronized void eventReceived(MuleEventContext context, Object component) {
-        try {
-          System.out.println("component");
-          logger.info("called " + loopCount.incrementAndGet() + " times");
-          FunctionalTestComponent ftc = (FunctionalTestComponent) component;
-          // without this we may have problems with the many repeats
-          if (1 == latch.getCount()) {
-            String o = IOUtils.toString((SftpInputStream) ftc.getLastReceivedMessage());
-            message.set(o);
-            latch.countDown();
-          }
-        }
-        catch (Exception e) {
-          logger.error(e.getMessage(), e);
-        }
-      }
-    };
+	protected String getConfigResources()
+	{
+		return "mule-sftp-identity-file-config.xml";
+	}
 
 
-    cleanupFtpDirectory();
+	//Downloads large file in the remote directory specified in config
+	public void testIdentityFile() throws Exception
+	{
+		final CountDownLatch latch = new CountDownLatch(1);
+		final AtomicReference message = new AtomicReference();
+		final AtomicInteger loopCount = new AtomicInteger(0);
 
-    Map properties = new HashMap();
-    properties.put("filename", "foo.bar");
-    MuleClient client = new MuleClient();
-//    assertTrue(getFtpClient().expectFileCount("/", 0, 1000));
+		EventCallback callback = new EventCallback()
+		{
+			public synchronized void eventReceived(MuleEventContext context, Object component)
+			{
+				try
+				{
+					logger.info("called " + loopCount.incrementAndGet() + " times");
+					FunctionalTestComponent ftc = (FunctionalTestComponent) component;
+					// without this we may have problems with the many repeats
+					if (1 == latch.getCount())
+					{
+						String o = IOUtils.toString((SftpInputStream) ftc.getLastReceivedMessage());
+						message.set(o);
+						latch.countDown();
+					}
+				}
+				catch (Exception e)
+				{
+					logger.error(e.getMessage(), e);
+				}
+			}
+		};
 
-    Object component = getComponent("testComponent");
-    assertTrue("FunctionalTestComponent expected", component instanceof FunctionalTestComponent);
-    FunctionalTestComponent ftc = (FunctionalTestComponent) component;
-    assertNotNull(ftc);
+		MuleClient client = new MuleClient();
 
-    ftc.setEventCallback(callback);
+		// Ensure that no other files exists
+		cleanupRemoteFtpDirectory(client, INBOUND_ENDPOINT_NAME);
 
-    logger.debug("before dispatch");
-    // Send an file to the SFTP server, which the inbound-endpoint then can pick up
-    client.dispatch("sftp://user3@localhost/data2", TEST_MESSAGE, properties);
-    logger.debug("before retrieve");
+		Map properties = new HashMap();
+//		properties.put("filename", "foo.bar");
 
-//    MuleMessage m = client.request("vm://test.download", TIMEOUT);
-//    if (m != null) {
-//      String filename = (String) m.getProperty("originalFilename");
-//      InputStream inputStream = (InputStream) m.getPayload();
-//      FileOutputStream fos = new FileOutputStream("/tmp/" + filename);
-//      IOUtils.copyLarge(inputStream, fos);
-//    }
+		Object component = getComponent("testComponent");
+		assertTrue("FunctionalTestComponent expected", component instanceof FunctionalTestComponent);
+		FunctionalTestComponent ftc = (FunctionalTestComponent) component;
+		assertNotNull(ftc);
 
-    //To do: match remote and local file sizes.  Manually check file in /tmp in meantime.
-    latch.await(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+		ftc.setEventCallback(callback);
 
-    assertEquals(TEST_MESSAGE, message.get());
-    System.out.println("Message = " + message.get());
+		logger.debug("before dispatch");
+		// Send an file to the SFTP server, which the inbound-endpoint then can pick up
+		client.dispatch("sftp://muletest1@sftpserver/data-in", TEST_MESSAGE, properties);
+		logger.debug("before retrieve");
 
-  }
+		latch.await(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+
+		assertEquals(TEST_MESSAGE, message.get());
+	}
 
 
 }

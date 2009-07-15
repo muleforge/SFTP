@@ -14,6 +14,7 @@ package org.mule.transport.sftp;
 import org.mule.api.MuleException;
 import org.mule.api.endpoint.EndpointURI;
 import org.mule.api.endpoint.InboundEndpoint;
+import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.api.lifecycle.InitialisationException;
 import org.mule.api.service.Service;
 import org.mule.api.transport.MessageReceiver;
@@ -46,6 +47,8 @@ public class SftpConnector extends AbstractConnector
     public static final String PROPERTY_INCLUDE_SUBFOLDERS = "includeSubfolders";
     public static final String IDENTITY_FILE = "identityFile";
     public static final String PASS_PHRASE = "passphrase";
+    public static final String FILE_AGE = "fileAge";
+    public static final String TEMP_DIR = "tempDir";
 
     public static final int DEFAULT_POLLING_FREQUENCY = 1000;
 
@@ -58,6 +61,12 @@ public class SftpConnector extends AbstractConnector
     private String identityFile;
     private String passphrase;
 
+    private boolean checkFileAge = false;
+    private long fileAge = 0;
+
+    private boolean useTempDir = false;
+    private String tempDir = null;
+
   public String getProtocol()
     {
         return "sftp";
@@ -67,10 +76,6 @@ public class SftpConnector extends AbstractConnector
     {
 
         long polling = pollingFrequency;
-
-        // Store the identityFile and the passphrase
-        identityFile = ( String ) endpoint.getProperty( IDENTITY_FILE );
-        passphrase = ( String ) endpoint.getProperty( PASS_PHRASE );
 
         // Override properties on the endpoint for the specific endpoint
         String tempPolling = ( String ) endpoint.getProperty( PROPERTY_POLLING_FREQUENCY );
@@ -148,8 +153,9 @@ public class SftpConnector extends AbstractConnector
     this.passphrase = passphrase;
   }
 
-  public SftpClient createSftpClient(EndpointURI endpointURI)  throws Exception
+  public SftpClient createSftpClient(ImmutableEndpoint endpoint)  throws Exception
     {
+        EndpointURI endpointURI = endpoint.getEndpointURI();
         SftpClient client = new SftpClient();
 
         final int uriPort = endpointURI.getPort();
@@ -164,8 +170,25 @@ public class SftpConnector extends AbstractConnector
             client.connect(endpointURI.getHost(), endpointURI.getPort());
         }
 
-      if(identityFile != null) {
-        client.login(endpointURI.getUser(), getIdentityFile(), getPassphrase());
+
+      if(identityFile != null || endpoint.getProperty(IDENTITY_FILE) != null ) {
+        String tmpIdentityFile = identityFile;
+        String tmpPassphrase = passphrase;
+
+        // Override the identityFile and the passphrase?
+        String endpointIdentityFile = ( String ) endpoint.getProperty( IDENTITY_FILE );
+        if(endpointIdentityFile != null && !endpointIdentityFile.equals(tmpIdentityFile)) {
+          logger.info("Overriding the identity file from '" + tmpIdentityFile + "' to '" + endpointIdentityFile + "' ");
+          tmpIdentityFile = endpointIdentityFile;
+        }
+
+        String endpointPassphrase = ( String ) endpoint.getProperty( PASS_PHRASE );
+        if(endpointPassphrase != null && !endpointPassphrase.equals(tmpPassphrase)) {
+          logger.info("Overriding the passphrase from '" + tmpPassphrase + "' to '" + endpointPassphrase + "' ");
+          tmpPassphrase = endpointPassphrase;
+        }
+
+        client.login(endpointURI.getUser(), tmpIdentityFile, tmpPassphrase);
       } else {
         client.login(endpointURI.getUser(), endpointURI.getPassword());
       }
@@ -225,6 +248,44 @@ public class SftpConnector extends AbstractConnector
     protected void doStop() throws MuleException {
         // TODO Auto-generated method stub
 
+    }
+
+     /**
+     * @return Returns the fileAge.
+     */
+    public long getFileAge()
+    {
+        return fileAge;
+    }
+
+    /**
+     * @param fileAge The fileAge in milliseconds to set.
+     */
+    public void setFileAge(long fileAge)
+    {
+        this.fileAge = fileAge;
+        this.checkFileAge = true;
+    }
+
+    public boolean getCheckFileAge()
+    {
+        return checkFileAge;
+    }
+
+    public String getTempDir()
+    {
+        return tempDir;
+    }
+
+    public void setTempDir(String tempDir)
+    {
+        this.tempDir = tempDir;
+        this.useTempDir = true;
+    }
+
+    public boolean getUseTempDir()
+    {
+        return useTempDir;
     }
 
 

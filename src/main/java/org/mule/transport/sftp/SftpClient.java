@@ -16,12 +16,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
+import com.jcraft.jsch.*;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 /**
@@ -60,31 +55,54 @@ public class SftpClient
 
 	public boolean changeWorkingDirectory(String wd) throws IOException
 	{
-
 		try
 		{
-
-            if (!wd.startsWith(home))
-            {
-                 wd = home + wd;
-            }
-
-			if (wd.startsWith("/~"))
+            wd = getAbsolutePath(wd);
+			if(logger.isDebugEnabled())
 			{
-				 wd = home + wd.substring( 2, wd.length());
+				logger.debug("Attempting to cwd to: " + wd);
 			}
-
-			logger.info("Attempting to cwd to: " + wd);
 			c.cd(wd);
 		}
 		catch (SftpException e)
 		{
-			e.printStackTrace();
-			logger.error("CWD attempt failed, message was: " + e.getMessage(), e);
+			logger.error("CWD attempt to '" + wd + "' failed, message was: " + e.getMessage(), e);
 			throw new IOException(e.getMessage());
 		}
 		return true;
 	}
+
+	/**
+	 * Converts a relative path to an absolute path.
+	 *
+	 * Note! If this method is called twice or more on an absolute path the result will be wrong!
+	 * Example, the endpoint-address  "sftp://user@srv//tmp/muletest1/foo/inbound"
+	 * will first result in the path "/tmp/muletest1/foo/inbound" (correct), but the next
+	 * will result in "/home/user/tmp/muletest1/foo/inbound".
+	 * <p/>
+	 *
+	 * @param path
+	 * @return
+	 */
+    String getAbsolutePath(String path)
+    {
+		if(path.startsWith("//")) {
+			// This is an absolute path! Just remove the first /
+			return path.substring(1);
+		}
+
+		if (!path.startsWith(home))
+        {
+            path = home + path;
+        }
+
+        if (path.startsWith("/~"))
+        {
+            path = home + path.substring(2, path.length());
+        }
+		// Now absolute!
+        return path;
+    }
 
 	public boolean login(String user, String password) throws IOException
 	{
@@ -106,42 +124,7 @@ public class SftpClient
 			Channel channel = session.openChannel(CHANNEL_SFTP);
 			channel.connect();
 			c = (ChannelSftp) channel;
-			home = c.pwd();
-		} catch (JSchException e)
-		{
-			throw new IOException(e.getMessage());
-		} catch (SftpException e)
-		{
-		  throw new IOException(e.getMessage());
-		}
-    return true;
-	}
-
-  public boolean login(String user, String identityFile, String passphrase) throws IOException {
-    try
-		{
-      if(passphrase == null || "".equals(passphrase)) {
-        jsch.addIdentity(new File(identityFile).getAbsolutePath());
-      } else {
-        jsch.addIdentity(new File(identityFile).getAbsolutePath(), passphrase);
-      }
-
-			session = jsch.getSession(user, host);
-			Properties hash = new Properties();
-			hash.put(STRICT_HOST_KEY_CHECKING, "no");
-			session.setConfig(hash);
-			session.setPort(port);
-			session.connect();
-			if ((fingerPrint != null)
-					&& !session.getHostKey().getFingerPrint(jsch).equals(
-							fingerPrint))
-			{
-				throw new RuntimeException("Invalid Fingerprint");
-			}
-			Channel channel = session.openChannel(CHANNEL_SFTP);
-			channel.connect();
-			c = (ChannelSftp) channel;
-			home = c.pwd();
+			setHome(c.pwd());
 		} catch (JSchException e)
 		{
 			throw new IOException(e.getMessage());
@@ -150,7 +133,50 @@ public class SftpClient
       throw new IOException(e.getMessage());
     }
     return true;
-  }
+	}
+
+	public boolean login(String user, String identityFile, String passphrase) throws IOException
+	{
+		// Lets first check that the identityFile exist
+		if(!new File(identityFile).exists()) {
+			throw new IOException("IdentityFile '" + identityFile + "' not found");
+		}
+
+		try
+		{
+			if (passphrase == null || "".equals(passphrase))
+			{
+				jsch.addIdentity(new File(identityFile).getAbsolutePath());
+			} else
+			{
+				jsch.addIdentity(new File(identityFile).getAbsolutePath(), passphrase);
+			}
+
+			session = jsch.getSession(user, host);
+			Properties hash = new Properties();
+			hash.put(STRICT_HOST_KEY_CHECKING, "no");
+			session.setConfig(hash);
+			session.setPort(port);
+			session.connect();
+			if ((fingerPrint != null)
+					&& !session.getHostKey().getFingerPrint(jsch).equals(fingerPrint))
+			{
+				throw new RuntimeException("Invalid Fingerprint");
+			}
+			Channel channel = session.openChannel(CHANNEL_SFTP);
+			channel.connect();
+			c = (ChannelSftp) channel;
+			setHome(c.pwd());
+		} catch (JSchException e)
+		{
+			logger.error("Error during login to " + user + "@" + host, e);
+			throw new IOException(e.getMessage());
+		} catch (SftpException e)
+		{
+			throw new IOException(e.getMessage());
+		}
+		return true;
+	}
 
 	public void connect(String uri) throws IOException
 	{
@@ -165,9 +191,14 @@ public class SftpClient
 
 	public boolean rename(String filename, String dest) throws IOException
 	{
+		String absolutePath  = getAbsolutePath(dest);
         try
         {
-            c.rename(filename, dest);
+          if( logger.isDebugEnabled())
+          {
+            logger.debug("Will try to rename " + filename + " to " + absolutePath);
+          }
+            c.rename(filename, absolutePath);
         }
         catch (SftpException e)
         {
@@ -180,6 +211,10 @@ public class SftpClient
 	{
 		try
 		{
+			if (logger.isDebugEnabled())
+			{
+				logger.debug("Will try to delete " + fileName);
+			}
 			c.rm(fileName);
 		} catch (SftpException e)
 		{
@@ -269,7 +304,10 @@ public class SftpClient
 	{
 		try
 		{
+			if(logger.isDebugEnabled())
+			{
 			logger.debug("Sending to SFTP service: Stream = " + stream + " , filename = " + fileName);
+			}
 
 			c.put(stream, fileName);
 		}
@@ -306,4 +344,76 @@ public class SftpClient
 		}
 	}
 
+	/**
+	 * @param filename
+	 * @return Number of seconds since the file was written to
+	 * @throws IOException
+	 */
+	public long getLastModifiedTime(String filename) throws IOException
+	{
+		try
+		{
+			SftpATTRS attrs = c.stat("./" + filename);
+			return attrs.getMTime() * 1000L;
+		} catch (SftpException e)
+		{
+			throw new IOException(e.getMessage());
+		}
+	}
+
+	/**
+	 * Creates a directory
+	 * @param directoryName
+	 * @throws IOException
+	 */
+	public void mkdir(String directoryName) throws IOException
+	{
+		try
+		{
+			if(logger.isDebugEnabled())
+			{
+				logger.debug("Will try to create directory " + directoryName);
+			}
+			c.mkdir(directoryName);
+		} catch (SftpException e)
+		{
+			// Dont throw e.getmessage since we only get "2: No such file"..
+//			throw new IOException(e.getMessage());
+			throw new IOException("Could not create the directory '" + directoryName + "'");
+		}
+	}
+
+	public void deleteDirectory(String path) throws IOException
+	{
+		path = getAbsolutePath(path);
+		try
+		{
+			if(logger.isDebugEnabled())
+			{
+				logger.debug("Will try to delete directory " + path);
+			}
+			c.rmdir(path);
+		} catch (SftpException e)
+		{
+			throw new IOException(e.getMessage());
+		}
+	}
+
+	/**
+	 * Setter for 'home'
+	 * @param home
+	 */
+	void setHome(String home)
+	{
+		this.home = home;
+	}
+
+	/**
+	 *
+	 * @return the ChannelSftp - useful for some tests
+	 */
+	ChannelSftp getChannelSftp()
+	{
+		return c;
+	}
 }

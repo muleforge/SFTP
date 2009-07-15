@@ -30,6 +30,7 @@ public class SftpEndpointTestCase extends AbstractMuleTestCase
         assertNull(url.getEndpointName());
         assertEquals("ms", url.getHost());
         assertEquals(0, url.getParams().size());
+        assertEquals("/data", url.getPath());
 
     }
 

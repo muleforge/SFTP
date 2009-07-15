@@ -18,6 +18,7 @@ import org.mule.api.endpoint.OutboundEndpoint;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.IOException;
 
 /**
  * <code>SftpMessageDispatcher</code> dispatches files via sftp to a remote sftp service.
@@ -109,22 +110,79 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		logger.info("Writing file to: " + endpoint.getEndpointURI());
 
 		SftpClient client = null;
+		boolean useTempDir = false;
+		String tempDirAbs = null;
 
 		try
 		{
 
-			client = sftpConnector.createSftpClient(endpoint.getEndpointURI());
+			client = sftpConnector.createSftpClient(endpoint);
 
 			logger.info("Connection setup successful, writing file.");
 
+            String tempDir = connector.getTempDir();
+            useTempDir = connector.getUseTempDir();
+            if(endpoint.getProperty(SftpConnector.TEMP_DIR) != null)
+            {
+                tempDir = (String) endpoint.getProperty(SftpConnector.TEMP_DIR);
+                useTempDir = true;
+            }
+
+            if(useTempDir)
+            {
+                // Use a temporary directory when uploading
+                tempDirAbs = endpoint.getEndpointURI().getPath() + "/" + tempDir;
+                // Try to change directory to the temp dir, if it fails - create it
+                try
+                {
+					// This method will throw an exception if the directory does not exist.
+                    client.changeWorkingDirectory(tempDirAbs);
+                } catch (IOException e)
+                {
+					logger.info("Got an exception when trying to change the working directory to the temp dir. " +
+							"Will try to create the directory " + tempDirAbs);
+					client.changeWorkingDirectory(endpoint.getEndpointURI().getPath());
+					client.mkdir(tempDir);
+					// Now it should exist!
+					client.changeWorkingDirectory(tempDirAbs);
+                }
+            }
+
 			// send file over sftp
 			client.storeFile(filename, inputStream);
+
+            if(useTempDir)
+            {
+                // Good when testing.. :)
+//                Thread.sleep(5000);
+
+                // Move the file to its final destination
+                String destDir = endpoint.getEndpointURI().getPath();
+                client.rename(filename, destDir + "/" + filename);
+            }
 
             logger.info("Successfullt wrote file, done.");
 		}
 		catch (Exception e)
 		{
 		    logger.error("Unexpected exception attempting to write file, message was: " + e.getMessage(), e);
+			if(inputStream != null)
+			{
+				// Ensure that the SftpInputStream knows about the error and dont delete the file
+				((SftpInputStream) inputStream).setErrorOccured(true);
+			}
+			if(useTempDir && tempDirAbs != null)
+            {
+				// Cleanup the remote temp dir!
+				try
+				{
+				client.changeWorkingDirectory(tempDirAbs);
+				client.deleteFile(filename);
+				} catch (Exception e2)
+				{
+					// do nothing
+				}
+			}
 		    throw e;
 		}
 		finally

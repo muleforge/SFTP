@@ -1,3 +1,13 @@
+/*
+ * $Id$
+ * --------------------------------------------------------------------------------------
+ * Copyright (c) MuleSource, Inc.  All rights reserved.  http://www.mulesource.com
+ *
+ * The software in this package is published under the terms of the MuleSource MPL
+ * license, a copy of which has been included with this distribution in the
+ * LICENSE.txt file.
+ */
+
 package org.mule.transport.sftp;
 
 import java.io.IOException;
@@ -15,6 +25,7 @@ public class SftpInputStream extends InputStream
 	SftpClient client;
 	boolean autoDelete = true;
 	String fileName;
+	boolean errorOccured = false;
 
 	/**
 	 * A special sftp InputStream.  The constuctor creates the InputStream by
@@ -62,7 +73,8 @@ public class SftpInputStream extends InputStream
 
 		is.close();
 
-		if( autoDelete )
+
+		if( autoDelete && !errorOccured)
 		{
 		    client.deleteFile(fileName);
 		}
@@ -72,7 +84,8 @@ public class SftpInputStream extends InputStream
 	}
 
 
-
-
-
+	public void setErrorOccured(boolean errorOccured)
+	{
+		this.errorOccured = errorOccured;
+	}
 }

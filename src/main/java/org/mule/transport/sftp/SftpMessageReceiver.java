@@ -81,7 +81,18 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
         SftpClient client = null;
 
         try {
-            client = ( ( SftpConnector ) connector ).createSftpClient( endpoint.getEndpointURI() );
+            SftpConnector sftpConnector = (SftpConnector) connector;
+            client = sftpConnector.createSftpClient( endpoint );
+
+            long fileAge = sftpConnector.getFileAge();
+            boolean checkFileAge = sftpConnector.getCheckFileAge();
+
+            // Override the value from the Endpoint?
+            if(endpoint.getProperty(SftpConnector.FILE_AGE) != null) {
+                checkFileAge = true;
+                fileAge = Long.valueOf((String) endpoint.getProperty(SftpConnector.FILE_AGE));
+            }
+
             String[] files = client.listFiles();
 
             // Only return files that have completely been written and match
@@ -94,12 +105,19 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
                     continue;
                 }
 
-                // See if the file is still growing, leave it alone if it is
-                if ( !hasChanged( files[i], client ) )
+                if(checkFileAge)
                 {
-//                    logger.debug("marking file [" + files[i] + "] as in transit.");
-//                    client.rename(files[i], files[i] + ".transtit");
-//                    completedFiles.add( files[i]  + ".transtit" );
+                    // See if the file is still growing, leave it alone if it is
+                    if ( !hasChanged( files[i], client, fileAge ) )
+                    {
+    //                    logger.debug("marking file [" + files[i] + "] as in transit.");
+    //                    client.rename(files[i], files[i] + ".transtit");
+    //                    completedFiles.add( files[i]  + ".transtit" );
+                        completedFiles.add( files[i]);
+                    }
+                }
+                else
+                {
                     completedFiles.add( files[i]);
                 }
 
@@ -120,7 +138,7 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
         SftpConnector sftpConnector = ( SftpConnector ) connector;
 
         // Getting a new SFTP client dedicated to the SftpInputStream below
-        SftpClient client = sftpConnector.createSftpClient( endpoint.getEndpointURI() );
+        SftpClient client = sftpConnector.createSftpClient( endpoint );
 
         // This special InputStream closes the SftpClient when the stream is
         // closed.
@@ -142,20 +160,56 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
 
     }
 
-    protected boolean hasChanged( String fileName, SftpClient client ) throws Exception {
-        // Take consecutive file size snapshots de determine if file is still
-        // being written
-        long fileSize1 = client.getSize( fileName );
-        long fileSize2 = client.getSize( fileName );
 
-        if ( fileSize1 == fileSize2 ) {
-            logger.debug( "File is stable (not growing), ready for retrieval: " + fileName );
-
-            return false;
-        } else {
-            logger.debug( "File is growing, deferring retrieval: " + fileName );
+    /**
+     * Checks if the file has been changed.
+     * <p/>
+     * Note! This assumes that the time on both servers are synchronized!
+     *
+     * @param fileName The file to check
+     * @param client instance of StftClient
+     * @param fileAge How old the file should be to be considered "old" and not changed
+     * @return true if the file has changed
+     * @throws Exception Error
+     */
+    protected boolean hasChanged(String fileName, SftpClient client, long fileAge) throws Exception
+    {
+        long lastModifiedTime = client.getLastModifiedTime(fileName);
+        // TODO Can we get the current time from the other server?
+        long now = System.currentTimeMillis();
+        long diff = now - lastModifiedTime;
+        if (diff < fileAge)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("The file has not aged enough yet, will return nothing for: "
+                        + fileName + ". The file must be " + (fileAge - diff) + "ms older, was " + diff);
+            }
             return true;
         }
+        else
+        {
+            return false;
+        }
+
+        // The below doesnt work if the connection is fast and the file is written to slowly
+
+
+        // Take consecutive file size snapshots de determine if file is still
+        // being written
+//        long fileSize1 = client.getSize(fileName);
+//        long fileSize2 = client.getSize(fileName);
+//
+//        if (fileSize1 == fileSize2)
+//        {
+//            logger.info("File is stable (not growing), ready for retrieval: " + fileName);
+//
+//            return false;
+//        } else
+//        {
+//            logger.info("File is growing, deferring retrieval: " + fileName);
+//            return true;
+//        }
     }
 
     /*

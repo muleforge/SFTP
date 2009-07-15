@@ -33,6 +33,7 @@
                 </xsd:sequence>
                 <xsd:attributeGroup ref="inboundAttributes"/>
                 <xsd:attributeGroup ref="outboundAttributes"/>
+                <xsd:attributeGroup ref="commonKeyAuthenticationAttributes"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -43,6 +44,7 @@
             <xsd:extension base="mule:inboundEndpointType">
                 <xsd:attributeGroup ref="addressAttributes"/>
                 <xsd:attributeGroup ref="inboundAttributes"/>
+              <xsd:attributeGroup ref="commonKeyAuthenticationAttributes"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -53,6 +55,7 @@
             <xsd:extension base="mule:outboundEndpointType">
                 <xsd:attributeGroup ref="addressAttributes"/>
                 <xsd:attributeGroup ref="outboundAttributes"/>
+              <xsd:attributeGroup ref="commonKeyAuthenticationAttributes"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -64,6 +67,7 @@
                 <xsd:attributeGroup ref="addressAttributes"/>
                 <xsd:attributeGroup ref="inboundAttributes"/>
                 <xsd:attributeGroup ref="outboundAttributes"/>
+                <xsd:attributeGroup ref="commonKeyAuthenticationAttributes"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -84,6 +88,13 @@
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="fileAge" type="mule:substitutableLong">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Miniumum age (ms) for a file to be processed. This can be useful when consuming large files. It tells Mule to wait for a period of time before consuming the file, allowing the file to be completely written before the file is processed.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:attributeGroup>
 
     <xsd:attributeGroup name="outboundAttributes">
@@ -94,7 +105,15 @@
                     This can use the patterns supported by the filename-parser configured for this connector                </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="tempDir" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    A temporary directory to first upload to, when the file is fully uploaded the file is moved to its final destination. The tempDir will be created as a sub directory to the endpoint.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:attributeGroup>
+
     <xsd:attributeGroup name="addressAttributes">
         <xsd:attribute name="path" type="xsd:string">
             <xsd:annotation>
@@ -131,7 +150,11 @@
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-          <xsd:attribute name="identityFile" type="xsd:string">
+  </xsd:attributeGroup>
+  <xsd:element name="abstract-filenameParser" abstract="true" type="file:filenameParserType"/>
+
+  <xsd:attributeGroup name="commonKeyAuthenticationAttributes">
+     <xsd:attribute name="identityFile" type="xsd:string">
       <xsd:annotation>
         <xsd:documentation>
           An identityFile location.
@@ -146,5 +169,4 @@
       </xsd:annotation>
     </xsd:attribute>
   </xsd:attributeGroup>
-  <xsd:element name="abstract-filenameParser" abstract="true" type="file:filenameParserType"/>
 </xsd:schema>
