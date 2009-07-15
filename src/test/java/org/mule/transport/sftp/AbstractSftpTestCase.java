@@ -1,7 +1,11 @@
 package org.mule.transport.sftp;
 
 import org.mule.tck.FunctionalTestCase;
+import org.mule.api.endpoint.EndpointURI;
+import org.mule.api.endpoint.EndpointException;
+import org.mule.endpoint.MuleEndpointURI;
 
+import java.io.IOException;
 
 /**
  * TODO
@@ -9,7 +13,7 @@ import org.mule.tck.FunctionalTestCase;
  * Date: Jun 8, 2009
  */
 
-public abstract class AbstractSftpTestCase extends FunctionalTestCase {
+public class AbstractSftpTestCase  extends FunctionalTestCase {
 
   /**
    * Deletes all files in the directory
@@ -32,5 +36,10 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase {
 //    } catch (EndpointException e) {
 //      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //    }
+  }
+
+
+  protected String getConfigResources() {
+    return "mule-large-receive-test-config.xml";
   }
 }
