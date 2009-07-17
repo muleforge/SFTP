@@ -56,7 +56,7 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
 		deleteRemoteDirectory(muleClient, OUTBOUND_ENDPOINT_NAME, TEMP_DIR);
 
 		// Send an file to the SFTP server, which the inbound-endpoint then can pick up
-		muleClient.dispatch("sftp://muletest1@sftpserver/tempdir-test-inbound?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
+		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME) + "?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
 
 		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
 		//   for example since we dont have the TestComp

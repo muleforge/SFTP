@@ -37,11 +37,16 @@ import com.jcraft.jsch.SftpException;
  * <p/>
  * Tip: I used 'watch -n 1 find datai* -ls' on the linux server to watch what happens on the directories when I run these tests
  *
- * @author Lennart Häggkvist
+ * TODO MULE-4395: This test fails if the log is in DEBUG mode (ie. rootCategory=DEBUG). Probably due to MULE-4395.
+ *   The problem can be recreated by adding 'log4j.logger.org.mule.routing.outbound=DEBUG' in log4j.properties
+ *
+ * TODO Fix something better than 'Thread.sleep(X);' - this sleep must probably be tuned to different computers (or setting it very high?)
+ *       If a test fails in the class, test increase the sleep time....
+ *
+ *  * @author Lennart Häggkvist
  */
 public class SftpDataIntegrityFunctionalTestCase extends AbstractSftpTestCase
 {
-	protected static final long TIMEOUT = 10000;
 	private static final String OUTBOUND_ENDPOINT_NAME = "outboundEndpoint";
 	private static final String INBOUND_ENDPOINT_NAME = "inboundEndpoint";
 
@@ -50,14 +55,14 @@ public class SftpDataIntegrityFunctionalTestCase extends AbstractSftpTestCase
 
 	private static final String INBOUND_DIRMISSING_ENDPOINT_NAME = "inboundEndpointDirMissing";
 
-	private static final String OUTBOUND_WRONGPASSPHRASE_ENDPOINT_NAME = "inboundEndpointWrongPasspraseOnOutbound";
-	private static final String INBOUND_WRONGPASSPHRASE_ENDPOINT_NAME = "outboundEndpointWrongPasspraseOnOutbound";
+	private static final String INBOUND_WRONGPASSPHRASE_ENDPOINT_NAME = "inboundEndpointWrongPasspraseOnOutbound";
 
 
 	private static final String fileName = "file.txt";
 	// Map that is used to set the filename in the outbound directory
 	private static final Map<String, String> fileNameProperties = new HashMap<String, String>();
 	private static final String TEMP_DIR = "uploading";
+
 	static
 	{
 		fileNameProperties.put("filename", fileName);
@@ -74,8 +79,6 @@ public class SftpDataIntegrityFunctionalTestCase extends AbstractSftpTestCase
 	 */
 	public void setUpBeforeTest(MuleClient muleClient, String inboundEndpointName, String outboundEndpointName) throws IOException, SftpException
 	{
-		System.out.println("XXXXXXXXXXXXXXXXXXX setUpBeforeTest");
-
 		// RW - so that we can do initial cleanup
 		remoteChmod(muleClient, outboundEndpointName, 00700);
 
@@ -131,11 +134,11 @@ public class SftpDataIntegrityFunctionalTestCase extends AbstractSftpTestCase
 		setUpBeforeTest(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME);
 
 		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-		muleClient.dispatch("sftp://muletest1@sftpserver/dataintegrity-test-inbound?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
+		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME) + "?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
 
 		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
 		//   for example since we dont have the TestComponent
-		Thread.sleep(3000);
+		Thread.sleep(4000);
 
 		verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, false, true);
 	}
@@ -153,11 +156,11 @@ public class SftpDataIntegrityFunctionalTestCase extends AbstractSftpTestCase
 		remoteChmod(muleClient, OUTBOUND_ENDPOINT_NAME, 00500);
 
 		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-		muleClient.dispatch("sftp://muletest1@sftpserver/dataintegrity-test-inbound?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
+		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME) + "?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
 
 		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
 		//   for example since we dont have the TestComponent
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
 	}
@@ -179,7 +182,7 @@ public class SftpDataIntegrityFunctionalTestCase extends AbstractSftpTestCase
 		remoteChmod(muleClient, OUTBOUND_TEMPDIR_ENDPOINT_NAME, 00500);
 
 		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-		muleClient.dispatch("sftp://muletest1@sftpserver/dataintegrity-tempdir-test-inbound?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
+		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_TEMPDIR_ENDPOINT_NAME) + "?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
 
 		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
 		//   for example since we dont have the TestComponent
@@ -206,11 +209,11 @@ public class SftpDataIntegrityFunctionalTestCase extends AbstractSftpTestCase
 		remoteChmod(muleClient, OUTBOUND_TEMPDIR_ENDPOINT_NAME, 00500);
 
 		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-		muleClient.dispatch("sftp://muletest1@sftpserver/dataintegrity-tempdir-test-inbound?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
+		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_TEMPDIR_ENDPOINT_NAME) + "?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
 
 		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
 		//   for example since we dont have the TestComponent
-		Thread.sleep(2000);
+		Thread.sleep(4000);
 
 		verifyInAndOutFiles(muleClient, INBOUND_TEMPDIR_ENDPOINT_NAME, OUTBOUND_TEMPDIR_ENDPOINT_NAME, true, false);
 
@@ -229,7 +232,7 @@ public class SftpDataIntegrityFunctionalTestCase extends AbstractSftpTestCase
 		cleanupRemoteFtpDirectory(muleClient, INBOUND_DIRMISSING_ENDPOINT_NAME);
 
 		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-		muleClient.dispatch("sftp://muletest1@sftpserver/dataintegrity-dirmissing-test-inbound?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
+		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_DIRMISSING_ENDPOINT_NAME) + "?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
 
 		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
 		//   for example since we dont have the TestComponent
@@ -247,17 +250,17 @@ public class SftpDataIntegrityFunctionalTestCase extends AbstractSftpTestCase
 	public void testWrongPassphraseOnOutboundDirectory() throws Exception
 	{
 		MuleClient muleClient = new MuleClient();
-		cleanupRemoteFtpDirectory(muleClient, OUTBOUND_WRONGPASSPHRASE_ENDPOINT_NAME);
+		cleanupRemoteFtpDirectory(muleClient, INBOUND_WRONGPASSPHRASE_ENDPOINT_NAME);
 
 		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-		muleClient.dispatch("sftp://muletest1@sftpserver/dataintegrity-wrongpassprase-test-inbound?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
+		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_WRONGPASSPHRASE_ENDPOINT_NAME) + "?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
 
 		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
 		//   for example since we dont have the TestComponent
 		Thread.sleep(2000);
 
-		SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_WRONGPASSPHRASE_ENDPOINT_NAME);
-		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_WRONGPASSPHRASE_ENDPOINT_NAME);
+		SftpClient sftpClient = getSftpClient(muleClient, INBOUND_WRONGPASSPHRASE_ENDPOINT_NAME);
+		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(INBOUND_WRONGPASSPHRASE_ENDPOINT_NAME);
 		assertTrue("The inbound file should still exist", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), fileName));
 	}
 

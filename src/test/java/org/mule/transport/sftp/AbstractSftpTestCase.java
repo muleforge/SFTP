@@ -108,10 +108,23 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		}
 	}
 
-	protected EndpointURI getUriByEndpointName(MuleClient client, String endpointName)
+	protected EndpointURI getUriByEndpointName(MuleClient muleClient, String endpointName)
 	{
-		ImmutableEndpoint endpoint = (ImmutableEndpoint) client.getProperty(endpointName);
+		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(endpointName);
 		return endpoint.getEndpointURI();
+	}
+
+	/**
+	 *
+	 * @param muleClient
+	 * @param endpointName
+	 * @return the endpoint adress in the form 'sftp://user@host/path'
+	 */
+	protected String getAddressByEndpoint(MuleClient muleClient, String endpointName) {
+		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(endpointName);
+		EndpointURI endpointURI = endpoint.getEndpointURI();
+
+		return "sftp://" + endpointURI.getUser() + "@" + endpointURI.getHost() + endpointURI.getPath();
 	}
 
 	protected SftpClient getSftpClient(MuleClient muleClient, String endpointName)

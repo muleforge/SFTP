@@ -178,6 +178,7 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
         // TODO Can we get the current time from the other server?
         long now = System.currentTimeMillis();
         long diff = now - lastModifiedTime;
+		// If the diff is negative it's a sign that the time on the test server and the ftps-server is not synchronized
         if (diff < fileAge)
         {
             if (logger.isDebugEnabled())

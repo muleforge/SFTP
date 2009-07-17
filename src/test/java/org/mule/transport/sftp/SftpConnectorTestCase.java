@@ -18,7 +18,8 @@ public class SftpConnectorTestCase extends AbstractConnectorTestCase
 {
 
     /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+       http://www.mulesource.org/display/MULE2USER/Creating+Transports
+     */
 
     public Connector createConnector() throws Exception
     {
@@ -47,10 +48,10 @@ public class SftpConnectorTestCase extends AbstractConnectorTestCase
         // TODO test setting and retrieving any custom properties on the
         // Connector as necessary
     }
-    
+
     public void testConnectorMessageRequesterFactory()
     {
-        //No MessageRequesterFactory	
+        //No MessageRequesterFactory
     }
 
 }

@@ -10,23 +10,23 @@
                http://www.mulesource.org/schema/mule/vm/2.2 http://www.mulesource.org/schema/mule/vm/2.2/mule-vm.xsd">
 
     <sftp:connector name="sftpCustomConnector" pollingFrequency="500" autoDelete="true" outputPattern="#[ORIGINALNAME]"
-                    identityFile="src/test/resources/certs/id_rsa-muletest1" passphrase="muletest1"/>
+					identityFile="${USER1_IDENTITYFILE}" passphrase="${USER1_IDENTITYFILE_PASSPHRASE}"/>
 
-    <sftp:connector name="sftpCustomConnectorTempDir" identityFile="src/test/resources/certs/id_rsa-muletest1"
-                    passphrase="muletest1" outputPattern="#[ORIGINALNAME]"
+    <sftp:connector name="sftpCustomConnectorTempDir" outputPattern="#[ORIGINALNAME]"
+                    identityFile="${USER1_IDENTITYFILE}" passphrase="${USER1_IDENTITYFILE_PASSPHRASE}"
                     tempDir="uploading"/>
 
     <model name="main">
         <service name="testComponent">
             <inbound>
-                <sftp:inbound-endpoint address="sftp://muletest1@sftpserver/tempdir-test-inbound"
+                <sftp:inbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/tempdir-test-inbound"
                                        connector-ref="sftpCustomConnector"
                                        name="inboundEndpoint"/>
             </inbound>
 
             <outbound>
                 <pass-through-router>
-                    <sftp:outbound-endpoint address="sftp://muletest1@sftpserver/tempdir-test-outbound"
+                    <sftp:outbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/tempdir-test-outbound"
                                             connector-ref="sftpCustomConnectorTempDir"
                                             name="outboundEndpoint">
                     </sftp:outbound-endpoint>

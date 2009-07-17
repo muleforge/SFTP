@@ -10,26 +10,26 @@
                http://www.mulesource.org/schema/mule/vm/2.2 http://www.mulesource.org/schema/mule/vm/2.2/mule-vm.xsd">
 
     <sftp:connector name="sftpCustomConnector" pollingFrequency="500" autoDelete="true" outputPattern="#[ORIGINALNAME]"
-                    identityFile="src/test/resources/certs/id_rsa-muletest1" passphrase="muletest1"/>
+                    identityFile="${USER1_IDENTITYFILE}" passphrase="${USER1_IDENTITYFILE_PASSPHRASE}"/>
 
     <sftp:connector name="sftpTempDirConnector" pollingFrequency="500" autoDelete="true" outputPattern="#[ORIGINALNAME]"
                     tempDir="uploading"
-                    identityFile="src/test/resources/certs/id_rsa-muletest1" passphrase="muletest1"/>
+                    identityFile="${USER1_IDENTITYFILE}" passphrase="${USER1_IDENTITYFILE_PASSPHRASE}"/>
 
     <sftp:connector name="sftpWrongPassphraseConnector" pollingFrequency="500" autoDelete="true" outputPattern="#[ORIGINALNAME]"
-                    identityFile="src/test/resources/certs/id_rsa-muletest1" passphrase="THIS-IS-NOT-CORRECT"/>
+                    identityFile="${USER1_IDENTITYFILE}" passphrase="THIS-IS-NOT-CORRECT"/>
 
     <model name="main">
         <service name="testComponent">
             <inbound>
-                <sftp:inbound-endpoint address="sftp://muletest1@sftpserver/dataintegrity-test-inbound"
+                <sftp:inbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/dataintegrity-test-inbound"
                                        connector-ref="sftpCustomConnector"
                                        name="inboundEndpoint"/>
             </inbound>
 
             <outbound>
                 <pass-through-router>
-                    <sftp:outbound-endpoint address="sftp://muletest1@sftpserver/dataintegrity-test-outbound"
+                    <sftp:outbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/dataintegrity-test-outbound"
                                             connector-ref="sftpCustomConnector"
                                             name="outboundEndpoint">
                     </sftp:outbound-endpoint>
@@ -42,14 +42,14 @@
     <model name="mainWithTempDir">
         <service name="testComponentTempDir">
             <inbound>
-                <sftp:inbound-endpoint address="sftp://muletest1@sftpserver/dataintegrity-tempdir-test-inbound"
+                <sftp:inbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/dataintegrity-tempdir-test-inbound"
                                        connector-ref="sftpTempDirConnector"
                                        name="inboundEndpointTempDir"/>
             </inbound>
 
             <outbound>
                 <pass-through-router>
-                    <sftp:outbound-endpoint address="sftp://muletest1@sftpserver/dataintegrity-tempdir-test-outbound"
+                    <sftp:outbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/dataintegrity-tempdir-test-outbound"
                                             connector-ref="sftpTempDirConnector"
                                             name="outboundEndpointTempDir">
                     </sftp:outbound-endpoint>
@@ -62,14 +62,14 @@
      <model name="mainWithDirMissing">
         <service name="testComponentDirMissing">
             <inbound>
-                <sftp:inbound-endpoint address="sftp://muletest1@sftpserver/dataintegrity-dirmissing-test-inbound"
+                <sftp:inbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/dataintegrity-dirmissing-test-inbound"
                                        connector-ref="sftpCustomConnector"
                                        name="inboundEndpointDirMissing"/>
             </inbound>
 
             <outbound>
                 <pass-through-router>
-                    <sftp:outbound-endpoint address="sftp://muletest1@sftpserver/DIRECTORY-MISSING"
+                    <sftp:outbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/DIRECTORY-MISSING"
                                             connector-ref="sftpCustomConnector"
                                             name="outboundEndpointDirMissing">
                     </sftp:outbound-endpoint>
@@ -82,14 +82,14 @@
     <model name="mainWrongPasspraseOnOutbound">
         <service name="testComponentWrongPasspraseOnOutbound">
             <inbound>
-                <sftp:inbound-endpoint address="sftp://muletest1@sftpserver/dataintegrity-wrongpassprase-test-inbound"
+                <sftp:inbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/dataintegrity-wrongpassprase-test-inbound"
                                        connector-ref="sftpCustomConnector"
                                        name="inboundEndpointWrongPasspraseOnOutbound"/>
             </inbound>
 
             <outbound>
                 <pass-through-router>
-                    <sftp:outbound-endpoint address="sftp://muletest1@sftpserver/DIRECTORY-MISSING"
+                    <sftp:outbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/DIRECTORY-MISSING"
                                             connector-ref="sftpWrongPassphraseConnector"
                                             name="outboundEndpointWrongPasspraseOnOutbound">
                     </sftp:outbound-endpoint>

@@ -38,7 +38,7 @@ public class SftpFileAgeFunctionalTestCase extends AbstractSftpTestCase
 
 	private static final String INBOUND_ENDPOINT_NAME = "inboundEndpoint";
 
-    protected static final long TIMEOUT = 10000*2;
+    protected static final long TIMEOUT = 10000*3;
 
     protected String getConfigResources()
     {
@@ -94,7 +94,7 @@ public class SftpFileAgeFunctionalTestCase extends AbstractSftpTestCase
 
         logger.debug("before dispatch");
         // Send an file to the SFTP server, which the inbound-endpoint then can pick up
-        client.dispatch("sftp://muletest1@sftpserver/fileage-test", TEST_MESSAGE, properties);
+		client.dispatch(getAddressByEndpoint(client, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, properties);
         logger.debug("before retrieve");
 
         latch.await(TIMEOUT, TimeUnit.MILLISECONDS);

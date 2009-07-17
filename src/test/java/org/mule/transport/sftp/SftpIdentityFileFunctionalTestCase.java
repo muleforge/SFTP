@@ -95,7 +95,7 @@ public class SftpIdentityFileFunctionalTestCase extends AbstractSftpTestCase
 
 		logger.debug("before dispatch");
 		// Send an file to the SFTP server, which the inbound-endpoint then can pick up
-		client.dispatch("sftp://muletest1@sftpserver/data-in", TEST_MESSAGE, properties);
+		client.dispatch(getAddressByEndpoint(client, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, properties);
 		logger.debug("before retrieve");
 
 		latch.await(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);

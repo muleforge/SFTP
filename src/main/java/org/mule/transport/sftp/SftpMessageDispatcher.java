@@ -180,7 +180,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 				client.deleteFile(filename);
 				} catch (Exception e2)
 				{
-					// do nothing
+					logger.error("Could not delete the file from the temp directory", e2);
 				}
 			}
 		    throw e;
