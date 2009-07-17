@@ -203,7 +203,7 @@ public class SftpConnector extends AbstractConnector
     }
 
     /* (non-Javadoc)
-     * @see org.mule.providers.AbstractConnector#doConnect()
+     * @see org.mule.transport.AbstractConnector#doConnect()
      */
     protected void doConnect() throws Exception {
         // TODO Auto-generated method stub
@@ -211,7 +211,7 @@ public class SftpConnector extends AbstractConnector
     }
 
     /* (non-Javadoc)
-     * @see org.mule.providers.AbstractConnector#doDisconnect()
+     * @see org.mule.transport.AbstractConnector#doDisconnect()
      */
     protected void doDisconnect() throws Exception {
         // TODO Auto-generated method stub
@@ -219,7 +219,7 @@ public class SftpConnector extends AbstractConnector
     }
 
     /* (non-Javadoc)
-     * @see org.mule.providers.AbstractConnector#doDispose()
+     * @see org.mule.transport.AbstractConnector#doDispose()
      */
     protected void doDispose() {
         // TODO Auto-generated method stub
@@ -227,7 +227,7 @@ public class SftpConnector extends AbstractConnector
     }
 
     /* (non-Javadoc)
-     * @see org.mule.providers.AbstractConnector#doInitialise()
+     * @see org.mule.transport.AbstractConnector#doInitialise()
      */
     protected void doInitialise() throws InitialisationException {
         // TODO Auto-generated method stub
@@ -235,7 +235,7 @@ public class SftpConnector extends AbstractConnector
     }
 
     /* (non-Javadoc)
-     * @see org.mule.providers.AbstractConnector#doStart()
+     * @see org.mule.transport.AbstractConnector#doStart()
      */
     protected void doStart() throws MuleException {
         // TODO Auto-generated method stub
@@ -243,7 +243,7 @@ public class SftpConnector extends AbstractConnector
     }
 
     /* (non-Javadoc)
-     * @see org.mule.providers.AbstractConnector#doStop()
+     * @see org.mule.transport.AbstractConnector#doStop()
      */
     protected void doStop() throws MuleException {
         // TODO Auto-generated method stub

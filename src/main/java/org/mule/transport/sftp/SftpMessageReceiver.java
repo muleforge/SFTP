@@ -216,7 +216,7 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
     /*
      * (non-Javadoc)
      *
-     * @see org.mule.providers.AbstractMessageReceiver#doDispose()
+     * @see org.mule.transport.AbstractMessageReceiver#doDispose()
      */
     protected void doDispose() {
         // TODO Auto-generated method stub
