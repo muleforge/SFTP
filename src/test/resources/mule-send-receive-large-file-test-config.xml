@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<mule xmlns="http://www.mulesource.org/schema/mule/core/2.2"
+	  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xmlns:spring="http://www.springframework.org/schema/beans"
+	  xmlns:sftp="http://www.mulesource.org/schema/mule/sftp/2.2"
+	  xmlns:vm="http://www.mulesource.org/schema/mule/vm/2.2"
+	  xmlns:test="http://www.mulesource.org/schema/mule/test/2.2"
+	  xsi:schemaLocation="
+               http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+               http://www.mulesource.org/schema/mule/core/2.2 http://www.mulesource.org/schema/mule/core/2.2/mule.xsd
+               http://www.mulesource.org/schema/mule/sftp/2.2 http://www.mulesource.org/schema/mule/sftp/2.2/mule-sftp.xsd
+               http://www.mulesource.org/schema/mule/vm/2.2 http://www.mulesource.org/schema/mule/vm/2.2/mule-vm.xsd
+               http://www.mulesource.org/schema/mule/test/2.2 http://www.mulesource.org/schema/mule/test/2.2/mule-test.xsd">
+
+	<sftp:connector name="sftp" pollingFrequency="15000"/>
+
+	<model name="send">
+		<service name="sending">
+			<inbound>
+				<vm:inbound-endpoint path="test.upload"/>
+			</inbound>
+			<outbound>
+				<pass-through-router>
+					<sftp:outbound-endpoint
+						address="sftp://${USER1_PASSWORD}:${USER1_NAME}@${SFTP_HOST}/data" outputPattern="${DATE}.dat"/>
+				</pass-through-router>
+			</outbound>
+		</service>
+	</model>
+
+	<model name="receive">
+		<service name="receiving">
+			<inbound>
+				<!-- synchronous="true" - otherwise the inbound endpoint will trigger several times -->
+				<sftp:inbound-endpoint name="inboundEndpoint" synchronous="true"
+									   address="sftp://${USER1_PASSWORD}:${USER1_NAME}@${SFTP_HOST}/data"/>
+			</inbound>
+			<component>
+				<singleton-object class="org.mule.tck.functional.FunctionalTestComponent"/>
+			</component>
+		</service>
+	</model>
+
+</mule>
+
+
+
