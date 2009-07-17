@@ -18,27 +18,30 @@ import java.util.Date;
 import java.util.HashMap;
 
 import org.apache.commons.io.IOUtils;
-import org.mule.api.MuleMessage;
+import org.mule.api.MuleEventContext;
 import org.mule.module.client.MuleClient;
-import org.mule.tck.FunctionalTestCase;
-import org.mule.transport.sftp.SftpConnector;
+import org.mule.tck.functional.EventCallback;
+import org.mule.tck.functional.FunctionalTestComponent;
+import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
+import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
+import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <code>SendReceiveFunctionalTestCase</code> tests sending an receiving multiple
- * small text files.  
- * 
- * 
+ * small text files.
+ *
+ *
  */
 
-public class SftpSendReceiveFunctionalTestCase extends FunctionalTestCase
+public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
 {
 
 	private static final long TIMEOUT = 30000;
- 
-	private ArrayList sendFiles;
-	private ArrayList receiveFiles;
-	
-	
+
+	private ArrayList<String> sendFiles;
+	private ArrayList<String> receiveFiles;
+
+
     protected String getConfigResources()
     {
         return "mule-send-receive-test-config.xml";
@@ -46,8 +49,8 @@ public class SftpSendReceiveFunctionalTestCase extends FunctionalTestCase
 
     public void testSendAndReceiveMultipleFiles() throws Exception
     {
-    	sendFiles = new ArrayList();
-    	
+    	sendFiles = new ArrayList<String>();
+
     	sendFiles.add("file1");
     	sendFiles.add("file2");
     	sendFiles.add("file3");
@@ -56,97 +59,84 @@ public class SftpSendReceiveFunctionalTestCase extends FunctionalTestCase
     	sendFiles.add("file6");
     	sendFiles.add("file7");
     	sendFiles.add("file8");
-  	
+
     	sendAndReceiveFiles();
-    }  
+    }
 
     public void testSendAndReceiveSingleFile() throws Exception
     {
-    	sendFiles = new ArrayList();
-    	
+    	sendFiles = new ArrayList<String>();
+
     	sendFiles.add("file created on " + new Date());
-    	
+
     	sendAndReceiveFiles();
     }
-        
- 
-    
+
+
+
     //Test Mule-1477 (an old VFS Connector issue, but test anyway).
     public void testSendAndReceiveEmptyFile() throws Exception
     {
-    	sendFiles = new ArrayList();
-    	
+    	sendFiles = new ArrayList<String>();
+
     	sendFiles.add("");
-    	
+
     	sendAndReceiveFiles();
     }
 
-   
+
     protected void sendAndReceiveFiles() throws Exception
     {
-        MuleClient client = new MuleClient();  
-                
-        for( int i = 0; i < sendFiles.size(); i++)
-        {
-            HashMap props = new HashMap(1);
-            props.put(SftpConnector.PROPERTY_FILENAME,sendFiles.get(i) + ".txt");
-        	
-            client.send("vm://test.upload",sendFiles.get(i),props);        	
-        }
-   
-   
-        
-        MuleMessage m;
-        
-        receiveFiles = new ArrayList();
-        
-        while( (m = client.request("vm://test.download",TIMEOUT)) != null)
-        {
+		final CountDownLatch latch = new CountDownLatch(sendFiles.size());
+		final AtomicInteger loopCount = new AtomicInteger(0);
 
-            assertTrue( m.getPayload() instanceof InputStream );
-        	String fileText = getStringFromInputStream( (InputStream) m.getPayload() );
-            assertNotNull(fileText);
-        	
-            logger.info("Received file: " + fileText);
-            
-        	if( sendFiles.contains(fileText))
-        	{
-                receiveFiles.add(fileText);	
-        	}      	
-        }
+        MuleClient client = new MuleClient();
+
+		// Do some cleaning so that the endpoint doesnt have any other files
+		super.cleanupRemoteFtpDirectory(client, "inboundEndpoint");
+
+		receiveFiles = new ArrayList<String>();
+
+		EventCallback callback = new EventCallback()
+		{
+			public void eventReceived(MuleEventContext context, Object component)
+				throws Exception
+			{
+				logger.info("called " + loopCount.incrementAndGet() + " times");
+				FunctionalTestComponent ftc = (FunctionalTestComponent) component;
+
+				String o = IOUtils.toString((SftpInputStream) ftc.getLastReceivedMessage());
+				if (sendFiles.contains(o))
+				{
+					receiveFiles.add(o);
+				} else
+				{
+					fail("The received file was not sent. Received: '" + o + "'");
+				}
+
+				latch.countDown();
+			}
+		};
+
+		getFunctionalTestComponent("receiving").setEventCallback(callback);
+
+
+		for (String sendFile : sendFiles)
+		{
+			HashMap<String, String> props = new HashMap<String, String>(1);
+			props.put(SftpConnector.PROPERTY_FILENAME, sendFile + ".txt");
+
+			client.send("vm://test.upload", sendFile, props);
+		}
+
+		latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
 
         logger.debug("Number of files sent: " + sendFiles.size());
         logger.debug("Number of files received: " + receiveFiles.size());
-        
+
         //This makes sure we received the same number of files we sent, and that
-        //the content was a match (since only matched content gets on the 
+        //the content was a match (since only matched content gets on the
         //receiveFiles ArrayList)
         assertTrue( sendFiles.size() == receiveFiles.size() );
-        
-      
     }
-    
-    protected String getStringFromInputStream(InputStream inputStream) throws Exception
-    {
-        try
-        {
-        	
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            	
-                byte [] buffer = new byte[1024];
-                int len;
-                while( (len = inputStream.read(buffer)) > 0) 
-                {
-                	baos.write(buffer,0,len);
-                } 
-
-
-            return new String(baos.toByteArray());
-        }
-        finally
-        {
-            IOUtils.closeQuietly(inputStream);
-        }
-    }
-
 }

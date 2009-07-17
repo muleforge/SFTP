@@ -127,6 +127,14 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		return "sftp://" + endpointURI.getUser() + "@" + endpointURI.getHost() + endpointURI.getPath();
 	}
 
+	/**
+	 * Returns a SftpClient that is logged in to the sftp server that the endpoint is configured against.
+	 *
+	 * @param muleClient
+	 * @param endpointName
+	 * @return
+	 * @throws IOException
+	 */
 	protected SftpClient getSftpClient(MuleClient muleClient, String endpointName)
 			throws IOException
 	{
@@ -136,7 +144,13 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		SftpConnector sftpConnector = (SftpConnector) endpoint.getConnector();
 
 		sftpClient.connect(endpointURI.getHost());
-		assertTrue("Login failed", sftpClient.login(endpointURI.getUser(), sftpConnector.getIdentityFile(), sftpConnector.getPassphrase()));
+		if(sftpConnector.getIdentityFile() != null)
+		{
+			assertTrue("Login failed", sftpClient.login(endpointURI.getUser(), sftpConnector.getIdentityFile(), sftpConnector.getPassphrase()));
+		} else
+		{
+			assertTrue("Login failed", sftpClient.login(endpointURI.getUser(), endpointURI.getPassword()));
+		}
 		return sftpClient;
 	}
 
