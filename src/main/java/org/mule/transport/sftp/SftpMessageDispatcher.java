@@ -107,7 +107,10 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 		}
 
-		logger.info("Writing file to: " + endpoint.getEndpointURI());
+		if(logger.isDebugEnabled())
+		{
+		    logger.debug("Writing file to: " + endpoint.getEndpointURI());
+		}
 
 		SftpClient client = null;
 		boolean useTempDir = false;
@@ -118,7 +121,10 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 			client = sftpConnector.createSftpClient(endpoint);
 
-			logger.info("Connection setup successful, writing file.");
+			if(logger.isDebugEnabled())
+			{
+			    logger.debug("Connection setup successful, writing file.");
+			}
 
             String tempDir = connector.getTempDir();
             useTempDir = connector.getUseTempDir();
@@ -161,7 +167,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
                 client.rename(filename, destDir + "/" + filename);
             }
 
-            logger.info("Successfullt wrote file, done.");
+            logger.info("Successfully wrote file '" + filename + "' to " + endpoint.getEndpointURI());
 		}
 		catch (Exception e)
 		{

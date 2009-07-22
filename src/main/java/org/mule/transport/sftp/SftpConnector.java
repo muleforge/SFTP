@@ -161,12 +161,18 @@ public class SftpConnector extends AbstractConnector
         final int uriPort = endpointURI.getPort();
         if (uriPort == -1)
         {
-            logger.info("Connecting to host: " + endpointURI.getHost());
+            if(logger.isDebugEnabled())
+			{
+            	logger.debug("Connecting to host: " + endpointURI.getHost());
+			}
             client.connect(endpointURI.getHost());
         }
         else
         {
-            logger.info("Connecting to host: " + endpointURI.getHost() + ", on port: " + String.valueOf(uriPort));
+			if(logger.isDebugEnabled())
+			{
+            	logger.debug("Connecting to host: " + endpointURI.getHost() + ", on port: " + String.valueOf(uriPort));
+			}
             client.connect(endpointURI.getHost(), endpointURI.getPort());
         }
 
@@ -178,13 +184,19 @@ public class SftpConnector extends AbstractConnector
         // Override the identityFile and the passphrase?
         String endpointIdentityFile = ( String ) endpoint.getProperty( IDENTITY_FILE );
         if(endpointIdentityFile != null && !endpointIdentityFile.equals(tmpIdentityFile)) {
-          logger.info("Overriding the identity file from '" + tmpIdentityFile + "' to '" + endpointIdentityFile + "' ");
+ 		  if(logger.isDebugEnabled())
+		  {
+            logger.debug("Overriding the identity file from '" + tmpIdentityFile + "' to '" + endpointIdentityFile + "' ");
+		  }
           tmpIdentityFile = endpointIdentityFile;
         }
 
         String endpointPassphrase = ( String ) endpoint.getProperty( PASS_PHRASE );
         if(endpointPassphrase != null && !endpointPassphrase.equals(tmpPassphrase)) {
-          logger.info("Overriding the passphrase from '" + tmpPassphrase + "' to '" + endpointPassphrase + "' ");
+		  if(logger.isDebugEnabled())
+	      {
+            logger.debug("Overriding the passphrase from '" + tmpPassphrase + "' to '" + endpointPassphrase + "' ");
+		  }
           tmpPassphrase = endpointPassphrase;
         }
 
@@ -193,11 +205,17 @@ public class SftpConnector extends AbstractConnector
         client.login(endpointURI.getUser(), endpointURI.getPassword());
       }
 
-        logger.info("Successfully connected to: " + endpointURI);
+		if(logger.isDebugEnabled())
+		{
+          logger.debug("Successfully connected to: " + endpointURI);
+		}
 
         client.changeWorkingDirectory(endpointURI.getPath());
 
-        logger.info("Successfully changed working directory to: " + endpointURI.getPath());
+		if(logger.isDebugEnabled())
+		{
+          logger.debug("Successfully changed working directory to: " + endpointURI.getPath());
+		}
 
         return client;
     }

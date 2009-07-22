@@ -53,7 +53,7 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
         String[] files = getAvailableFiles();
 
         if ( files.length == 0 ) {
-            logger.info( "No matching files found" );
+            logger.debug( "No matching files found" );
         }
 
         for ( int i = 0; i < files.length; i++ ) {
