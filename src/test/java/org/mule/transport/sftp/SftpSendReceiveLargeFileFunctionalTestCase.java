@@ -15,6 +15,7 @@ import org.mule.module.client.MuleClient;
 import org.mule.tck.functional.EventCallback;
 import org.mule.tck.functional.FunctionalTestComponent;
 import org.mule.api.MuleEventContext;
+import org.mule.util.StringMessageUtils;
 import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
@@ -38,7 +39,7 @@ public class SftpSendReceiveLargeFileFunctionalTestCase extends AbstractSftpTest
 	private static final long TIMEOUT = 30000;
 
 	// Size of the genereated stream - 200 Mb
-	final static int SEND_SIZE = 1024 * 1024 * 10;
+	final static int SEND_SIZE = 1024 * 1024 * 200;
 
 	// Uses the same config as SftpSendReceiveFunctionalTestCase
 	protected String getConfigResources()
@@ -117,6 +118,8 @@ public class SftpSendReceiveLargeFileFunctionalTestCase extends AbstractSftpTest
 
 		HashMap<String, String> props = new HashMap<String, String>(1);
 		props.put(SftpConnector.PROPERTY_FILENAME, "bigfile.txt");
+
+		logger.info(StringMessageUtils.getBoilerPlate("Note! If this test fails due to timeout please add '-Dmule.test.timeoutSecs=XX' to the mvn command!"));
 
 		// Send the content using stream
 		client.send("vm://test.upload", os, props);
