@@ -88,9 +88,9 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
             boolean checkFileAge = sftpConnector.getCheckFileAge();
 
             // Override the value from the Endpoint?
-            if(endpoint.getProperty(SftpConnector.FILE_AGE) != null) {
+            if(endpoint.getProperty(SftpConnector.PROPERTY_FILE_AGE) != null) {
                 checkFileAge = true;
-                fileAge = Long.valueOf((String) endpoint.getProperty(SftpConnector.FILE_AGE));
+                fileAge = Long.valueOf((String) endpoint.getProperty(SftpConnector.PROPERTY_FILE_AGE));
             }
 
             String[] files = client.listFiles();

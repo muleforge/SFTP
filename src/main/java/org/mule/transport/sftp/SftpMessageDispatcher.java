@@ -128,9 +128,9 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
             String tempDir = connector.getTempDir();
             useTempDir = connector.getUseTempDir();
-            if(endpoint.getProperty(SftpConnector.TEMP_DIR) != null)
+            if(endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR) != null)
             {
-                tempDir = (String) endpoint.getProperty(SftpConnector.TEMP_DIR);
+                tempDir = (String) endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR);
                 useTempDir = true;
             }
 
@@ -174,8 +174,14 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		    logger.error("Unexpected exception attempting to write file, message was: " + e.getMessage(), e);
 			if(inputStream != null)
 			{
+				if(inputStream instanceof SftpInputStream)
+				{
 				// Ensure that the SftpInputStream knows about the error and dont delete the file
 				((SftpInputStream) inputStream).setErrorOccured(true);
+				} else
+				{
+					logger.warn("SftpInputStream not used, errorOccured=true could not be set");
+				}
 			}
 			if(useTempDir && tempDirAbs != null)
             {
@@ -198,10 +204,10 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		        // If the connection fails, the client will be null, otherwise disconnect.
 		        client.disconnect();
 		    }
-		    else
-		    {
-		        logger.warn("Unexpected null SFTPClient instance - operation probably failed ...");
-		    }
+//		    else
+//		    {
+//		        logger.warn("Unexpected null SFTPClient instance - operation probably failed ...");
+//		    }
 
 			inputStream.close();
 

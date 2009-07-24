@@ -45,10 +45,10 @@ public class SftpConnector extends AbstractConnector
     public static final String PROPERTY_SELECT_EXPRESSION = "selectExpression";
     public static final String PROPERTY_FILE_EXTENSION = "fileExtension";
     public static final String PROPERTY_INCLUDE_SUBFOLDERS = "includeSubfolders";
-    public static final String IDENTITY_FILE = "identityFile";
-    public static final String PASS_PHRASE = "passphrase";
-    public static final String FILE_AGE = "fileAge";
-    public static final String TEMP_DIR = "tempDir";
+    public static final String PROPERTY_IDENTITY_FILE = "identityFile";
+    public static final String PROPERTY_PASS_PHRASE = "passphrase";
+    public static final String PROPERTY_FILE_AGE = "fileAge";
+    public static final String PROPERTY_TEMP_DIR = "tempDir";
 
     public static final int DEFAULT_POLLING_FREQUENCY = 1000;
 
@@ -67,7 +67,7 @@ public class SftpConnector extends AbstractConnector
     private boolean useTempDir = false;
     private String tempDir = null;
 
-  public String getProtocol()
+	public String getProtocol()
     {
         return "sftp";
     }
@@ -177,12 +177,12 @@ public class SftpConnector extends AbstractConnector
         }
 
 
-      if(identityFile != null || endpoint.getProperty(IDENTITY_FILE) != null ) {
+      if(identityFile != null || endpoint.getProperty(PROPERTY_IDENTITY_FILE) != null ) {
         String tmpIdentityFile = identityFile;
         String tmpPassphrase = passphrase;
 
         // Override the identityFile and the passphrase?
-        String endpointIdentityFile = ( String ) endpoint.getProperty( IDENTITY_FILE );
+        String endpointIdentityFile = ( String ) endpoint.getProperty(PROPERTY_IDENTITY_FILE);
         if(endpointIdentityFile != null && !endpointIdentityFile.equals(tmpIdentityFile)) {
  		  if(logger.isDebugEnabled())
 		  {
@@ -191,7 +191,7 @@ public class SftpConnector extends AbstractConnector
           tmpIdentityFile = endpointIdentityFile;
         }
 
-        String endpointPassphrase = ( String ) endpoint.getProperty( PASS_PHRASE );
+        String endpointPassphrase = ( String ) endpoint.getProperty(PROPERTY_PASS_PHRASE);
         if(endpointPassphrase != null && !endpointPassphrase.equals(tmpPassphrase)) {
 		  if(logger.isDebugEnabled())
 	      {

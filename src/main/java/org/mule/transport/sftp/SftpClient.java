@@ -66,8 +66,9 @@ public class SftpClient
 		}
 		catch (SftpException e)
 		{
-			logger.error("CWD attempt to '" + wd + "' failed, message was: " + e.getMessage(), e);
-			throw new IOException(e.getMessage());
+			String message = "Error '" + e.getMessage() + "' occured when trying to CDW to '" + wd + "'.";
+//			logger.error(message, e);
+			throw new IOException(message);
 		}
 		return true;
 	}
