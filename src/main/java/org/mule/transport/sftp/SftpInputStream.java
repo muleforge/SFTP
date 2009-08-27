@@ -64,7 +64,9 @@ public class SftpInputStream extends InputStream
 
 	public int available() throws IOException
 	{
-		throw new IOException("Operation not supported by SftpInputStream");
+		return is.available();
+		// TODO: why was this added? This prevents transports from using BufferedInputStream.
+//		throw new IOException("Operation not supported by SftpInputStream");
 	}
 
 	public void close() throws IOException
