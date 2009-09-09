@@ -85,7 +85,7 @@ public class SftpClient
 	 * @param path
 	 * @return
 	 */
-    String getAbsolutePath(String path)
+    public String getAbsolutePath(String path)
     {
 		if(path.startsWith("//")) {
 			// This is an absolute path! Just remove the first /
@@ -128,11 +128,11 @@ public class SftpClient
 			setHome(c.pwd());
 		} catch (JSchException e)
 		{
-			throw new IOException(e.getMessage());
+			logAndThrowLoginError(user, e);
 		} catch (SftpException e)
-    {
-      throw new IOException(e.getMessage());
-    }
+	    {
+			logAndThrowLoginError(user, e);
+	    }
     return true;
 	}
 
@@ -170,13 +170,17 @@ public class SftpClient
 			setHome(c.pwd());
 		} catch (JSchException e)
 		{
-			logger.error("Error during login to " + user + "@" + host, e);
-			throw new IOException(e.getMessage());
+			logAndThrowLoginError(user, e);
 		} catch (SftpException e)
 		{
-			throw new IOException(e.getMessage());
+			logAndThrowLoginError(user, e);
 		}
 		return true;
+	}
+
+	private void logAndThrowLoginError(String user, Exception e) throws IOException {
+		logger.error("Error during login to " + user + "@" + host, e);
+		throw new IOException("Error during login to " + user + "@" + host + ": " + e.getMessage());
 	}
 
 	public void connect(String uri) throws IOException
