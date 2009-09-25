@@ -21,6 +21,7 @@ import org.mule.api.transport.MessageReceiver;
 import org.mule.transport.AbstractConnector;
 import org.mule.transport.file.FilenameParser;
 import org.mule.transport.file.SimpleFilenameParser;
+import org.mule.transport.sftp.notification.SftpNotifier;
 
 
 /**
@@ -49,7 +50,16 @@ public class SftpConnector extends AbstractConnector
     public static final String PROPERTY_PASS_PHRASE = "passphrase";
     public static final String PROPERTY_FILE_AGE = "fileAge";
     public static final String PROPERTY_TEMP_DIR = "tempDir";
-
+    public static final String PROPERTY_SIZE_CHECK_WAIT_TIME = "sizeCheckWaitTime";
+    public static final String PROPERTY_ARCHIVE_DIR = "archiveDir";
+    public static final String PROPERTY_ARCHIVE_TEMP_RECEIVING_DIR = "archiveTempReceivingDir";
+    public static final String PROPERTY_ARCHIVE_TEMP_SENDING_DIR = "archiveTempSendingDir";
+    public static final String PROPERTY_DUPLICATE_HANDLING = "duplicateHandling";
+    public static final String PROPERTY_USE_TEMP_FILE_TIMESTAMP_SUFFIX = "useTempFileTimestampSuffix";
+    public static final String PROPERTY_DUPLICATE_HANDLING_THROW_EXCEPTION = "throwException";
+    public static final String PROPERTY_DUPLICATE_HANDLING_OVERWRITE = "overwrite";
+    public static final String PROPERTY_DUPLICATE_HANDLING_ASS_SEQ_NO = "addSeqNo";
+    
     public static final int DEFAULT_POLLING_FREQUENCY = 1000;
 
     private FilenameParser filenameParser = new SimpleFilenameParser();
@@ -67,6 +77,13 @@ public class SftpConnector extends AbstractConnector
     private boolean useTempDir = false;
     private String tempDir = null;
 
+    private String duplicateHandling = "throwException";
+    private boolean useTempFileTimestampSuffix = false;
+    private long sizeCheckWaitTime = -1;
+    private String archiveDir = "";
+    private String archiveTempReceivingDir = "";
+    private String archiveTempSendingDir = "";
+    
 	public String getProtocol()
     {
         return "sftp";
@@ -155,8 +172,13 @@ public class SftpConnector extends AbstractConnector
 
   public SftpClient createSftpClient(ImmutableEndpoint endpoint)  throws Exception
     {
+	  return createSftpClient(endpoint, null);
+    }
+
+  public SftpClient createSftpClient(ImmutableEndpoint endpoint, SftpNotifier notifier)  throws Exception
+    {
         EndpointURI endpointURI = endpoint.getEndpointURI();
-        SftpClient client = new SftpClient();
+        SftpClient client = new SftpClient(notifier);
 
         final int uriPort = endpointURI.getPort();
         if (uriPort == -1)
@@ -306,5 +328,60 @@ public class SftpConnector extends AbstractConnector
         return useTempDir;
     }
 
+
+
+    // Need this method to be public for SftpNotifier
+	@Override
+	public boolean isEnableMessageEvents() {
+		return super.isEnableMessageEvents();
+	}
+
+	public void setDuplicateHandling(String duplicateHandling) {
+		this.duplicateHandling = duplicateHandling;
+	}
+
+	public String getDuplicateHandling() {
+		return duplicateHandling;
+	}
+
+	public void setUseTempFileTimestampSuffix(boolean useTempFileTimestampSuffix) {
+		this.useTempFileTimestampSuffix = useTempFileTimestampSuffix;
+	}
+
+	public boolean isUseTempFileTimestampSuffix() {
+		return useTempFileTimestampSuffix;
+	}
+
+	public void setSizeCheckWaitTime(long sizeCheckWaitTime) {
+		this.sizeCheckWaitTime = sizeCheckWaitTime;
+	}
+
+	public long getSizeCheckWaitTime() {
+		return sizeCheckWaitTime;
+	}
+
+	public void setArchiveDir(String archiveDir) {
+		this.archiveDir = archiveDir;
+	}
+
+	public String getArchiveDir() {
+		return archiveDir;
+	}
+
+	public void setArchiveTempReceivingDir(String archiveTempReceivingDir) {
+		this.archiveTempReceivingDir = archiveTempReceivingDir;
+	}
+
+	public String getArchiveTempReceivingDir() {
+		return archiveTempReceivingDir;
+	}
+
+	public void setArchiveTempSendingDir(String archiveTempSendingDir) {
+		this.archiveTempSendingDir = archiveTempSendingDir;
+	}
+
+	public String getArchiveTempSendingDir() {
+		return archiveTempSendingDir;
+	}
 
 }

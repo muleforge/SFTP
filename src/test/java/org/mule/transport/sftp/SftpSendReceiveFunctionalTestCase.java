@@ -47,27 +47,12 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
         return "mule-send-receive-test-config.xml";
     }
 
-    public void testSendAndReceiveMultipleFiles() throws Exception
-    {
-    	sendFiles = new ArrayList<String>();
-
-    	sendFiles.add("file1");
-    	sendFiles.add("file2");
-    	sendFiles.add("file3");
-    	sendFiles.add("file4");
-    	sendFiles.add("file5");
-    	sendFiles.add("file6");
-    	sendFiles.add("file7");
-    	sendFiles.add("file8");
-
-    	sendAndReceiveFiles();
-    }
 
     public void testSendAndReceiveSingleFile() throws Exception
     {
     	sendFiles = new ArrayList<String>();
 
-    	sendFiles.add("file created on " + new Date());
+    	sendFiles.add("file created on " + new Date().getTime());
 
     	sendAndReceiveFiles();
     }
@@ -85,6 +70,23 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
     }
 
 
+    public void testSendAndReceiveMultipleFiles() throws Exception
+    {
+    	sendFiles = new ArrayList<String>();
+
+    	sendFiles.add("file1");
+    	sendFiles.add("file2");
+    	sendFiles.add("file3");
+    	sendFiles.add("file4");
+    	sendFiles.add("file5");
+    	sendFiles.add("file6");
+    	sendFiles.add("file7");
+    	sendFiles.add("file8");
+
+    	sendAndReceiveFiles();
+    }
+    
+    
     protected void sendAndReceiveFiles() throws Exception
     {
 		final CountDownLatch latch = new CountDownLatch(sendFiles.size());

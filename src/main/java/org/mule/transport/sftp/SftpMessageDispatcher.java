@@ -11,14 +11,17 @@
 package org.mule.transport.sftp;
 
 
-import org.mule.transport.AbstractMessageDispatcher;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
 import org.mule.api.endpoint.OutboundEndpoint;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.IOException;
+import org.mule.transport.AbstractMessageDispatcher;
+import org.mule.transport.sftp.notification.SftpNotifier;
 
 /**
  * <code>SftpMessageDispatcher</code> dispatches files via sftp to a remote sftp service.
@@ -30,11 +33,13 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 {
 
 	private SftpConnector connector;
+    private SftpUtil sftpUtil = null;
 
     public SftpMessageDispatcher(OutboundEndpoint endpoint)
 	{
         super(endpoint);
 		connector = (SftpConnector) endpoint.getConnector();
+        sftpUtil = new SftpUtil(connector, endpoint);
 	}
 
     protected void doConnect() throws Exception
@@ -62,7 +67,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 
 		Object data = event.transformMessage();
-    String filename = (String) event
+		String filename = (String) event
 				.getProperty(SftpConnector.PROPERTY_FILENAME);
 
 		SftpConnector sftpConnector = (SftpConnector) connector;
@@ -118,14 +123,19 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 		try
 		{
-
-			client = sftpConnector.createSftpClient(endpoint);
+			String serviceName = (event.getService() == null) ? "UNKNOWN SERVICE" : event.getService().getName();
+			SftpNotifier notifier = new SftpNotifier(connector, event.getMessage(), endpoint, serviceName);
+			client = sftpConnector.createSftpClient(endpoint, notifier);
 
 			if(logger.isDebugEnabled())
 			{
 			    logger.debug("Connection setup successful, writing file.");
 			}
-
+			
+			// Duplicate Handling
+            String destDir = endpoint.getEndpointURI().getPath();
+			String transferFilename = client.duplicateHandling(destDir, filename, sftpUtil.getDuplicateHandling());
+			
             String tempDir = connector.getTempDir();
             useTempDir = connector.getUseTempDir();
             if(endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR) != null)
@@ -136,8 +146,10 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
             if(useTempDir)
             {
-                // Use a temporary directory when uploading
-                tempDirAbs = endpoint.getEndpointURI().getPath() + "/" + tempDir;
+            	// TODO. ML FIX. Use SftpClient.createSftpDirIfNotExists() + changeWorkingDirectory once all tests pass!
+
+            	// Use a temporary directory when uploading
+                tempDirAbs = destDir + "/" + tempDir;
                 // Try to change directory to the temp dir, if it fails - create it
                 try
                 {
@@ -147,15 +159,24 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
                 {
 					logger.info("Got an exception when trying to change the working directory to the temp dir. " +
 							"Will try to create the directory " + tempDirAbs);
-					client.changeWorkingDirectory(endpoint.getEndpointURI().getPath());
+					client.changeWorkingDirectory(destDir);
 					client.mkdir(tempDir);
 					// Now it should exist!
 					client.changeWorkingDirectory(tempDirAbs);
                 }
+
+                // Add unique file-name (if configured) for use during transfer to temp-dir
+            	boolean addUniqueSuffix = sftpUtil.isUseTempFileTimestampSuffix();
+            	if (addUniqueSuffix) {
+            		transferFilename = sftpUtil.createUniqueSuffix(transferFilename);
+            	}
+            
             }
 
-			// send file over sftp
-			client.storeFile(filename, inputStream);
+            
+            
+            // send file over sftp
+			client.storeFile(transferFilename, inputStream);
 
             if(useTempDir)
             {
@@ -163,8 +184,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 //                Thread.sleep(5000);
 
                 // Move the file to its final destination
-                String destDir = endpoint.getEndpointURI().getPath();
-                client.rename(filename, destDir + "/" + filename);
+                client.rename(transferFilename, destDir + "/" + filename);
             }
 
             logger.info("Successfully wrote file '" + filename + "' to " + endpoint.getEndpointURI());
@@ -176,11 +196,16 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			{
 				if(inputStream instanceof SftpInputStream)
 				{
-				// Ensure that the SftpInputStream knows about the error and dont delete the file
-				((SftpInputStream) inputStream).setErrorOccured(true);
+					// Ensure that the SftpInputStream knows about the error and dont delete the file
+					((SftpInputStream) inputStream).setErrorOccured(true);
+
+				} else if(inputStream instanceof SftpFileArchiveInputStream) {
+					// Ensure that the SftpFileArchiveInputStream knows about the error and don't delete the file
+					((SftpFileArchiveInputStream) inputStream).setErrorOccured(true);
+
 				} else
 				{
-					logger.warn("SftpInputStream not used, errorOccured=true could not be set");
+					logger.warn("Neither SftpInputStream nor SftpFileArchiveInputStream used, errorOccured=true could not be set. Type is " + inputStream.getClass().getName());
 				}
 			}
 			if(useTempDir && tempDirAbs != null)
@@ -234,6 +259,4 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
         }
         return connector.getFilenameParser().getFilename(message, pattern);
     }
-
-
 }

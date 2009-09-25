@@ -13,11 +13,19 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mule.api.endpoint.InboundEndpoint;
+import org.mule.transport.sftp.notification.SftpNotifier;
 
 import com.jcraft.jsch.*;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
+ 
+import static org.mule.transport.sftp.notification.SftpTransportNotification.SFTP_GET_ACTION;
+import static org.mule.transport.sftp.notification.SftpTransportNotification.SFTP_PUT_ACTION;
+import static org.mule.transport.sftp.notification.SftpTransportNotification.SFTP_RENAME_ACTION;
+import static org.mule.transport.sftp.notification.SftpTransportNotification.SFTP_DELETE_ACTION;
 
 /**
  * <code>SftpClient</code> Wrapper around jsch sftp library.  Provides access to
@@ -37,6 +45,7 @@ public class SftpClient
 	private ChannelSftp c;
 
 	private JSch jsch;
+	private SftpNotifier notifier;
 
 	private Session session;
 
@@ -48,13 +57,24 @@ public class SftpClient
 
 	private String fingerPrint;
 
+	// Keep track of the current working directory for improved logging.
+	private String currentDirectory = "";
+	
 	public SftpClient()
 	{
+		this(null);
+	}
+	
+	public SftpClient(SftpNotifier notifier)
+	{
 		jsch = new JSch();
+		this.notifier = notifier;
 	}
 
 	public boolean changeWorkingDirectory(String wd) throws IOException
 	{
+		currentDirectory = wd;
+
 		try
 		{
             wd = getAbsolutePath(wd);
@@ -196,6 +216,9 @@ public class SftpClient
 
 	public boolean rename(String filename, String dest) throws IOException
 	{
+		// Notify sftp rename file action
+		if (notifier != null) notifier.notify(SFTP_RENAME_ACTION, "from: " + currentDirectory + "/" + filename + " - to: " + dest);
+
 		String absolutePath  = getAbsolutePath(dest);
         try
         {
@@ -214,6 +237,9 @@ public class SftpClient
 
 	public boolean deleteFile(String fileName) throws IOException
 	{
+		// Notify sftp delete file action
+		if (notifier != null) notifier.notify(SFTP_DELETE_ACTION, currentDirectory + "/" + fileName);
+
 		try
 		{
 			if (logger.isDebugEnabled())
@@ -248,9 +274,13 @@ public class SftpClient
 
 	public String[] listFiles() throws IOException
 	{
+		return listFiles(".");
+	}
+
+	public String[] listFiles(String path) throws IOException
+	{
 		try
 		{
-			String path = ".";
 			java.util.Vector vv = null;
 			vv = c.ls(path);
 			if (vv != null)
@@ -284,6 +314,10 @@ public class SftpClient
 
 	public InputStream retrieveFile(String fileName) throws IOException
 	{
+		// Notify sftp get file action
+		long size = getSize(fileName);
+		if (notifier != null) notifier.notify(SFTP_GET_ACTION, currentDirectory + "/" + fileName, size);
+
 		try
 		{
 			return c.get(fileName);
@@ -309,6 +343,10 @@ public class SftpClient
 	{
 		try
 		{
+
+			// Notify sftp put file action
+			if (notifier != null) notifier.notify(SFTP_PUT_ACTION, currentDirectory + "/" + fileName);
+
 			if(logger.isDebugEnabled())
 			{
 			logger.debug("Sending to SFTP service: Stream = " + stream + " , filename = " + fileName);
@@ -345,7 +383,7 @@ public class SftpClient
 			return c.stat("./" + filename).getSize();
 		} catch (SftpException e)
 		{
-			throw new IOException(e.getMessage());
+			throw new IOException(e.getMessage() + " (" + currentDirectory + "/" + filename + ")");
 		}
 	}
 
@@ -383,8 +421,7 @@ public class SftpClient
 		} catch (SftpException e)
 		{
 			// Dont throw e.getmessage since we only get "2: No such file"..
-//			throw new IOException(e.getMessage());
-			throw new IOException("Could not create the directory '" + directoryName + "'");
+			throw new IOException("Could not create the directory '" + directoryName + "', caused by: " + e.getMessage());
 		}
 	}
 
@@ -421,4 +458,83 @@ public class SftpClient
 	{
 		return c;
 	}
+
+	public void createSftpDirIfNotExists(InboundEndpoint endpoint, String newDir) throws IOException {
+		String newDirAbs = endpoint.getEndpointURI().getPath() + "/" + newDir;
+
+		String currDir = currentDirectory;
+		
+        // Try to change directory to the new dir, if it fails - create it
+        try
+        {
+			// This method will throw an exception if the directory does not exist.
+        	if (logger.isDebugEnabled()) logger.debug("CHANGE DIR FROM " + currentDirectory + " TO " + newDirAbs);
+            changeWorkingDirectory(newDirAbs);
+        } catch (IOException e)
+        {
+			logger.info("Got an exception when trying to change the working directory to the new dir. " +
+					"Will try to create the directory " + newDirAbs);
+			changeWorkingDirectory(endpoint.getEndpointURI().getPath());
+			mkdir(newDir);
+
+			// Now it should exist!
+			changeWorkingDirectory(newDirAbs);
+        } finally {
+        	changeWorkingDirectory(currDir);
+        	if (logger.isDebugEnabled()) logger.debug("DIR IS NOW BACK TO " + currentDirectory);
+        }
+	}
+
+	public String duplicateHandling(String destDir, String filename, String duplicateHandling) throws IOException
+	{
+		if (duplicateHandling.equals(SftpConnector.PROPERTY_DUPLICATE_HANDLING_ASS_SEQ_NO)) {
+			filename = createUniqueName(destDir, filename);
+
+		} else if (duplicateHandling.equals(SftpConnector.PROPERTY_DUPLICATE_HANDLING_OVERWRITE)) {
+			// TODO. ML FIX. Implement this!
+			throw new NotImplementedException("Strategy " + SftpConnector.PROPERTY_DUPLICATE_HANDLING_OVERWRITE + " is not yet implemented");
+
+		} else {
+			// Nothing to do in the case of PROPERTY_DUPLICATE_HANDLING_THROW_EXCEPTION, if the file already exists then an error will be throwed...
+		}
+		
+		return filename;
+	}
+
+	private String createUniqueName(String dir, String path) throws IOException {
+
+		int fileIdx = 1;
+
+		// TODO. Add code for handling no '.'
+		int fileTypeIdx = path.lastIndexOf('.');
+		String fileType = path.substring(fileTypeIdx); // Let the fileType include the leading '.'
+		String filename = path.substring(0, fileTypeIdx);
+
+		if (logger.isDebugEnabled()) logger.debug("Create a unique name for: " + path + " (" + dir + " - " + filename + " - " + fileType + ")");
+
+		String uniqueFilename = filename;
+		String[] existingFiles = listFiles(getAbsolutePath(dir));
+
+		while (existsFile(existingFiles, uniqueFilename, fileType)) {
+			uniqueFilename = filename + '_' + fileIdx++;
+		}
+		
+		uniqueFilename = uniqueFilename + fileType;
+		if (!path.equals(uniqueFilename) && logger.isInfoEnabled()) logger.info("A file with the original filename (" + path + ") already exists, new name: " + uniqueFilename); 
+		if (logger.isDebugEnabled()) logger.debug("Unique name returned: " + uniqueFilename);
+		return uniqueFilename;
+	}
+
+	private boolean existsFile(String[] files, String filename, String fileType) throws IOException {
+		boolean existsFile = false;
+		filename += fileType;
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].equals(filename)) {
+				if (logger.isDebugEnabled()) logger.debug("Found existing file: " + files[i]);
+				existsFile = true;
+			}
+		}
+		return existsFile;
+	}
+
 }

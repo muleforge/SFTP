@@ -95,6 +95,42 @@
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="sizeCheckWaitTime" type="mule:substitutableLong">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Wait time (in ms) between size-checks to determine if a file is ready to be processed. 
+                    Disabled if not set or set to a negative value.
+                    This feature can be useful to avoid processing not yet completely written files (e.g. consuming large files).
+                    It tells Mule to do two size checks waiting the specified time between the two size calls.
+                    If the two size calls return the same value Mule consider the file ready for processing.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+		<xsd:attribute name="archiveDir" type="xsd:string">
+		    <xsd:annotation>
+		        <xsd:documentation>
+					Archives a copy of the file in the specified directory on the filesystem where mule is running.
+					The archive folder must have been created before Mule is started and the user Mule runs under must have privileges to read and write to the folder.
+		        </xsd:documentation>
+		    </xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="archiveTempReceivingDir" type="xsd:string">
+		    <xsd:annotation>
+		        <xsd:documentation>
+					If specified then the file to be archived is received in this folder and then moved to the archiveTempSendingDir while sent further on to the outbound endpoint.
+					Must be specified together with a archiveTempSendingDir and archiveDir.
+		        </xsd:documentation>
+		    </xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="archiveTempSendingDir" type="xsd:string">
+		    <xsd:annotation>
+		        <xsd:documentation>
+					If specified then the file to be archived is sent to the outbound endpoint from this folder.
+					After the file is consumed by the outbound endpoint or the component itself (i.e. when the underlying InputStream is closed) it will be moved to the archive folder.
+					Must be specified together with a archiveTempReceivingDir and archiveDir.
+		        </xsd:documentation>
+		    </xsd:annotation>
+		</xsd:attribute>
     </xsd:attributeGroup>
 
     <xsd:attributeGroup name="outboundAttributes">
@@ -105,6 +141,7 @@
                     This can use the patterns supported by the filename-parser configured for this connector                </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+<!-- 
         <xsd:attribute name="tempDir" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation>
@@ -112,7 +149,27 @@
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+ -->
+        <xsd:attribute name="duplicateHandling" type="duplicateHandlingType" default="throwException">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Determines what to do if a file already exist on the outbound endpoint with the specified name.
+                    throwException: Will throw an exception if a file already exists
+                    overwrite: Will overwrite an existing file
+                    addSeqNo: Will add a sequence number to the target filename making the filename unique, starting with 1 and incrementing the number until a unique filename is found
+                    The default behaviour is to throw an exception.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:attributeGroup>
+
+	<xsd:simpleType name="duplicateHandlingType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="throwException"/>
+			<xsd:enumeration value="overwrite"/>
+			<xsd:enumeration value="addSeqNo"/>
+		</xsd:restriction>
+	</xsd:simpleType> 
 
     <xsd:attributeGroup name="addressAttributes">
         <xsd:attribute name="path" type="xsd:string">
@@ -168,5 +225,34 @@
         </xsd:documentation>
       </xsd:annotation>
     </xsd:attribute>
+
+	<xsd:attribute name="tempDir" type="xsd:string">
+	    <xsd:annotation>
+	        <xsd:documentation>
+	        	Mule tries to create the temp-directory in the endpoint folder if it doesn't already exist.
+	        	Ensure that the user Mule is configured to use to access the sftp server has privileges to create a temp folder if required! 
+
+				For inbound endpoints:
+	            A temporary directory from where the download takes place.
+	            Disabled if not set or set to an empty string.
+	            The file will be moved to the tempDir, to mark that a download is taking place, before the download starts.
+	            The tempDir will be created as a sub directory to the endpoint.
+
+				For outbound endpoints:
+                A temporary directory to first upload to, when the file is fully uploaded the file is moved to its final destination. 
+                The tempDir will be created as a sub directory to the endpoint.
+	        </xsd:documentation>
+	    </xsd:annotation>
+	</xsd:attribute>
+	<xsd:attribute name="useTempFileTimestampSuffix" type="xsd:boolean" default="false">
+	    <xsd:annotation>
+	        <xsd:documentation>
+	            Used together with the tempDir - attribute to give the files in the tempDir a guaranteed unique name based on the local time when the file was moved to the tempDir.
+	            Disabled by default.
+	        </xsd:documentation>
+	    </xsd:annotation>
+	</xsd:attribute>
+
   </xsd:attributeGroup>
+    
 </xsd:schema>
