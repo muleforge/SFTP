@@ -14,8 +14,6 @@ package org.mule.transport.sftp;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
@@ -39,7 +37,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 	{
         super(endpoint);
 		connector = (SftpConnector) endpoint.getConnector();
-        sftpUtil = new SftpUtil(connector, endpoint);
+        sftpUtil = new SftpUtil(endpoint);
 	}
 
     protected void doConnect() throws Exception
@@ -69,8 +67,6 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		Object data = event.transformMessage();
 		String filename = (String) event
 				.getProperty(SftpConnector.PROPERTY_FILENAME);
-
-		SftpConnector sftpConnector = (SftpConnector) connector;
 
 		//If no name specified, set filename according to output pattern specified on
 		//endpoint or connector
@@ -125,7 +121,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		{
 			String serviceName = (event.getService() == null) ? "UNKNOWN SERVICE" : event.getService().getName();
 			SftpNotifier notifier = new SftpNotifier(connector, event.getMessage(), endpoint, serviceName);
-			client = sftpConnector.createSftpClient(endpoint, notifier);
+			client = connector.createSftpClient(endpoint, notifier);
 
 			if(logger.isDebugEnabled())
 			{

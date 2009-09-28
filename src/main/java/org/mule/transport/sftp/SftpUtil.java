@@ -6,9 +6,9 @@ import java.util.Date;
 import org.mule.api.endpoint.ImmutableEndpoint;
 
 /**
- * Contains reusable methods not directly related to usage of the jsch sftp library.
+ * Contains reusable methods not directly related to usage of the jsch sftp library (they can be found in the class SftpClient).
  * 
- * @author magnus larsson
+ * @author Magnus Larsson
  *
  */
 public class SftpUtil {
@@ -16,9 +16,9 @@ public class SftpUtil {
 	private SftpConnector connector;
 	private ImmutableEndpoint endpoint;
 
-	public SftpUtil(SftpConnector connector, ImmutableEndpoint endpoint) {
-		this.connector = connector;
+	public SftpUtil(ImmutableEndpoint endpoint) {
 		this.endpoint = endpoint;
+		this.connector = (SftpConnector)endpoint.getConnector();
 	}
 	
     public String createUniqueSuffix(String filename) {

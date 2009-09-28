@@ -16,6 +16,7 @@ import java.util.Properties;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.transport.sftp.notification.SftpNotifier;
 
@@ -459,7 +460,7 @@ public class SftpClient
 		return c;
 	}
 
-	public void createSftpDirIfNotExists(InboundEndpoint endpoint, String newDir) throws IOException {
+	public void createSftpDirIfNotExists(ImmutableEndpoint endpoint, String newDir) throws IOException {
 		String newDirAbs = endpoint.getEndpointURI().getPath() + "/" + newDir;
 
 		String currDir = currentDirectory;
