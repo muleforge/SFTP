@@ -65,8 +65,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 
 		Object data = event.transformMessage();
-		String filename = (String) event
-				.getProperty(SftpConnector.PROPERTY_FILENAME);
+		String filename = (String)event.getProperty(SftpConnector.PROPERTY_FILENAME);
 
 		//If no name specified, set filename according to output pattern specified on
 		//endpoint or connector
@@ -116,12 +115,14 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		SftpClient client = null;
 		boolean useTempDir = false;
 		String tempDirAbs = null;
+		String transferFilename = null;
 
 		try
 		{
 			String serviceName = (event.getService() == null) ? "UNKNOWN SERVICE" : event.getService().getName();
 			SftpNotifier notifier = new SftpNotifier(connector, event.getMessage(), endpoint, serviceName);
 			client = connector.createSftpClient(endpoint, notifier);
+            String destDir = endpoint.getEndpointURI().getPath();
 
 			if(logger.isDebugEnabled())
 			{
@@ -129,9 +130,10 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			}
 			
 			// Duplicate Handling
-            String destDir = endpoint.getEndpointURI().getPath();
-			String transferFilename = client.duplicateHandling(destDir, filename, sftpUtil.getDuplicateHandling());
+			filename = client.duplicateHandling(destDir, filename, sftpUtil.getDuplicateHandling());
+			transferFilename = filename;
 			
+			// TODO. ML FIX. Should use SftpUtil.getTempDir() and get rid of the help-method SftpConnector.getUseTempDir()
             String tempDir = connector.getTempDir();
             useTempDir = connector.getUseTempDir();
             if(endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR) != null)
@@ -210,7 +212,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 				try
 				{
 				client.changeWorkingDirectory(tempDirAbs);
-				client.deleteFile(filename);
+				client.deleteFile(transferFilename);
 				} catch (Exception e2)
 				{
 					logger.error("Could not delete the file from the temp directory", e2);

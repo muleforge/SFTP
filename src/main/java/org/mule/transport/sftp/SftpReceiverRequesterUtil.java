@@ -181,22 +181,22 @@ public class SftpReceiverRequesterUtil {
 		File archiveTmpReceivingFolder = FileUtils.newFile(archive + '/' + archiveTmpReceivingDir);
 		File archiveTmpReceivingFile   = FileUtils.newFile(archive + '/' + archiveTmpReceivingDir, fileNamePart);
 		if (!archiveTmpReceivingFolder.exists()) {
-			if (logger.isDebugEnabled()) logger.debug("Creates " + archiveTmpReceivingFolder.getAbsolutePath());
+			if (logger.isInfoEnabled()) logger.info("Creates " + archiveTmpReceivingFolder.getAbsolutePath());
 			archiveTmpReceivingFolder.mkdirs();
 		}
 
 		File archiveTmpSendingFolder   = FileUtils.newFile(archive + '/' + archiveTmpSendingDir);
 		File archiveTmpSendingFile     = FileUtils.newFile(archive + '/' + archiveTmpSendingDir,   fileNamePart);
 		if (!archiveTmpSendingFolder.exists()) {
-			if (logger.isDebugEnabled()) logger.debug("Creates " + archiveTmpSendingFolder.getAbsolutePath());
+			if (logger.isInfoEnabled()) logger.info("Creates " + archiveTmpSendingFolder.getAbsolutePath());
 			archiveTmpSendingFolder.mkdirs();
 		}
 
-		if (logger.isDebugEnabled()) logger.debug("Copy SftpInputStream to archiveTmpReceivingFile... " + archiveTmpReceivingFile.getAbsolutePath());
+		if (logger.isInfoEnabled()) logger.info("Copy SftpInputStream to archiveTmpReceivingFile... " + archiveTmpReceivingFile.getAbsolutePath());
 		FileUtils.copyStreamToFile(is, archiveTmpReceivingFile);
 		
 		// TODO. ML FIX. Should be performed before the sftp:delete - operation, i.e. in the SftpInputStream in the operation above...
-		if (logger.isDebugEnabled()) logger.debug("Move archiveTmpReceivingFile (" + archiveTmpReceivingFile + ") to archiveTmpSendingFile (" + archiveTmpSendingFile + ")...");
+		if (logger.isInfoEnabled()) logger.info("Move archiveTmpReceivingFile (" + archiveTmpReceivingFile + ") to archiveTmpSendingFile (" + archiveTmpSendingFile + ")...");
 		FileUtils.moveFile(archiveTmpReceivingFile, archiveTmpSendingFile);
 		
 		if (logger.isDebugEnabled()) logger.debug("Return SftpFileArchiveInputStream for archiveTmpSendingFile (" + archiveTmpSendingFile + ")...");
@@ -205,7 +205,7 @@ public class SftpReceiverRequesterUtil {
 
 	private InputStream archiveFile(InputStream is, File archiveFile)
 			throws IOException, FileNotFoundException {
-		if (logger.isDebugEnabled()) logger.debug("Copy SftpInputStream to archiveFile... " + archiveFile.getAbsolutePath());
+		if (logger.isInfoEnabled()) logger.info("Copy SftpInputStream to archiveFile... " + archiveFile.getAbsolutePath());
 		FileUtils.copyStreamToFile(is, archiveFile);
 		
 		if (logger.isDebugEnabled()) logger.debug("*** Return SftpFileArchiveInputStream for archiveFile...");

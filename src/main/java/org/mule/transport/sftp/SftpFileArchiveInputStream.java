@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.context.notification.EndpointMessageNotification;
 import org.mule.util.FileUtils;
 
 /**
@@ -48,7 +47,7 @@ public class SftpFileArchiveInputStream extends FileInputStream {
 		super.close();
 
 		if( !errorOccured && archiveFile != null ) {
-        	if (logger.isDebugEnabled()) logger.debug("Move archiveTmpSendingFile (" + file + ") to archiveFolder (" + archiveFile + ")...");
+        	if (logger.isInfoEnabled()) logger.info("Move archiveTmpSendingFile (" + file + ") to archiveFolder (" + archiveFile + ")...");
         	FileUtils.moveFile(file, archiveFile);
 		}
 	}

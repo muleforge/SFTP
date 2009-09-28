@@ -40,7 +40,7 @@ public class SftpUtil {
         String tempDir = connector.getTempDir();
 
         // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_ARCHIVE_TEMP_RECEIVING_DIR);
+        Object v = endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR);
         if(v != null) {
         	tempDir = (String)v;
         }

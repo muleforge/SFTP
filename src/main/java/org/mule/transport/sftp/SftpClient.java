@@ -521,7 +521,7 @@ public class SftpClient
 		}
 		
 		uniqueFilename = uniqueFilename + fileType;
-		if (!path.equals(uniqueFilename) && logger.isInfoEnabled()) logger.info("A file with the original filename (" + path + ") already exists, new name: " + uniqueFilename); 
+		if (!path.equals(uniqueFilename) && logger.isInfoEnabled()) logger.info("A file with the original filename (" + dir + "/" + path + ") already exists, new name: " + uniqueFilename); 
 		if (logger.isDebugEnabled()) logger.debug("Unique name returned: " + uniqueFilename);
 		return uniqueFilename;
 	}
