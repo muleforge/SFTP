@@ -119,5 +119,28 @@ public class SftpUtil {
         
         return duplicateHandling;
 	}
+
+    public String getIdentityFile() {
+        String identityFile = connector.getIdentityFile();
+
+        // Override the value from the endpoint?
+        Object v = endpoint.getProperty(SftpConnector.PROPERTY_IDENTITY_FILE);
+        if(v != null) {
+        	identityFile = (String)v;
+        }
+        
+        return identityFile;
+	}    
     
+    public String getPassphrase() {
+        String passphrase = connector.getPassphrase();
+
+        // Override the value from the endpoint?
+        Object v = endpoint.getProperty(SftpConnector.PROPERTY_PASS_PHRASE);
+        if(v != null) {
+        	passphrase = (String)v;
+        }
+        
+        return passphrase;
+	}        
 }
