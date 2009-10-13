@@ -12,7 +12,6 @@ package org.mule.transport.sftp;
 
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.mule.api.MuleEvent;
@@ -103,8 +102,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 		} else
 		{
-			throw new IllegalArgumentException("Unxpected message type: java.io.InputStream or byte[] expected ");
-
+			throw new IllegalArgumentException("Unexpected message type: java.io.InputStream or byte[] expected ");
 		}
 
 		if(logger.isDebugEnabled())
@@ -114,7 +112,6 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 		SftpClient client = null;
 		boolean useTempDir = false;
-		String tempDirAbs = null;
 		String transferFilename = null;
 
 		try
@@ -128,59 +125,29 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			{
 			    logger.debug("Connection setup successful, writing file.");
 			}
-			
+
 			// Duplicate Handling
 			filename = client.duplicateHandling(destDir, filename, sftpUtil.getDuplicateHandling());
 			transferFilename = filename;
-			
-			// TODO. ML FIX. Should use SftpUtil.getTempDir() and get rid of the help-method SftpConnector.getUseTempDir()
-            String tempDir = connector.getTempDir();
-            useTempDir = connector.getUseTempDir();
-            if(endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR) != null)
-            {
-                tempDir = (String) endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR);
-                useTempDir = true;
-            }
 
+            useTempDir = sftpUtil.isUseTempDir();
             if(useTempDir)
             {
-            	// TODO. ML FIX. Use SftpClient.createSftpDirIfNotExists() + changeWorkingDirectory once all tests pass!
+				sftpUtil.createSftpDirIfNotExists(client, destDir);
 
-            	// Use a temporary directory when uploading
-                tempDirAbs = destDir + "/" + tempDir;
-                // Try to change directory to the temp dir, if it fails - create it
-                try
-                {
-					// This method will throw an exception if the directory does not exist.
-                    client.changeWorkingDirectory(tempDirAbs);
-                } catch (IOException e)
-                {
-					logger.info("Got an exception when trying to change the working directory to the temp dir. " +
-							"Will try to create the directory " + tempDirAbs);
-					client.changeWorkingDirectory(destDir);
-					client.mkdir(tempDir);
-					// Now it should exist!
-					client.changeWorkingDirectory(tempDirAbs);
-                }
-
-                // Add unique file-name (if configured) for use during transfer to temp-dir
-            	boolean addUniqueSuffix = sftpUtil.isUseTempFileTimestampSuffix();
-            	if (addUniqueSuffix) {
-            		transferFilename = sftpUtil.createUniqueSuffix(transferFilename);
-            	}
-            
+				// Add unique file-name (if configured) for use during transfer to temp-dir
+				boolean addUniqueSuffix = sftpUtil.isUseTempFileTimestampSuffix();
+				if (addUniqueSuffix)
+				{
+					transferFilename = sftpUtil.createUniqueSuffix(transferFilename);
+				}
             }
 
-            
-            
             // send file over sftp
 			client.storeFile(transferFilename, inputStream);
 
             if(useTempDir)
             {
-                // Good when testing.. :)
-//                Thread.sleep(5000);
-
                 // Move the file to its final destination
                 client.rename(transferFilename, destDir + "/" + filename);
             }
@@ -206,17 +173,10 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 					logger.warn("Neither SftpInputStream nor SftpFileArchiveInputStream used, errorOccured=true could not be set. Type is " + inputStream.getClass().getName());
 				}
 			}
-			if(useTempDir && tempDirAbs != null)
+			if(useTempDir)
             {
 				// Cleanup the remote temp dir!
-				try
-				{
-				client.changeWorkingDirectory(tempDirAbs);
-				client.deleteFile(transferFilename);
-				} catch (Exception e2)
-				{
-					logger.error("Could not delete the file from the temp directory", e2);
-				}
+				sftpUtil.cleanupTempDir(client, transferFilename);
 			}
 		    throw e;
 		}

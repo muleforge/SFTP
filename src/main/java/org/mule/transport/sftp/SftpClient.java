@@ -22,7 +22,7 @@ import org.mule.transport.sftp.notification.SftpNotifier;
 
 import com.jcraft.jsch.*;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
- 
+
 import static org.mule.transport.sftp.notification.SftpTransportNotification.SFTP_GET_ACTION;
 import static org.mule.transport.sftp.notification.SftpTransportNotification.SFTP_PUT_ACTION;
 import static org.mule.transport.sftp.notification.SftpTransportNotification.SFTP_RENAME_ACTION;
@@ -60,12 +60,12 @@ public class SftpClient
 
 	// Keep track of the current working directory for improved logging.
 	private String currentDirectory = "";
-	
+
 	public SftpClient()
 	{
 		this(null);
 	}
-	
+
 	public SftpClient(SftpNotifier notifier)
 	{
 		jsch = new JSch();
@@ -87,7 +87,7 @@ public class SftpClient
 		}
 		catch (SftpException e)
 		{
-			String message = "Error '" + e.getMessage() + "' occured when trying to CDW to '" + wd + "'.";
+			String message = "Error '" + e.getMessage() + "' occurred when trying to CDW to '" + wd + "'.";
 //			logger.error(message, e);
 			throw new IOException(message);
 		}
@@ -421,7 +421,7 @@ public class SftpClient
 			c.mkdir(directoryName);
 		} catch (SftpException e)
 		{
-			// Dont throw e.getmessage since we only get "2: No such file"..
+			// Don't throw e.getmessage since we only get "2: No such file"..
 			throw new IOException("Could not create the directory '" + directoryName + "', caused by: " + e.getMessage());
 		}
 	}
@@ -455,7 +455,7 @@ public class SftpClient
 	 *
 	 * @return the ChannelSftp - useful for some tests
 	 */
-	ChannelSftp getChannelSftp()
+	public ChannelSftp getChannelSftp()
 	{
 		return c;
 	}
@@ -464,7 +464,7 @@ public class SftpClient
 		String newDirAbs = endpoint.getEndpointURI().getPath() + "/" + newDir;
 
 		String currDir = currentDirectory;
-		
+
         // Try to change directory to the new dir, if it fails - create it
         try
         {
@@ -498,7 +498,7 @@ public class SftpClient
 		} else {
 			// Nothing to do in the case of PROPERTY_DUPLICATE_HANDLING_THROW_EXCEPTION, if the file already exists then an error will be throwed...
 		}
-		
+
 		return filename;
 	}
 
@@ -519,9 +519,9 @@ public class SftpClient
 		while (existsFile(existingFiles, uniqueFilename, fileType)) {
 			uniqueFilename = filename + '_' + fileIdx++;
 		}
-		
+
 		uniqueFilename = uniqueFilename + fileType;
-		if (!path.equals(uniqueFilename) && logger.isInfoEnabled()) logger.info("A file with the original filename (" + dir + "/" + path + ") already exists, new name: " + uniqueFilename); 
+		if (!path.equals(uniqueFilename) && logger.isInfoEnabled()) logger.info("A file with the original filename (" + dir + "/" + path + ") already exists, new name: " + uniqueFilename);
 		if (logger.isDebugEnabled()) logger.debug("Unique name returned: " + uniqueFilename);
 		return uniqueFilename;
 	}

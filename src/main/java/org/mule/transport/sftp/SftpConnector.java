@@ -59,7 +59,7 @@ public class SftpConnector extends AbstractConnector
     public static final String PROPERTY_DUPLICATE_HANDLING_THROW_EXCEPTION = "throwException";
     public static final String PROPERTY_DUPLICATE_HANDLING_OVERWRITE = "overwrite";
     public static final String PROPERTY_DUPLICATE_HANDLING_ASS_SEQ_NO = "addSeqNo";
-    
+
     public static final int DEFAULT_POLLING_FREQUENCY = 1000;
 
     private FilenameParser filenameParser = new SimpleFilenameParser();
@@ -74,7 +74,6 @@ public class SftpConnector extends AbstractConnector
     private boolean checkFileAge = false;
     private long fileAge = 0;
 
-    private boolean useTempDir = false;
     private String tempDir = null;
 
     private String duplicateHandling = "throwException";
@@ -83,7 +82,7 @@ public class SftpConnector extends AbstractConnector
     private String archiveDir = "";
     private String archiveTempReceivingDir = "";
     private String archiveTempSendingDir = "";
-    
+
 	public String getProtocol()
     {
         return "sftp";
@@ -320,14 +319,7 @@ public class SftpConnector extends AbstractConnector
     public void setTempDir(String tempDir)
     {
         this.tempDir = tempDir;
-        this.useTempDir = true;
     }
-
-    public boolean getUseTempDir()
-    {
-        return useTempDir;
-    }
-
 
 
     // Need this method to be public for SftpNotifier

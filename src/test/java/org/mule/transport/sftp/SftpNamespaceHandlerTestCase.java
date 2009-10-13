@@ -30,7 +30,6 @@ public class SftpNamespaceHandlerTestCase extends FunctionalTestCase
         assertTrue(c.isAutoDelete());
         assertEquals(c.getPollingFrequency(),15000);
         assertEquals(1234, c.getFileAge());
-        assertEquals(true, c.getUseTempDir());
         assertEquals("uploading", c.getTempDir());
         //TODO Assert specific properties are configured correctly
 

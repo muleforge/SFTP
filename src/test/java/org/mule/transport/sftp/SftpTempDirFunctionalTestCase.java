@@ -76,6 +76,7 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
 		SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
 		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_ENDPOINT_NAME);
 		assertTrue("The file should exist in the final destination", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), fileName));
+		assertFalse("No file should exist in the temp directory", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath() + "/uploading", fileName));
 	}
 
 }
