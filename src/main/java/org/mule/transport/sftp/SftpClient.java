@@ -280,26 +280,47 @@ public class SftpClient
 
 	public String[] listFiles(String path) throws IOException
 	{
+		return listDirectory(path, true, false);
+	}
+
+	public String[] listDirectories() throws IOException
+	{
+		return listDirectory(".", false, true);
+	}
+
+	public String[] listDirectories(String path) throws IOException
+	{
+		return listDirectory(path, false, true);
+	}
+
+	private String[] listDirectory(String path, boolean includeFiles, boolean includeDirectories) throws IOException
+	{
 		try
 		{
 			java.util.Vector vv = null;
 			vv = c.ls(path);
 			if (vv != null)
 			{
-				ArrayList ret = new ArrayList();
+				ArrayList<String> ret = new ArrayList<String>();
 				for (int ii = 0; ii < vv.size(); ii++)
 				{
 					Object obj = vv.elementAt(ii);
 					if (obj instanceof com.jcraft.jsch.ChannelSftp.LsEntry)
 					{
 						LsEntry entry = (LsEntry) obj;
-						if (!entry.getAttrs().isDir())
+						if (includeFiles && !entry.getAttrs().isDir())
 						{
 							ret.add(entry.getFilename());
 						}
+						if (includeDirectories && entry.getAttrs().isDir())
+						{
+							if(!entry.getFilename().equals(".")  && !entry.getFilename().equals("..")) {
+								ret.add(entry.getFilename());
+							}
+						}
 					}
 				}
-				return (String[]) ret.toArray(new String[ret.size()]);
+				return ret.toArray(new String[ret.size()]);
 			}
 		} catch (SftpException e)
 		{
@@ -538,4 +559,13 @@ public class SftpClient
 		return existsFile;
 	}
 
+	public void chmod(String path, int permissions) throws SftpException
+	{
+		path = getAbsolutePath(path);
+		if(logger.isDebugEnabled())
+		{
+			logger.debug("Will try to chmod directory '" + path + "' to permission " + permissions);
+		}
+		c.chmod(permissions, path);
+	}
 }

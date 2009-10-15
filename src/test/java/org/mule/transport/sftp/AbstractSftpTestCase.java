@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpException;
 import org.mule.api.MuleEventContext;
 import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.EndpointURI;
@@ -30,15 +32,13 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- *  @author Lennart Häggkvist
-  * Date: Jun 8, 2009
+ * @author Lennart Häggkvist
+ *         Date: Jun 8, 2009
  */
 public abstract class AbstractSftpTestCase extends FunctionalTestCase
 {
 
-	/**
-	 * Deletes all files in the directory, useful when testing to ensure that no files are in the way...
-	 */
+	/** Deletes all files in the directory, useful when testing to ensure that no files are in the way... */
 	protected void cleanupRemoteFtpDirectory(MuleClient muleClient, String endpointName) throws IOException
 	{
 		SftpClient sftpClient = getSftpClient(muleClient, endpointName);
@@ -53,9 +53,60 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		}
 	}
 
+
 	/**
-	 * Deletes the <i>directoryName</i> under the endpoint path
+	 * Deletes a directory with all its files and sub-directories. The reason it do a "chmod 700" before the delete is that some tests
+	 * changes the permission, and thus we have to restore the right to delete it...
+	 *
+	 * @param muleClient
+	 * @param endpointName
+	 * @param relativePath
+	 * @throws IOException
 	 */
+	protected void recursiveDelete(MuleClient muleClient, String endpointName, String relativePath) throws IOException
+	{
+		SftpClient sftpClient = getSftpClient(muleClient, endpointName);
+
+		EndpointURI endpointURI = getUriByEndpointName(muleClient, endpointName);
+		String path = endpointURI.getPath() + relativePath;
+
+		try
+		{
+			// Ensure that we can delete the current directory and the below directories (if write is not permitted then delete is either)
+			sftpClient.chmod(path, 00700);
+
+			sftpClient.changeWorkingDirectory(sftpClient.getAbsolutePath(path));
+
+			// Delete all sub-directories
+			String[] directories = sftpClient.listDirectories();
+			for (String directory : directories)
+			{
+				recursiveDelete(muleClient, endpointName, relativePath + "/" + directory);
+			}
+
+			// Delete all files
+			String[] files = sftpClient.listFiles();
+			for (String file : files)
+			{
+				sftpClient.deleteFile(file);
+			}
+
+			// Delete the directory
+			try
+			{
+				sftpClient.deleteDirectory(path);
+			} catch (Exception e)
+			{
+				logger.debug("", e);
+			}
+
+		} catch (Exception e)
+		{
+			logger.debug("", e);
+		}
+	}
+
+	/** Deletes the <i>directoryName</i> under the endpoint path */
 	protected void deleteRemoteDirectory(MuleClient muleClient, String endpointName, String directoryName) throws IOException
 	{
 		SftpClient sftpClient = getSftpClient(muleClient, endpointName);
@@ -71,31 +122,33 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			{
 				sftpClient.deleteFile(file);
 			}
-		} catch(Exception e)
+		} catch (Exception e)
 		{
 			// Ignore, this will occur if the directory didnt exist!
 		}
 
 		try
 		{
+			// Ensure that we can delete it (if write is not permitted then delete is either)
+			remoteChmod(muleClient, endpointName, 00700);
 			sftpClient.deleteDirectory(endpointURI.getPath() + "/" + directoryName);
-		} catch(IOException e) {
+		} catch (Exception e)
+		{
 			e.printStackTrace();
 		}
 
 		try
 		{
-			sftpClient.changeWorkingDirectory(endpointURI.getPath() + "/" + directoryName);
-			fail("The directory should have been deleted");
+			String dir = endpointURI.getPath() + "/" + directoryName;
+			sftpClient.changeWorkingDirectory(dir);
+			fail("The directory '" + dir + "' should have been deleted");
 		} catch (IOException e)
 		{
 			// Expected
 		}
 	}
 
-	/**
-	 * Creates the <i>directoryName</i> under the endpoint path
-	 */
+	/** Creates the <i>directoryName</i> under the endpoint path */
 	protected void createRemoteDirectory(MuleClient muleClient, String endpointName, String directoryName) throws IOException
 	{
 		SftpClient sftpClient = getSftpClient(muleClient, endpointName);
@@ -106,7 +159,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		try
 		{
 			sftpClient.mkdir(directoryName);
-		} catch(IOException e) {
+		} catch (IOException e)
+		{
 			e.printStackTrace();
 			// Expected if the directory didnt exist
 		}
@@ -127,16 +181,25 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	}
 
 	/**
-	 *
 	 * @param muleClient
 	 * @param endpointName
-	 * @return the endpoint adress in the form 'sftp://user@host/path'
+	 * @return the endpoint address in the form 'sftp://user:password@host/path'
 	 */
-	protected String getAddressByEndpoint(MuleClient muleClient, String endpointName) {
+	protected String getAddressByEndpoint(MuleClient muleClient, String endpointName)
+	{
 		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(endpointName);
 		EndpointURI endpointURI = endpoint.getEndpointURI();
 
-		return "sftp://" + endpointURI.getUser() + "@" + endpointURI.getHost() + endpointURI.getPath();
+		return "sftp://" + endpointURI.getUser() + ":" + endpointURI.getPassword() + "@" + endpointURI.getHost() + endpointURI.getPath();
+	}
+
+	protected String getPathByEndpoint(MuleClient muleClient, String endpointName) throws IOException
+	{
+		SftpClient sftpClient = getSftpClient(muleClient, endpointName);
+		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(endpointName);
+		EndpointURI endpointURI = endpoint.getEndpointURI();
+
+		return sftpClient.getAbsolutePath(endpointURI.getPath());
 	}
 
 	/**
@@ -148,7 +211,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	 * @throws IOException
 	 */
 	protected SftpClient getSftpClient(MuleClient muleClient, String endpointName)
-			throws IOException
+		throws IOException
 	{
 		SftpClient sftpClient = new SftpClient();
 		ImmutableEndpoint endpoint = getImmutableEndpoint(muleClient, endpointName);
@@ -157,7 +220,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		SftpConnector sftpConnector = (SftpConnector) endpoint.getConnector();
 
 		sftpClient.connect(endpointURI.getHost());
-		if(sftpConnector.getIdentityFile() != null)
+		if (sftpConnector.getIdentityFile() != null)
 		{
 			assertTrue("Login failed", sftpClient.login(endpointURI.getUser(), sftpConnector.getIdentityFile(), sftpConnector.getPassphrase()));
 		} else
@@ -167,9 +230,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		return sftpClient;
 	}
 
-	/**
-	 * Checks if the file exists on the server
-	 */
+	/** Checks if the file exists on the server */
 	protected boolean verifyFileExists(SftpClient sftpClient, EndpointURI endpointURI, String file) throws IOException
 	{
 		return verifyFileExists(sftpClient, endpointURI.getPath(), file);
@@ -182,17 +243,15 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
 		for (String remoteFile : files)
 		{
-			if(file.equals(remoteFile)) {
+			if (file.equals(remoteFile))
+			{
 				return true;
 			}
 		}
 		return false;
 	}
 
-	/**
-	 * Base method for executing tests...
-	 *
-	 */
+	/** Base method for executing tests... */
 	protected void executeBaseTest(String inputEndpointName, String sendUrl, String filename, final int size, String receivingTestComponentName, long timeout) throws Exception
 	{
 		MuleClient client = new MuleClient();
@@ -215,31 +274,33 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 				logger.info("called " + loopCount.incrementAndGet() + " times");
 				FunctionalTestComponent ftc = (FunctionalTestComponent) component;
 
-					InputStream sftpInputStream = (InputStream) ftc.getLastReceivedMessage();
-					BufferedInputStream bif = new BufferedInputStream(sftpInputStream);
-					byte[] buffer = new byte[1024 * 4];
+				InputStream sftpInputStream = (InputStream) ftc.getLastReceivedMessage();
+				BufferedInputStream bif = new BufferedInputStream(sftpInputStream);
+				byte[] buffer = new byte[1024 * 4];
 
-					try {
-						int n;
-						while (-1 != (n = bif.read(buffer)))
+				try
+				{
+					int n;
+					while (-1 != (n = bif.read(buffer)))
+					{
+						totalReceivedSize.addAndGet(n);
+
+						// Simple check to verify the data...
+						for (byte b : buffer)
 						{
-							totalReceivedSize.addAndGet(n);
-	
-							// Simple check to verify the data...
-							for (byte b : buffer)
+							if (b != testByte)
 							{
-								if (b != testByte)
-								{
-									fail("Incorrect received byte (was '" + b + "', excepected '" + testByte + "'");
-								}
+								fail("Incorrect received byte (was '" + b + "', excepected '" + testByte + "'");
 							}
 						}
-					} finally {
-						bif.close();
 					}
-						
+				} finally
+				{
+					bif.close();
+				}
 
-					latch.countDown();
+
+				latch.countDown();
 			}
 		};
 
@@ -282,7 +343,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	 * To be overridden by the test-classes if required
 	 */
 	protected void executeBaseAssertionsBeforeCall() {
-	}	
+	}
 
 	/**
 	 * To be overridden by the test-classes if required
@@ -295,25 +356,42 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
 		assertEquals("The received file should have the same size as the sent file", sendSize, receivedSize);
 	}
-	
+
 	private ImmutableEndpoint getImmutableEndpoint(MuleClient muleClient,
-			String endpointName) throws IOException {
+													 String endpointName) throws IOException
+	{
 		ImmutableEndpoint endpoint = null;
 
 		Object o = muleClient.getProperty(endpointName);
-		if (o instanceof ImmutableEndpoint) {
+		if (o instanceof ImmutableEndpoint)
+		{
 			// For Inbound and Outbound Endpoints
-			endpoint = (ImmutableEndpoint)o;
+			endpoint = (ImmutableEndpoint) o;
 
-		} else if (o instanceof EndpointBuilder) {
+		} else if (o instanceof EndpointBuilder)
+		{
 			// For Endpoint-references
-			EndpointBuilder eb = (EndpointBuilder)o;
-			try {
+			EndpointBuilder eb = (EndpointBuilder) o;
+			try
+			{
 				endpoint = eb.buildInboundEndpoint();
-			} catch (Exception e) {
+			} catch (Exception e)
+			{
 				throw new IOException(e.getMessage());
 			}
 		}
 		return endpoint;
+	}
+
+	protected void remoteChmod(MuleClient muleClient, String endpointName, int permissions) throws IOException, SftpException
+	{
+		SftpClient sftpClient = getSftpClient(muleClient, endpointName);
+		ChannelSftp channelSftp = sftpClient.getChannelSftp();
+
+		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(endpointName);
+		EndpointURI endpointURI = endpoint.getEndpointURI();
+
+		// RW - so that we can do initial cleanup
+		channelSftp.chmod(permissions, sftpClient.getAbsolutePath(endpointURI.getPath()));
 	}
 }

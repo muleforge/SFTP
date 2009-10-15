@@ -174,6 +174,7 @@ public class SftpConnector extends AbstractConnector
 	  return createSftpClient(endpoint, null);
     }
 
+  // TODO elhoo: this method has a connection leak if an exception is thrown
   public SftpClient createSftpClient(ImmutableEndpoint endpoint, SftpNotifier notifier)  throws Exception
     {
         EndpointURI endpointURI = endpoint.getEndpointURI();
