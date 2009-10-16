@@ -174,72 +174,86 @@ public class SftpConnector extends AbstractConnector
 	  return createSftpClient(endpoint, null);
     }
 
-  // TODO elhoo: this method has a connection leak if an exception is thrown
   public SftpClient createSftpClient(ImmutableEndpoint endpoint, SftpNotifier notifier)  throws Exception
     {
-        EndpointURI endpointURI = endpoint.getEndpointURI();
-        SftpClient client = new SftpClient(notifier);
-
-        final int uriPort = endpointURI.getPort();
-        if (uriPort == -1)
-        {
-            if(logger.isDebugEnabled())
-			{
-            	logger.debug("Connecting to host: " + endpointURI.getHost());
-			}
-            client.connect(endpointURI.getHost());
-        }
-        else
-        {
-			if(logger.isDebugEnabled())
-			{
-            	logger.debug("Connecting to host: " + endpointURI.getHost() + ", on port: " + String.valueOf(uriPort));
-			}
-            client.connect(endpointURI.getHost(), endpointURI.getPort());
-        }
-
-
-      if(identityFile != null || endpoint.getProperty(PROPERTY_IDENTITY_FILE) != null ) {
-        String tmpIdentityFile = identityFile;
-        String tmpPassphrase = passphrase;
-
-        // Override the identityFile and the passphrase?
-        String endpointIdentityFile = ( String ) endpoint.getProperty(PROPERTY_IDENTITY_FILE);
-        if(endpointIdentityFile != null && !endpointIdentityFile.equals(tmpIdentityFile)) {
- 		  if(logger.isDebugEnabled())
-		  {
-            logger.debug("Overriding the identity file from '" + tmpIdentityFile + "' to '" + endpointIdentityFile + "' ");
-		  }
-          tmpIdentityFile = endpointIdentityFile;
-        }
-
-        String endpointPassphrase = ( String ) endpoint.getProperty(PROPERTY_PASS_PHRASE);
-        if(endpointPassphrase != null && !endpointPassphrase.equals(tmpPassphrase)) {
-		  if(logger.isDebugEnabled())
-	      {
-            logger.debug("Overriding the passphrase from '" + tmpPassphrase + "' to '" + endpointPassphrase + "' ");
-		  }
-          tmpPassphrase = endpointPassphrase;
-        }
-
-        client.login(endpointURI.getUser(), tmpIdentityFile, tmpPassphrase);
-      } else {
-        client.login(endpointURI.getUser(), endpointURI.getPassword());
-      }
-
-		if(logger.isDebugEnabled())
+		SftpClient client = null;
+		try
 		{
-          logger.debug("Successfully connected to: " + endpointURI);
-		}
+			EndpointURI endpointURI = endpoint.getEndpointURI();
+			client = new SftpClient(notifier);
 
-        client.changeWorkingDirectory(endpointURI.getPath());
+			final int uriPort = endpointURI.getPort();
+			if (uriPort == -1)
+			{
+				if (logger.isDebugEnabled())
+				{
+					logger.debug("Connecting to host: " + endpointURI.getHost());
+				}
+				client.connect(endpointURI.getHost());
+			} else
+			{
+				if (logger.isDebugEnabled())
+				{
+					logger.debug("Connecting to host: " + endpointURI.getHost() + ", on port: " + String.valueOf(uriPort));
+				}
+				client.connect(endpointURI.getHost(), endpointURI.getPort());
+			}
 
-		if(logger.isDebugEnabled())
+
+			if (identityFile != null || endpoint.getProperty(PROPERTY_IDENTITY_FILE) != null)
+			{
+				String tmpIdentityFile = identityFile;
+				String tmpPassphrase = passphrase;
+
+				// Override the identityFile and the passphrase?
+				String endpointIdentityFile = (String) endpoint.getProperty(PROPERTY_IDENTITY_FILE);
+				if (endpointIdentityFile != null && !endpointIdentityFile.equals(tmpIdentityFile))
+				{
+					if (logger.isDebugEnabled())
+					{
+						logger.debug("Overriding the identity file from '" + tmpIdentityFile + "' to '" + endpointIdentityFile + "' ");
+					}
+					tmpIdentityFile = endpointIdentityFile;
+				}
+
+				String endpointPassphrase = (String) endpoint.getProperty(PROPERTY_PASS_PHRASE);
+				if (endpointPassphrase != null && !endpointPassphrase.equals(tmpPassphrase))
+				{
+					if (logger.isDebugEnabled())
+					{
+						logger.debug("Overriding the passphrase from '" + tmpPassphrase + "' to '" + endpointPassphrase + "' ");
+					}
+					tmpPassphrase = endpointPassphrase;
+				}
+
+				client.login(endpointURI.getUser(), tmpIdentityFile, tmpPassphrase);
+			} else
+			{
+				client.login(endpointURI.getUser(), endpointURI.getPassword());
+			}
+
+			if (logger.isDebugEnabled())
+			{
+				logger.debug("Successfully connected to: " + endpointURI);
+			}
+
+			client.changeWorkingDirectory(endpointURI.getPath());
+
+			if (logger.isDebugEnabled())
+			{
+				logger.debug("Successfully changed working directory to: " + endpointURI.getPath());
+			}
+
+			return client;
+		} catch (Exception e)
 		{
-          logger.debug("Successfully changed working directory to: " + endpointURI.getPath());
+			// Must disconnect the client if an exception occurs, otherwise we get hanging connections
+			if (client != null)
+			{
+				client.disconnect();
+			}
+			throw e;
 		}
-
-        return client;
     }
 
     /* (non-Javadoc)
