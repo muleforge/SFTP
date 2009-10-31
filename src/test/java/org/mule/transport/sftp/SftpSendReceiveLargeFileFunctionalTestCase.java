@@ -41,6 +41,13 @@ public class SftpSendReceiveLargeFileFunctionalTestCase extends AbstractSftpTest
 		return "mule-send-receive-large-file-test-config.xml";
 	}
 
+    @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        initEndpointDirectory("inboundEndpoint");
+    }    
+
 	/**
 	 * Test sending and receiving a large file.
 	 *
@@ -48,5 +55,5 @@ public class SftpSendReceiveLargeFileFunctionalTestCase extends AbstractSftpTest
 	public void testSendAndReceiveLargeFile() throws Exception
 	{
 		executeBaseTest("inboundEndpoint", "vm://test.upload", "bigfile.txt", SEND_SIZE, "receiving", TIMEOUT * 10);
-	}	
+	}
 }

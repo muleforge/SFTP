@@ -45,6 +45,13 @@ public class SftpFileAgeFunctionalTestCase extends AbstractSftpTestCase
         return "mule-sftp-file-age-config.xml";
     }
 
+    @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        initEndpointDirectory("inboundEndpoint");
+    }
+
     public void testFileAge() throws Exception
     {
         final CountDownLatch latch = new CountDownLatch(1);
@@ -77,7 +84,7 @@ public class SftpFileAgeFunctionalTestCase extends AbstractSftpTestCase
         MuleClient client = new MuleClient();
 
 		// Ensure that no other files exists
-		cleanupRemoteFtpDirectory(client, INBOUND_ENDPOINT_NAME);
+//		cleanupRemoteFtpDirectory(client, INBOUND_ENDPOINT_NAME);
 
         Object component = getComponent("testComponent");
         assertTrue("FunctionalTestComponent expected", component instanceof FunctionalTestComponent);

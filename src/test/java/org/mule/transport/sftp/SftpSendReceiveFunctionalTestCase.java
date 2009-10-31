@@ -11,8 +11,6 @@
 
 package org.mule.transport.sftp;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,6 +43,13 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
     protected String getConfigResources()
     {
         return "mule-send-receive-test-config.xml";
+    }
+
+    @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        initEndpointDirectory("inboundEndpoint");
     }
 
 
@@ -85,17 +90,14 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
 
     	sendAndReceiveFiles();
     }
-    
-    
+
+
     protected void sendAndReceiveFiles() throws Exception
     {
 		final CountDownLatch latch = new CountDownLatch(sendFiles.size());
 		final AtomicInteger loopCount = new AtomicInteger(0);
 
         MuleClient client = new MuleClient();
-
-		// Do some cleaning so that the endpoint doesnt have any other files
-		super.cleanupRemoteFtpDirectory(client, "inboundEndpoint");
 
 		receiveFiles = new ArrayList<String>();
 

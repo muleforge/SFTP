@@ -50,31 +50,4 @@ public abstract class AbstractSftpDataIntegrityTestCase extends AbstractSftpTest
         }
     }
 
-	/**
-	 * Deletes the directory and then recreate it.
-	 * TODO: this assumes that no other directories than the tempDir exist (sftp doesn't support recursive delete)
-	 *
-	 * @param endpointName
-	 * @throws org.mule.api.MuleException
-	 * @throws java.io.IOException
-	 * @throws com.jcraft.jsch.SftpException
-	 */
-	protected void initEndpointDirectory(String endpointName) throws MuleException, IOException, SftpException
-	{
-		MuleClient muleClient = new MuleClient();
-		SftpClient sftpClient = getSftpClient(muleClient, endpointName);
-		ChannelSftp channelSftp = sftpClient.getChannelSftp();
-
-		try
-		{
-			recursiveDelete(muleClient, endpointName, "");
-		} catch (IOException e)
-		{
-			logger.error("", e);
-		}
-
-		String path = getPathByEndpoint(muleClient, endpointName);
-		channelSftp.mkdir(path);
-	}
-
 }

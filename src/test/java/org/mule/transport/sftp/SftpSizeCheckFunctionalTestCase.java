@@ -27,13 +27,20 @@ public class SftpSizeCheckFunctionalTestCase extends AbstractSftpTestCase
 		return "mule-sftp-sizeCheck-test-config.xml";
 	}
 
+    @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        initEndpointDirectory("inboundEndpoint");
+    }    
+
 	/**
-	 * Test the sizeCheck feature  
+	 * Test the sizeCheck feature
 	 */
 	public void testSizeCheck() throws Exception
 	{
 		// TODO. Add some tests specific to sizeCheck, i.e. create a very large file and ensure that the sizeChec prevents the inbound enpoint to read the file during creation of it
-		
+
 		executeBaseTest("inboundEndpoint", "vm://test.upload", "file.txt", SEND_SIZE, "receiving", TIMEOUT);
 	}
 }

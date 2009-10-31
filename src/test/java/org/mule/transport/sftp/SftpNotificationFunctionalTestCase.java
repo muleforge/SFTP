@@ -26,6 +26,9 @@ public class SftpNotificationFunctionalTestCase extends AbstractSftpTestCase
 	@Override
 	protected void doSetUp() throws Exception {
 		super.doSetUp();
+
+        initEndpointDirectory("inboundEndpoint");        
+
 		SftpTransportNotificationTestListener.reset();
 	}
 
@@ -47,22 +50,22 @@ public class SftpNotificationFunctionalTestCase extends AbstractSftpTestCase
 	 */
 	@Override
 	protected void executeBaseAssertionsBeforeCall() {
-		
+
 		super.executeBaseAssertionsBeforeCall();
-		
+
 		//  Assert that none of the sftp-notifications already are set
 		assertFalse(SftpTransportNotificationTestListener.gotSftpPutNotification());
 		assertFalse(SftpTransportNotificationTestListener.gotSftpRenameNotification());
 		assertFalse(SftpTransportNotificationTestListener.gotSftpGetNotification());
-		assertFalse(SftpTransportNotificationTestListener.gotSftpDeleteNotification());		
-	}	
+		assertFalse(SftpTransportNotificationTestListener.gotSftpDeleteNotification());
+	}
 
 	/**
 	 * To be overridden by the test-classes if required
 	 */
 	@Override
 	protected void executeBaseAssertionsAfterCall(int sendSize, int receivedSize) {
-		
+
 		super.executeBaseAssertionsAfterCall(sendSize, receivedSize);
 
 		//  Now also verify that we got the expected sftp-notifications

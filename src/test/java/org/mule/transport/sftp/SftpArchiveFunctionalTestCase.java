@@ -27,24 +27,34 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		// TODO. Runs much faster but makes test3 to fail.
 		// setDisposeManagerPerSuite(true);
 	}
-	
+
 	protected String getConfigResources()
 	{
 		return "mule-sftp-archive-test-config.xml";
 	}
 
+    @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        initEndpointDirectory("inboundEndpoint1");
+        initEndpointDirectory("inboundEndpoint2");
+        initEndpointDirectory("inboundEndpoint3");
+        initEndpointDirectory("inboundEndpoint4");
+    }
+
 	/**
-	 * Test plain archive functionality with no extra features enabled 
+	 * Test plain archive functionality with no extra features enabled
 	 */
 	public void testArchive1() throws Exception
 	{
 		// TODO. Add some tests specific to this test, i.e. not only rely on the tests performed by executeTest().
-		
+
 		executeBaseTest("inboundEndpoint1", "vm://test.upload1", "file1.txt", SEND_SIZE, "receiving1", TIMEOUT);
 	}
 
 	/**
-	 * Test archive functionality with full usage of temp-dir and creation of unique names of temp-files 
+	 * Test archive functionality with full usage of temp-dir and creation of unique names of temp-files
 	 */
 	public void testArchive2() throws Exception
 	{
@@ -64,7 +74,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 	}
 
 	/**
-	 * Test archive functionality with usage of temp-dir for archive but not for inbound and outbound endpoints 
+	 * Test archive functionality with usage of temp-dir for archive but not for inbound and outbound endpoints
 	 */
 	public void testArchive4() throws Exception
 	{

@@ -44,16 +44,24 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
 		return "mule-sftp-temp-dir-config.xml";
 	}
 
+    @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        initEndpointDirectory(INBOUND_ENDPOINT_NAME);
+        initEndpointDirectory(OUTBOUND_ENDPOINT_NAME);
+    }
+
 	public void testTempDir() throws Exception
 	{
 		MuleClient muleClient = new MuleClient();
 
 		// Ensure that no other files exists
-		cleanupRemoteFtpDirectory(muleClient, OUTBOUND_ENDPOINT_NAME);
-		cleanupRemoteFtpDirectory(muleClient, INBOUND_ENDPOINT_NAME);
+//		cleanupRemoteFtpDirectory(muleClient, OUTBOUND_ENDPOINT_NAME);
+//		cleanupRemoteFtpDirectory(muleClient, INBOUND_ENDPOINT_NAME);
 
 		// Delete the temp directory so that we can ensure that it is created
-		deleteRemoteDirectory(muleClient, OUTBOUND_ENDPOINT_NAME, TEMP_DIR);
+//		deleteRemoteDirectory(muleClient, OUTBOUND_ENDPOINT_NAME, TEMP_DIR);
 
 		// Send an file to the SFTP server, which the inbound-endpoint then can pick up
 		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME) + "?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);

@@ -27,13 +27,21 @@ public class SftpQuartzRequesterFunctionalTestCase extends AbstractSftpTestCase
 		return "mule-sftp-quartzRequester-test-config.xml";
 	}
 
+    @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        // In this test we need to get the outboundEndpoint instead of the inbound
+        initEndpointDirectory("outboundEndpoint");
+    }
+
 	/**
-	 * Test a quarts based requester  
+	 * Test a quarts based requester
 	 */
 	public void testQuartzRequester() throws Exception
 	{
 		// TODO. Add some tests specific to sizeCheck, i.e. create a very large file and ensure that the sizeChec prevents the inbound enpoint to read the file during creation of it
-		
+
 		executeBaseTest("inboundEndpoint", "vm://test.upload", "file.txt", SEND_SIZE, "receiving", TIMEOUT);
 	}
 }

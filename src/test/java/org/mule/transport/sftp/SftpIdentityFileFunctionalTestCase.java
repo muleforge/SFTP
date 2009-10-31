@@ -47,6 +47,13 @@ public class SftpIdentityFileFunctionalTestCase extends AbstractSftpTestCase
 		return "mule-sftp-identity-file-config.xml";
 	}
 
+     @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        initEndpointDirectory(INBOUND_ENDPOINT_NAME);
+    }
+
 
 	//Downloads large file in the remote directory specified in config
 	public void testIdentityFile() throws Exception
@@ -81,7 +88,7 @@ public class SftpIdentityFileFunctionalTestCase extends AbstractSftpTestCase
 		MuleClient client = new MuleClient();
 
 		// Ensure that no other files exists
-		cleanupRemoteFtpDirectory(client, INBOUND_ENDPOINT_NAME);
+//		cleanupRemoteFtpDirectory(client, INBOUND_ENDPOINT_NAME);
 
 		Map properties = new HashMap();
 //		properties.put("filename", "foo.bar");

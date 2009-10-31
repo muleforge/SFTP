@@ -24,7 +24,7 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
 
 	// TODO. Not very elegant solution, but the best I could figure out right now. Needs tp be improved over time...
 	private boolean expectException = false;
-	
+
 	// Size of the generated stream - 2 Mb
 	final static int SEND_SIZE = 1024 * 1024 * 2;
 
@@ -43,38 +43,43 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
 	{
 		return "mule-sftp-duplicateHandling-test-config.xml";
 	}
-	
+
 	@Override
 	protected void doSetUp() throws Exception {
 		super.doSetUp();
+
+        initEndpointDirectory("inboundEndpoint1");
+        initEndpointDirectory("inboundEndpoint2");
+        initEndpointDirectory("inboundEndpoint3");
+        
 		ExceptionListener.reset();
 		expectException = false;
 	}
-	
+
 
 	/**
-	 * Test 1 - test duplicate handling by throwing an exception 
+	 * Test 1 - test duplicate handling by throwing an exception
 	 */
 	public void testDuplicateHandlingThrowException() throws Exception
 	{
 		// TODO. Add some tests specific to this test, i.e. not only rely on the tests performed by executeTest().
-		
+
 		executeBaseTest("inboundEndpoint1", "vm://test.upload1", "file1.txt", SEND_SIZE, "receiving1", TIMEOUT);
 	}
 
 	/**
-	 * Test 2 - test duplicate handling by overwriting the existing file 
+	 * Test 2 - test duplicate handling by overwriting the existing file
 	 * Not yet implemented, so currently we check for a valid exception...
 	 */
 	public void testDuplicateHandlingOverwrite() throws Exception
 	{
 		// TODO. Add some tests specific to this test, i.e. not only rely on the tests performed by executeTest().
-		
+
 		expectException = true;
 		assertNull(ExceptionListener.getStandardException());
 
 		executeBaseTest("inboundEndpoint2", "vm://test.upload2", "file2.txt", SEND_SIZE, "receiving2", TIMEOUT);
-		
+
 		// Verify that a NotImplementedException exception was throwed...
 		Throwable ex = ExceptionListener.getStandardException();
 		assertNotNull(ex);
@@ -82,7 +87,7 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
 	}
 
 	/**
-	 * Test 3 - test duplicate handling by adding a sequence number to the new file 
+	 * Test 3 - test duplicate handling by adding a sequence number to the new file
 	 */
 	public void testDuplicateHandlingAddSeqNo() throws Exception
 	{

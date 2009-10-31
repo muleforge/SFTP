@@ -17,6 +17,7 @@ import java.util.HashMap;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import org.mule.api.MuleEventContext;
+import org.mule.api.MuleException;
 import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.EndpointURI;
 import org.mule.api.endpoint.ImmutableEndpoint;
@@ -257,7 +258,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		MuleClient client = new MuleClient();
 
 		// Do some cleaning so that the endpoint doesn't have any other files
-		cleanupRemoteFtpDirectory(client, inputEndpointName);
+        // We don't need to do this anymore since we are deleting and then creating the directory for each test
+		// cleanupRemoteFtpDirectory(client, inputEndpointName);
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		final AtomicInteger loopCount = new AtomicInteger(0);
@@ -394,4 +396,30 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		// RW - so that we can do initial cleanup
 		channelSftp.chmod(permissions, sftpClient.getAbsolutePath(endpointURI.getPath()));
 	}
+
+    /**
+     * Ensures that the directory exists and is writable by deleting the directory and then recreate it.
+     *
+     * @param endpointName
+     * @throws org.mule.api.MuleException
+     * @throws java.io.IOException
+     * @throws com.jcraft.jsch.SftpException
+     */
+    protected void initEndpointDirectory(String endpointName) throws MuleException, IOException, SftpException
+    {
+        MuleClient muleClient = new MuleClient();
+        SftpClient sftpClient = getSftpClient(muleClient, endpointName);
+        ChannelSftp channelSftp = sftpClient.getChannelSftp();
+
+        try
+        {
+            recursiveDelete(muleClient, endpointName, "");
+        } catch (IOException e)
+        {
+            logger.error("", e);
+        }
+
+        String path = getPathByEndpoint(muleClient, endpointName);
+        channelSftp.mkdir(path);
+    }
 }

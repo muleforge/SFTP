@@ -16,10 +16,10 @@
 			   http://www.mulesource.org/schema/mule/quartz/2.2 http://www.mulesource.org/schema/mule/quartz/2.2/mule-quartz.xsd">
 
 	<sftp:connector name="sftp"/>
-	
+
 	<!-- synchronous="true" - otherwise the inbound endpoint will trigger several times -->
-	<sftp:endpoint 
-		name="inboundEndpoint" 
+	<sftp:endpoint
+		name="inboundEndpoint"
 		synchronous="true"
 		address="sftp://${USER1_NAME}:${USER1_PASSWORD}@${SFTP_HOST}/data"/>
 
@@ -31,7 +31,8 @@
 			<outbound>
 				<pass-through-router>
 					<sftp:outbound-endpoint
-						address="sftp://${USER1_NAME}:${USER1_PASSWORD}@${SFTP_HOST}/data" 
+                        name="outboundEndpoint"
+						address="sftp://${USER1_NAME}:${USER1_PASSWORD}@${SFTP_HOST}/data"
 						outputPattern="${DATE}.dat"/>
 				</pass-through-router>
 			</outbound>
@@ -41,9 +42,9 @@
 	<model name="receive">
 		<service name="receiving">
 			<inbound>
-				<quartz:inbound-endpoint 					
+				<quartz:inbound-endpoint
 					name="quartzInboundEndpoint"
-					cronExpression="0/3 * * * * ?" 
+					cronExpression="0/3 * * * * ?"
 					jobName="cronJob">
 					<quartz:endpoint-polling-job>
 						<quartz:job-endpoint ref="inboundEndpoint" />
