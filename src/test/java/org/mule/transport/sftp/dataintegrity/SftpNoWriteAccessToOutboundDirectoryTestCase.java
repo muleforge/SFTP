@@ -16,14 +16,19 @@ public class SftpNoWriteAccessToOutboundDirectoryTestCase extends AbstractSftpDa
 		return "dataintegrity/sftp-dataintegrity-common-config.xml";
 	}
 
+        @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        // Delete the in & outbound directories
+		initEndpointDirectory(INBOUND_ENDPOINT_NAME);
+		initEndpointDirectory(OUTBOUND_ENDPOINT_NAME);
+    }
+
 	/** No write access on the outbound directory. The source file should still exist */
 	public void testNoWriteAccessToOutboundDirectory() throws Exception
 	{
 		MuleClient muleClient = new MuleClient();
-
-		// Delete the in & outbound directories
-		initEndpointDirectory(INBOUND_ENDPOINT_NAME);
-		initEndpointDirectory(OUTBOUND_ENDPOINT_NAME);
 
 		// change the chmod to "dr-x------" on the outbound-directory
 		remoteChmod(muleClient, OUTBOUND_ENDPOINT_NAME, 00500);

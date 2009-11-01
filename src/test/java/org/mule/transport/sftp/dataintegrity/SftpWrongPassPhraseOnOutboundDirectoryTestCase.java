@@ -17,6 +17,14 @@ public class SftpWrongPassPhraseOnOutboundDirectoryTestCase extends AbstractSftp
 		return "dataintegrity/sftp-wrong-passphrase-config.xml";
 	}
 
+    @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        // Delete the in & outbound directories
+		initEndpointDirectory(INBOUND_ENDPOINT_NAME);
+    }
+
 	/**
 	 * The outbound directory doesn't exist.
 	 * The source file should still exist
@@ -25,9 +33,6 @@ public class SftpWrongPassPhraseOnOutboundDirectoryTestCase extends AbstractSftp
 	public void testWrongPassPhraseOnOutboundDirectory() throws Exception
 	{
 		MuleClient muleClient = new MuleClient();
-
-		// Delete the in & outbound directories
-		initEndpointDirectory(INBOUND_ENDPOINT_NAME);
 
 		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
 		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);

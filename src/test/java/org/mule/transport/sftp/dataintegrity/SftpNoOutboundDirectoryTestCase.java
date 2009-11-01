@@ -16,15 +16,20 @@ public class SftpNoOutboundDirectoryTestCase extends AbstractSftpDataIntegrityTe
         return "dataintegrity/sftp-no-outbound-directory-config.xml";
     }
 
+    @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        // Delete the in & outbound directories
+		initEndpointDirectory(ENDPOINT_NAME);
+    }
+
     /**
      * The outbound directory doesn't exist.
      * The source file should still exist
      */
     public void testNoOutboundDirectory() throws Exception {
         MuleClient muleClient = new MuleClient();
-
-		// Delete the in & outbound directories
-		initEndpointDirectory(ENDPOINT_NAME);
 
         // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
         muleClient.dispatch(getAddressByEndpoint(muleClient, ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);

@@ -20,6 +20,15 @@ public class SftpCantWriteToFinalDestAfterTempDirectoryTestCase extends Abstract
 		return "dataintegrity/sftp-dataintegrity-common-with-tempdir-config.xml";
 	}
 
+     @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+         // Delete the in & outbound directories
+         initEndpointDirectory(INBOUND_ENDPOINT_NAME);
+         initEndpointDirectory(OUTBOUND_ENDPOINT_NAME);
+    }
+
 	/**
 	 * No write access on the outbound directory but write access to the TEMP directory.
 	 * The source file should still exist and no file should exist in the TEMP directory.
@@ -27,10 +36,6 @@ public class SftpCantWriteToFinalDestAfterTempDirectoryTestCase extends Abstract
 	public void testCantWriteToFinalDestAfterTempDirectory() throws Exception
 	{
 		MuleClient muleClient = new MuleClient();
-
-		// Delete the in & outbound directories
-		initEndpointDirectory(INBOUND_ENDPOINT_NAME);
-		initEndpointDirectory(OUTBOUND_ENDPOINT_NAME);
 
 		// Must create the temp directory before we change the access rights
 		createRemoteDirectory(muleClient, OUTBOUND_ENDPOINT_NAME, "uploading");

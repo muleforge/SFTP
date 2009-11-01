@@ -16,6 +16,15 @@ public class SftpCantCreateTempDirectoryTestCase extends AbstractSftpDataIntegri
 		return "dataintegrity/sftp-dataintegrity-common-with-tempdir-config.xml";
 	}
 
+     @Override
+    protected void doSetUp() throws Exception {
+        super.doSetUp();
+
+        // Delete the in & outbound directories
+		initEndpointDirectory(INBOUND_ENDPOINT_NAME);
+		initEndpointDirectory(OUTBOUND_ENDPOINT_NAME);
+    }
+
 	/**
 	 * No write access on the outbound directory and thus the TEMP directory cant be created.
 	 * The source file should still exist
@@ -25,10 +34,6 @@ public class SftpCantCreateTempDirectoryTestCase extends AbstractSftpDataIntegri
 	public void testCantCreateTempDirectory() throws Exception
 	{
 		MuleClient muleClient = new MuleClient();
-
-		// Delete the in & outbound directories
-		initEndpointDirectory(INBOUND_ENDPOINT_NAME);
-		initEndpointDirectory(OUTBOUND_ENDPOINT_NAME);
 
 		// change the chmod to "dr-x------" on the outbound-directory
 		// --> the temp directory should not be able to be created
