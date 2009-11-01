@@ -10,19 +10,23 @@
 
 package org.mule.transport.sftp;
 
+import org.mule.api.MuleException;
+import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.endpoint.MuleEndpointURI;
-import org.mule.tck.AbstractMuleTestCase;
+import org.mule.module.client.MuleClient;
 import org.mule.api.endpoint.EndpointURI;
 
 
-public class SftpEndpointTestCase extends AbstractMuleTestCase
-{
+public class SftpEndpointTestCase extends AbstractSftpTestCase {
+
+    protected String getConfigResources() {
+        return "mule-sftp-endpoint-config.xml";
+    }
 
     /* For general guidelines on writing transports see
        http://mule.mulesource.org/display/MULE/Writing+Transports */
 
-    public void testValidEndpointURI() throws Exception
-    {
+    public void testValidEndpointURI() throws Exception {
         // TODO test creating and asserting Endpoint values eg
 
         EndpointURI url = new MuleEndpointURI("sftp://ms/data");
@@ -34,17 +38,43 @@ public class SftpEndpointTestCase extends AbstractMuleTestCase
 
     }
 
-  public void testValidEndpointURIWithUserAndPasswd() throws Exception {
-    EndpointURI url = new MuleEndpointURI("sftp://user1:passwd1@localhost:4242/data2");
-    assertEquals("sftp", url.getScheme());
-    assertEquals("localhost", url.getHost());
-    assertEquals(4242, url.getPort());
-    assertEquals("passwd1", url.getPassword());
-    assertEquals("user1", url.getUser());
+    public void testValidEndpointURIWithUserAndPasswd() throws Exception {
+        EndpointURI url = new MuleEndpointURI("sftp://user1:passwd1@localhost:4242/data2");
+        assertEquals("sftp", url.getScheme());
+        assertEquals("localhost", url.getHost());
+        assertEquals(4242, url.getPort());
+        assertEquals("passwd1", url.getPassword());
+        assertEquals("user1", url.getUser());
 
-    assertEquals(0, url.getParams().size());
+        assertEquals(0, url.getParams().size());
 
-  }
+    }
+
+    public void testEndpointConfig() throws MuleException {
+        MuleClient muleClient = new MuleClient();
+        ImmutableEndpoint endpoint1 = (ImmutableEndpoint) muleClient.getProperty("inboundEndpoint1");
+
+        EndpointURI url1 = endpoint1.getEndpointURI();
+        assertEquals("sftp", url1.getScheme());
+        assertEquals("foobar-host", url1.getHost());
+        assertEquals(4243, url1.getPort());
+        assertEquals("passw0rd", url1.getPassword());
+        assertEquals("user42", url1.getUser());
+
+        assertEquals("sftp://user42:passw0rd@foobar-host:4243/data", url1.getUri().toString());
+
+        // Verify that both endpoints in the config are equal
+        ImmutableEndpoint endpoint2 = (ImmutableEndpoint) muleClient.getProperty("inboundEndpoint2");
+        EndpointURI url2 = endpoint2.getEndpointURI();
+
+        assertEquals("sftp", url2.getScheme());
+        assertEquals("foobar-host", url2.getHost());
+        assertEquals(4243, url2.getPort());
+        assertEquals("passw0rd", url2.getPassword());
+        assertEquals("user42", url2.getUser());
+
+        assertEquals(url1.getUri().toString(), url2.getUri().toString());
+    }
 
 
 }
