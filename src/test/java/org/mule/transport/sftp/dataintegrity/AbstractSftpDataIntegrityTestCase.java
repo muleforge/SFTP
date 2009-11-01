@@ -32,21 +32,27 @@ public abstract class AbstractSftpDataIntegrityTestCase extends AbstractSftpTest
     protected void verifyInAndOutFiles(MuleClient muleClient, String inboundEndpointName, String outboundEndpointName,
                                        boolean shouldInboundFileStillExist, boolean shouldOutboundFileExist) throws IOException {
         SftpClient sftpClientInbound = getSftpClient(muleClient, inboundEndpointName);
-        ImmutableEndpoint inboundEndpoint = (ImmutableEndpoint) muleClient.getProperty(inboundEndpointName);
-
         SftpClient sftpClientOutbound = getSftpClient(muleClient, outboundEndpointName);
-        ImmutableEndpoint outboundEndpoint = (ImmutableEndpoint) muleClient.getProperty(outboundEndpointName);
 
-        if (shouldInboundFileStillExist) {
-            assertTrue("The inbound file should still exist", super.verifyFileExists(sftpClientInbound, inboundEndpoint.getEndpointURI(), FILE_NAME));
-        } else {
-            assertFalse("The inbound file should have been deleted", super.verifyFileExists(sftpClientInbound, inboundEndpoint.getEndpointURI(), FILE_NAME));
-        }
+        try {
+            ImmutableEndpoint inboundEndpoint = (ImmutableEndpoint) muleClient.getProperty(inboundEndpointName);
 
-        if (shouldOutboundFileExist) {
-            assertTrue("The outbound file should exist", super.verifyFileExists(sftpClientOutbound, outboundEndpoint.getEndpointURI(), FILE_NAME));
-        } else {
-            assertFalse("The outbound file should have been deleted", super.verifyFileExists(sftpClientOutbound, outboundEndpoint.getEndpointURI(), FILE_NAME));
+            ImmutableEndpoint outboundEndpoint = (ImmutableEndpoint) muleClient.getProperty(outboundEndpointName);
+
+            if (shouldInboundFileStillExist) {
+                assertTrue("The inbound file should still exist", super.verifyFileExists(sftpClientInbound, inboundEndpoint.getEndpointURI(), FILE_NAME));
+            } else {
+                assertFalse("The inbound file should have been deleted", super.verifyFileExists(sftpClientInbound, inboundEndpoint.getEndpointURI(), FILE_NAME));
+            }
+
+            if (shouldOutboundFileExist) {
+                assertTrue("The outbound file should exist", super.verifyFileExists(sftpClientOutbound, outboundEndpoint.getEndpointURI(), FILE_NAME));
+            } else {
+                assertFalse("The outbound file should have been deleted", super.verifyFileExists(sftpClientOutbound, outboundEndpoint.getEndpointURI(), FILE_NAME));
+            }
+        } finally {
+            sftpClientInbound.disconnect();
+            sftpClientOutbound.disconnect();
         }
     }
 

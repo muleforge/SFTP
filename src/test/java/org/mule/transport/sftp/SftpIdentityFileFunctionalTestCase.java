@@ -39,7 +39,6 @@ public class SftpIdentityFileFunctionalTestCase extends AbstractSftpTestCase
 	private static final int DEFAULT_TIMEOUT = 10000;
 
 	//Increase this to be a little larger than expected download time
-	protected static final long TIMEOUT = 500000;
 	private static final String INBOUND_ENDPOINT_NAME = "inboundEndpoint";
 
 	protected String getConfigResources()

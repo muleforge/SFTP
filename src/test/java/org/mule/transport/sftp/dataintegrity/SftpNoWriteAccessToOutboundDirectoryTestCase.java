@@ -1,6 +1,7 @@
 package org.mule.transport.sftp.dataintegrity;
 
 import org.mule.module.client.MuleClient;
+import org.mule.transport.sftp.SftpClient;
 
 /**
  * Verify that the original file is not lost if the outbound directory doesn't exist
@@ -30,18 +31,24 @@ public class SftpNoWriteAccessToOutboundDirectoryTestCase extends AbstractSftpDa
 	{
 		MuleClient muleClient = new MuleClient();
 
-		// change the chmod to "dr-x------" on the outbound-directory
-		remoteChmod(muleClient, OUTBOUND_ENDPOINT_NAME, 00500);
+        SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
 
-		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
+        try {
+// change the chmod to "dr-x------" on the outbound-directory
+            remoteChmod(muleClient, sftpClient, OUTBOUND_ENDPOINT_NAME, 00500);
 
-		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
-		//   for example since we dont have the TestComponent
-		Thread.sleep(4000);
+            // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
+            muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
 
-		verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
-	}
+            // TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
+            //   for example since we dont have the TestComponent
+            Thread.sleep(4000);
+
+            verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
+        } finally {
+            sftpClient.disconnect();
+        }
+    }
 
 
 }

@@ -1,6 +1,7 @@
 package org.mule.transport.sftp.dataintegrity;
 
 import org.mule.module.client.MuleClient;
+import org.mule.transport.sftp.SftpClient;
 
 /**
  * Tests that files are not deleted if the temp directory can't be created
@@ -35,19 +36,25 @@ public class SftpCantCreateTempDirectoryTestCase extends AbstractSftpDataIntegri
 	{
 		MuleClient muleClient = new MuleClient();
 
-		// change the chmod to "dr-x------" on the outbound-directory
-		// --> the temp directory should not be able to be created
-		remoteChmod(muleClient, OUTBOUND_ENDPOINT_NAME, 00500);
+        SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
 
-		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
+        try {
+// change the chmod to "dr-x------" on the outbound-directory
+            // --> the temp directory should not be able to be created
+            remoteChmod(muleClient, sftpClient, OUTBOUND_ENDPOINT_NAME, 00500);
 
-		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
-		//   for example since we don't have the TestComponent because we want to have to Sftp-endpoints?
-		Thread.sleep(5000);
+            // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
+            muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
 
-		verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
-	}
+            // TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
+            //   for example since we don't have the TestComponent because we want to have to Sftp-endpoints?
+            Thread.sleep(5000);
+
+            verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
+        } finally {
+            sftpClient.disconnect();
+        }
+    }
 
 	/**
 	 * The same test as above, but with the difference that this time it should be okay to create the directory,

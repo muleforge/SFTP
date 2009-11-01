@@ -42,8 +42,12 @@ public class SftpWrongPassPhraseOnOutboundDirectoryTestCase extends AbstractSftp
 		Thread.sleep(5000);
 
 		SftpClient sftpClient = getSftpClient(muleClient, INBOUND_ENDPOINT_NAME);
-		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(INBOUND_ENDPOINT_NAME);
-		assertTrue("The inbound file should still exist", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), FILE_NAME));
-	}
+        try {
+            ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(INBOUND_ENDPOINT_NAME);
+            assertTrue("The inbound file should still exist", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), FILE_NAME));
+        } finally {
+            sftpClient.disconnect();
+        }
+    }
 
 }

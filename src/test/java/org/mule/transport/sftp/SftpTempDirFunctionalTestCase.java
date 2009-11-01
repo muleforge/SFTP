@@ -70,21 +70,27 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
 		//   for example since we dont have the TestComp
 		Thread.sleep(10000);
 
-		try
+        SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
+        try
 		{
-			SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
 			EndpointURI endpointURI = getUriByEndpointName(muleClient, OUTBOUND_ENDPOINT_NAME);
 
 			sftpClient.changeWorkingDirectory(endpointURI.getPath() + "/" + TEMP_DIR);
 		} catch (IOException f)
 		{
 			fail("The temp directory should have been created");
-		}
+		} finally {
+            sftpClient.disconnect();
+        }
 
-		SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
-		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_ENDPOINT_NAME);
-		assertTrue("The file should exist in the final destination", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), fileName));
-		assertFalse("No file should exist in the temp directory", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath() + "/uploading", fileName));
-	}
+        try {
+            sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
+            ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_ENDPOINT_NAME);
+            assertTrue("The file should exist in the final destination", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), fileName));
+            assertFalse("No file should exist in the temp directory", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath() + "/uploading", fileName));
+        } finally {
+            sftpClient.disconnect();
+        }
+    }
 
 }

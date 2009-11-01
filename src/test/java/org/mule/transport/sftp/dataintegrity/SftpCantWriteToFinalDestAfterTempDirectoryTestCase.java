@@ -40,8 +40,11 @@ public class SftpCantWriteToFinalDestAfterTempDirectoryTestCase extends Abstract
 		// Must create the temp directory before we change the access rights
 		createRemoteDirectory(muleClient, OUTBOUND_ENDPOINT_NAME, "uploading");
 
+        SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
+
+        try {
 		// change the chmod to "dr-x------" on the outbound-directory
-		remoteChmod(muleClient, OUTBOUND_ENDPOINT_NAME, 00500);
+		remoteChmod(muleClient, sftpClient, OUTBOUND_ENDPOINT_NAME, 00500);
 
 		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
 		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
@@ -52,9 +55,11 @@ public class SftpCantWriteToFinalDestAfterTempDirectoryTestCase extends Abstract
 
 		verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
 
-		SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
-		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_ENDPOINT_NAME);
-		assertFalse("The inbound file should not be left in the TEMP-dir", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath() + "/" + TEMP_DIR, FILE_NAME));
-	}
+            ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_ENDPOINT_NAME);
+            assertFalse("The inbound file should not be left in the TEMP-dir", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath() + "/" + TEMP_DIR, FILE_NAME));
+        } finally {
+            sftpClient.disconnect();
+        }
+    }
 
 }

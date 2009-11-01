@@ -39,8 +39,12 @@ public class SftpNoOutboundDirectoryTestCase extends AbstractSftpDataIntegrityTe
         Thread.sleep(2000);
 
         SftpClient sftpClient = getSftpClient(muleClient, ENDPOINT_NAME);
-        ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(ENDPOINT_NAME);
-        assertTrue("The inbound file should still exist", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), FILE_NAME));
+        try {
+            ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(ENDPOINT_NAME);
+            assertTrue("The inbound file should still exist", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), FILE_NAME));
+        } finally {
+            sftpClient.disconnect();
+        }
     }
 
 
