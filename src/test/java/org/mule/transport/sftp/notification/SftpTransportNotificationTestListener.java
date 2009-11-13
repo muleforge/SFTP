@@ -22,39 +22,39 @@ public class SftpTransportNotificationTestListener implements SftpTransportNotif
 	private static boolean gotSftpRenameNotification = false;
 	private static boolean gotSftpGetNotification    = false;
 	private static boolean gotSftpDeleteNotification = false;
-	
+
 	public void onNotification(ServerNotification notification) {
 
-		SftpTransportNotification sftpNotification = null;
+		SftpTransportNotification sftpNotification;
 		if (notification instanceof SftpTransportNotification) {
 			sftpNotification = (SftpTransportNotification)notification;
 		} else {
 			logger.debug("SftpTransportNotificationTestListener RECEIVED UNKNOWN NOTIFICATION OF TYPE {}", notification.getClass().getName());
 			return;
 		}
-		
+
 		String action     = notification.getActionName();
-		
+
 		if (action.equals(SFTP_GET_ACTION_MSG)) {
 			gotSftpGetNotification = true;
-			
+
 		} else if (action.equals(SFTP_PUT_ACTION_MSG)) {
 			gotSftpPutNotification = true;
-			
+
 		} else if (action.equals(SFTP_RENAME_ACTION_MSG)) {
 			gotSftpRenameNotification = true;
-			
+
 		} else if (action.equals(SFTP_DELETE_ACTION_MSG)) {
 			gotSftpDeleteNotification = true;
-		} 
-		
-		String resourceId = notification.getResourceIdentifier(); 
+		}
+
+		String resourceId = notification.getResourceIdentifier();
 		String timestamp  = new Date(notification.getTimestamp()).toString();
 
 		String endpoint   = sftpNotification.getEndpoint().getEndpointURI().toString();
 		String info       = sftpNotification.getInfo();
 		long   size       = sftpNotification.getSize();
-		
+
 		String msgType = "???";
 		String correlationId    = "???";
 		if (notification.getSource() instanceof MuleMessage) {
@@ -74,7 +74,7 @@ public class SftpTransportNotificationTestListener implements SftpTransportNotif
     	gotSftpGetNotification    = false;
     	gotSftpDeleteNotification = false;
     }
-    
+
     public static boolean gotSftpPutNotification() {
 		return gotSftpPutNotification;
 	}

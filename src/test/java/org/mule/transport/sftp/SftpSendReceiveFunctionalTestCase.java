@@ -39,8 +39,9 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
 	private ArrayList<String> sendFiles;
 	private ArrayList<String> receiveFiles;
 
+	private int nrOfFiles = 8;
 
-    protected String getConfigResources()
+	protected String getConfigResources()
     {
         return "mule-send-receive-test-config.xml";
     }
@@ -79,14 +80,9 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
     {
     	sendFiles = new ArrayList<String>();
 
-    	sendFiles.add("file1");
-    	sendFiles.add("file2");
-    	sendFiles.add("file3");
-    	sendFiles.add("file4");
-    	sendFiles.add("file5");
-    	sendFiles.add("file6");
-    	sendFiles.add("file7");
-    	sendFiles.add("file8");
+		for(int i=1; i <= nrOfFiles; i++) {
+			sendFiles.add("file" + i);
+		}
 
     	sendAndReceiveFiles();
     }
@@ -109,7 +105,8 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
 				logger.info("called " + loopCount.incrementAndGet() + " times");
 				FunctionalTestComponent ftc = (FunctionalTestComponent) component;
 
-				String o = IOUtils.toString((SftpInputStream) ftc.getLastReceivedMessage());
+				SftpInputStream inputStream = (SftpInputStream) ftc.getLastReceivedMessage();
+				String o = IOUtils.toString(inputStream);
 				if (sendFiles.contains(o))
 				{
 					receiveFiles.add(o);
@@ -119,6 +116,7 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
 				}
 
 				latch.countDown();
+				inputStream.close();
 			}
 		};
 

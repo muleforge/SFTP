@@ -19,10 +19,11 @@ import org.mule.tck.AbstractMuleTestCase;
 public class SftpClientTestCase extends AbstractMuleTestCase
 {
 	public void testGetAbsolutePath() {
-		SftpClient client = new SftpClient();
+		SftpClient client = new SftpClient("hostName");
 		client.setHome("/home/user");
 
 		// Assuming address="sftp://user@host/PATH" and thus the path always start with "/"
+		assertEquals("hostName", client.getHost());
 
 		// Relative paths
 		assertEquals("/home/user/foo", client.getAbsolutePath("/foo"));

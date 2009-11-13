@@ -17,7 +17,7 @@ package org.mule.transport.sftp;
  */
 public class SftpQuartzRequesterFunctionalTestCase extends AbstractSftpTestCase
 {
-	private static final long TIMEOUT = 15000;
+	private static final long TIMEOUT = 20000;
 
 	// Size of the generated stream - 2 Mb
 	final static int SEND_SIZE = 1024 * 1024 * 2;

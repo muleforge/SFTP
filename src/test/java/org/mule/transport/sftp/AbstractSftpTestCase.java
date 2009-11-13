@@ -162,7 +162,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		return "sftp://" + endpointURI.getUser() + ":" + endpointURI.getPassword() + "@" + endpointURI.getHost() + endpointURI.getPath();
 	}
 
-	protected String getPathByEndpoint(MuleClient muleClient, SftpClient sftpClient, String endpointName) throws IOException
+	protected String getPathByEndpoint(MuleClient muleClient, SftpClient sftpClient, String endpointName)
 	{
 		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(endpointName);
 		EndpointURI endpointURI = endpoint.getEndpointURI();
@@ -181,23 +181,29 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	protected SftpClient getSftpClient(MuleClient muleClient, String endpointName)
 		throws IOException
 	{
-		SftpClient sftpClient = new SftpClient();
 		ImmutableEndpoint endpoint = getImmutableEndpoint(muleClient, endpointName);
-
 		EndpointURI endpointURI = endpoint.getEndpointURI();
+		SftpClient sftpClient = new SftpClient(endpointURI.getHost());
+
 		SftpConnector sftpConnector = (SftpConnector) endpoint.getConnector();
 
-//        if(!sftpClient.isConnected()) {
-            sftpClient.connect(endpointURI.getHost());
-
-            if (sftpConnector.getIdentityFile() != null)
-            {
-                assertTrue("Login failed", sftpClient.login(endpointURI.getUser(), sftpConnector.getIdentityFile(), sftpConnector.getPassphrase()));
-            } else
-            {
-                assertTrue("Login failed", sftpClient.login(endpointURI.getUser(), endpointURI.getPassword()));
-            }
-//        }
+		if (sftpConnector.getIdentityFile() != null)
+		{
+			try
+			{
+				sftpClient.login(endpointURI.getUser(), sftpConnector.getIdentityFile(), sftpConnector.getPassphrase());
+			} catch(Exception e) {
+				fail("Login failed: " + e);
+			}
+		} else
+		{
+			try
+			{
+				sftpClient.login(endpointURI.getUser(), endpointURI.getPassword());
+			} catch(Exception e) {
+				fail("Login failed: " + e);
+			}
+		}
 		return sftpClient;
 	}
 
@@ -355,7 +361,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		return endpoint;
 	}
 
-	protected void remoteChmod(MuleClient muleClient, SftpClient sftpClient, String endpointName, int permissions) throws IOException, SftpException
+	protected void remoteChmod(MuleClient muleClient, SftpClient sftpClient, String endpointName, int permissions) throws SftpException
 	{
         ChannelSftp channelSftp = sftpClient.getChannelSftp();
 

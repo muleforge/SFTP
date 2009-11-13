@@ -31,6 +31,7 @@
                 <xsd:sequence minOccurs="0" maxOccurs="1">
                     <xsd:element ref="abstract-filenameParser"/>
                 </xsd:sequence>
+                <xsd:attributeGroup ref="poolingAttributes"/>
                 <xsd:attributeGroup ref="inboundAttributes"/>
                 <xsd:attributeGroup ref="outboundAttributes"/>
                 <xsd:attributeGroup ref="commonKeyAuthenticationAttributes"/>
@@ -98,7 +99,7 @@
         <xsd:attribute name="sizeCheckWaitTime" type="mule:substitutableLong">
             <xsd:annotation>
                 <xsd:documentation>
-                    Wait time (in ms) between size-checks to determine if a file is ready to be processed. 
+                    Wait time (in ms) between size-checks to determine if a file is ready to be processed.
                     Disabled if not set or set to a negative value.
                     This feature can be useful to avoid processing not yet completely written files (e.g. consuming large files).
                     It tells Mule to do two size checks waiting the specified time between the two size calls.
@@ -138,10 +139,11 @@
             <xsd:annotation>
                 <xsd:documentation>
                     The pattern to use when writing a file to disk.
-                    This can use the patterns supported by the filename-parser configured for this connector                </xsd:documentation>
+                    This can use the patterns supported by the filename-parser configured for this connector
+				</xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-<!-- 
+<!--
         <xsd:attribute name="tempDir" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation>
@@ -169,7 +171,7 @@
 			<xsd:enumeration value="overwrite"/>
 			<xsd:enumeration value="addSeqNo"/>
 		</xsd:restriction>
-	</xsd:simpleType> 
+	</xsd:simpleType>
 
     <xsd:attributeGroup name="addressAttributes">
         <xsd:attribute name="path" type="xsd:string">
@@ -230,7 +232,7 @@
 	    <xsd:annotation>
 	        <xsd:documentation>
 	        	Mule tries to create the temp-directory in the endpoint folder if it doesn't already exist.
-	        	Ensure that the user Mule is configured to use to access the sftp server has privileges to create a temp folder if required! 
+	        	Ensure that the user Mule is configured to use to access the sftp server has privileges to create a temp folder if required!
 
 				For inbound endpoints:
 	            A temporary directory from where the download takes place.
@@ -239,7 +241,7 @@
 	            The tempDir will be created as a sub directory to the endpoint.
 
 				For outbound endpoints:
-                A temporary directory to first upload to, when the file is fully uploaded the file is moved to its final destination. 
+                A temporary directory to first upload to, when the file is fully uploaded the file is moved to its final destination.
                 The tempDir will be created as a sub directory to the endpoint.
 	        </xsd:documentation>
 	    </xsd:annotation>
@@ -254,5 +256,16 @@
 	</xsd:attribute>
 
   </xsd:attributeGroup>
-    
+
+	<xsd:attributeGroup name="poolingAttributes">
+        <xsd:attribute name="maxConnectionPoolSize" type="mule:substitutableInt" default="0">
+            <xsd:annotation>
+                <xsd:documentation>
+					If the number of active connections is specified, then a connection pool will be used with active connections up to this number.
+					Use a negative value for no limit. If the value is zero no connection pool will be used.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+	</xsd:attributeGroup>
+
 </xsd:schema>

@@ -31,7 +31,6 @@ public class SftpEndpointTestCase extends AbstractSftpTestCase {
 
         EndpointURI url = new MuleEndpointURI("sftp://ms/data");
         assertEquals("sftp", url.getScheme());
-        assertNull(url.getEndpointName());
         assertEquals("ms", url.getHost());
         assertEquals(0, url.getParams().size());
         assertEquals("/data", url.getPath());

@@ -15,7 +15,7 @@ public class EndpointMessageNotificationTestListener implements EndpointMessageN
 
 	public void onNotification(ServerNotification notification) {
 
-		EndpointMessageNotification endpointNotification = null;
+		EndpointMessageNotification endpointNotification;
 		if (notification instanceof EndpointMessageNotification) {
 			endpointNotification = (EndpointMessageNotification)notification;
 		} else {
@@ -25,13 +25,13 @@ public class EndpointMessageNotificationTestListener implements EndpointMessageN
 
 		String endpoint   = endpointNotification.getEndpoint().getEndpointURI().toString();
 		String action     = notification.getActionName();
-		String resourceId = notification.getResourceIdentifier(); 
+		String resourceId = notification.getResourceIdentifier();
 		String timestamp  = new Date(notification.getTimestamp()).toString();
 
 		MuleMessage message  = (MuleMessage)endpointNotification.getSource();
 		String msgType       = message.getPayload().getClass().getName();
 		String correlationId = message.getStringProperty("MULE_CORRELATION_ID",        "?");
-		
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("*** OnNotification: " + notification.EVENT_NAME + "\nTimestamp=" + timestamp + "\nMsgType=" + msgType + "\nAction=" + action + "\nResourceId=" + resourceId + "\nEndpoint=" + endpoint + "\nCorrelationId=" + correlationId + "");
 		}

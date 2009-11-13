@@ -10,8 +10,6 @@
 package org.mule.transport.sftp;
 
 
-import java.io.InputStream;
-
 import org.mule.DefaultMuleMessage;
 import org.mule.api.MuleMessage;
 import org.mule.api.endpoint.InboundEndpoint;
@@ -21,76 +19,77 @@ import org.mule.api.transport.MessageAdapter;
 import org.mule.transport.AbstractPollingMessageReceiver;
 import org.mule.transport.sftp.notification.SftpNotifier;
 
+import java.io.InputStream;
+
 /**
  * <code>SftpMessageReceiver</code> polls and receives files from an sftp
  * service using jsch. This receiver produces an InputStream payload, which can
  * be materialized in a MessageDispatcher or Component.
  */
-public class SftpMessageReceiver extends AbstractPollingMessageReceiver {
+public class SftpMessageReceiver extends AbstractPollingMessageReceiver
+{
 
-    private SftpReceiverRequesterUtil sftpRRUtil = null;
-    
-    public SftpMessageReceiver( SftpConnector connector, Service component,
-            InboundEndpoint endpoint, long frequency ) throws CreateException {
+	private SftpReceiverRequesterUtil sftpRRUtil = null;
 
-        super( connector, component, endpoint );
+	public SftpMessageReceiver(SftpConnector connector, Service component,
+							   InboundEndpoint endpoint, long frequency) throws CreateException
+	{
+		super(connector, component, endpoint);
 
-        this.setFrequency( frequency );
+		this.setFrequency(frequency);
 
-        sftpRRUtil = new SftpReceiverRequesterUtil(endpoint);
+		sftpRRUtil = new SftpReceiverRequesterUtil(endpoint);
+	}
 
-    }
+	public void poll() throws Exception
+	{
+		String[] files = sftpRRUtil.getAvailableFiles(false);
 
-    public void poll() throws Exception {
+		if (files.length == 0)
+		{
+			logger.debug("No matching files found at endpoint " + endpoint.getEndpointURI());
+		}
 
-        String[] files = sftpRRUtil.getAvailableFiles(false);
+		for (String file : files)
+		{
+			routeFile(file);
+		}
+	}
 
-        if ( files.length == 0 ) {
-            logger.debug( "No matching files found" );
-        }
-
-        for ( int i = 0; i < files.length; i++ ) {
-            routeFile( files[i] );
-
-        }
-
-    }
-
-	protected void routeFile( String path ) throws Exception {
-
+	protected void routeFile(String path) throws Exception
+	{
 		// A bit tricky initialization of the notifier in this case since we don't have access to the message yet...
-		SftpNotifier notifier = new SftpNotifier((SftpConnector)connector, new DefaultMuleMessage(null), endpoint, service.getName());
-    	
-    	InputStream inputStream = sftpRRUtil.retrieveFile( path, notifier );
+		SftpNotifier notifier = new SftpNotifier((SftpConnector) connector, new DefaultMuleMessage(null), endpoint, service.getName());
 
-    	if (logger.isDebugEnabled()) logger.debug( "Routing file: " + path );
+		InputStream inputStream = sftpRRUtil.retrieveFile(path, notifier);
 
-        MessageAdapter msgAdapter = connector.getMessageAdapter( inputStream );
-        msgAdapter.setProperty( SftpConnector.PROPERTY_ORIGINAL_FILENAME, path );
-        MuleMessage message = new DefaultMuleMessage( msgAdapter );
-        
-        // Now we have access to the message, update the notifier with the message
-        notifier.setMessage(message);
-        
-        routeMessage( message, endpoint.isSynchronous() );
-    }
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("Routing file: " + path);
+		}
 
-	public void doConnect() throws Exception {
-        // no op
-    }
+		MessageAdapter msgAdapter = connector.getMessageAdapter(inputStream);
+		msgAdapter.setProperty(SftpConnector.PROPERTY_ORIGINAL_FILENAME, path);
+		MuleMessage message = new DefaultMuleMessage(msgAdapter);
 
-    public void doDisconnect() throws Exception {
-        // no op
-    }
+		// Now we have access to the message, update the notifier with the message
+		notifier.setMessage(message);
 
+		routeMessage(message, endpoint.isSynchronous());
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.mule.transport.AbstractMessageReceiver#doDispose()
-     */
-    protected void doDispose() {
-        // TODO Auto-generated method stub
+	public void doConnect() throws Exception
+	{
+		// no op
+	}
 
-    }
+	public void doDisconnect() throws Exception
+	{
+		// no op
+	}
+
+	protected void doDispose()
+	{
+		// no op
+	}
 }

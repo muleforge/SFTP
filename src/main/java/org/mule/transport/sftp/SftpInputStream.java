@@ -10,40 +10,46 @@
 
 package org.mule.transport.sftp;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.mule.api.endpoint.ImmutableEndpoint;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
  * <code>SftpInputStream</code> wraps an sftp InputStream.
- *
- *
  */
 
 public class SftpInputStream extends InputStream
 {
-    InputStream is;
-	SftpClient client;
-	boolean autoDelete = true;
-	String fileName;
-	boolean errorOccured = false;
+	private final Log logger = LogFactory.getLog(getClass());
+
+	private InputStream is;
+	private SftpClient client;
+	private boolean autoDelete = true;
+	private String fileName;
+	private boolean errorOccured = false;
+	private ImmutableEndpoint endpoint;
 
 	/**
 	 * A special sftp InputStream.  The constuctor creates the InputStream by
 	 * calling <code>SftpClient.retrieveFile(fileName)</code>.  The client passed
 	 * in is destroyed when the stream is closed.
 	 *
-	 * @param client The SftpClient instance.  Will be destroyed when stream closed.
-	 * @param fileName name of the file to be retrieved
+	 * @param client	 The SftpClient instance.  Will be destroyed when stream closed.
+	 * @param fileName   name of the file to be retrieved
 	 * @param autoDelete whether the file specified by fileName should be deleted
-	 *
-	 * @return an instance of SftpInputStream
+	 * @param endpoint   the endpoint associated to a specific client (connector) pool.
+	 * @throws Exception if failing to retrieve internal input stream.
 	 */
-	public SftpInputStream(SftpClient client,String fileName,boolean autoDelete ) throws Exception
+	public SftpInputStream(SftpClient client, String fileName, boolean autoDelete, ImmutableEndpoint endpoint) throws Exception
 	{
 		this.is = client.retrieveFile(fileName);
 		this.client = client;
 		this.fileName = fileName;
 		this.autoDelete = autoDelete;
+		this.endpoint = endpoint;
 	}
 
 	public int read(byte[] b) throws IOException
@@ -56,38 +62,37 @@ public class SftpInputStream extends InputStream
 		return is.read();
 	}
 
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException
-    {
-        return is.read(b, off, len);
-    }
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException
+	{
+		return is.read(b, off, len);
+	}
 
 	public int available() throws IOException
 	{
 		return is.available();
-		// TODO: why was this added? This prevents transports from using BufferedInputStream.
-//		throw new IOException("Operation not supported by SftpInputStream");
 	}
 
 	public void close() throws IOException
 	{
-		//System.out.println("===========Closing SFTP client=====================");
-
 		is.close();
 
-
-		if( autoDelete && !errorOccured)
+		if (autoDelete && !errorOccured)
 		{
-		    client.deleteFile(fileName);
+			client.deleteFile(fileName);
 		}
-		client.disconnect();
 
-
+		try
+		{
+			((SftpConnector) endpoint.getConnector()).releaseClient(endpoint, client);
+		} catch (Exception e)
+		{
+			logger.error(e.getMessage(), e);
+		}
 	}
 
-
-	public void setErrorOccured(boolean errorOccured)
+	public void setErrorOccurred()
 	{
-		this.errorOccured = errorOccured;
+		this.errorOccured = true;
 	}
 }

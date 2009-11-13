@@ -109,7 +109,10 @@ public class SftpFileAgeFunctionalTestCase extends AbstractSftpTestCase
         // We assume that the total time never should be less than fileAge. That means that the fileAge value
         // in this test must be rather high
         long time = System.currentTimeMillis() - startTime;
-        int expectedMinTime = 10000;
+
+		int maxTimeDiff = 1000; // Max time diff between localhost and the server. Ie. the time can differ up to this and the test
+								// will be okay. This is used because localhost/developer machine is not always synchronized with the server(s)
+        int expectedMinTime = 10000 - maxTimeDiff;
         assertTrue("The total time should never be less the 'fileAge' ms (was " + time + ", expected " + expectedMinTime + ")", time > expectedMinTime);
 
         assertEquals(TEST_MESSAGE, message.get());

@@ -14,8 +14,6 @@ import org.mule.config.spring.parsers.generic.OrphanDefinitionParser;
 import org.mule.endpoint.URIBuilder;
 import org.mule.transport.sftp.SftpConnector;
 
-import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
-
 /**
  * Registers a Bean Definition Parser for handling <code><sftp:connector></code> elements.
  *

@@ -15,6 +15,7 @@
 		            autoDelete="true"
                     fileAge="1234"
                     tempDir="uploading"
+					maxConnectionPoolSize="42"
 		            >
 
 	</sftp:connector>

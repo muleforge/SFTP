@@ -11,28 +11,23 @@ package org.mule.transport.sftp;
 
 import org.mule.tck.FunctionalTestCase;
 
-/**
- * TODO
- */
 public class SftpNamespaceHandlerTestCase extends FunctionalTestCase
 {
-    protected String getConfigResources()
-    {
-        return "sftp-namespace-config.xml";
-    }
+	protected String getConfigResources()
+	{
+		return "sftp-namespace-config.xml";
+	}
 
-    public void testSftpConfig() throws Exception
-    {
-        SftpConnector c = (SftpConnector) muleContext.getRegistry().lookupConnector("sftpConnector");
-        assertNotNull(c);
-        assertTrue(c.isConnected());
-        assertTrue(c.isStarted());
-        assertTrue(c.isAutoDelete());
-        assertEquals(c.getPollingFrequency(),15000);
-        assertEquals(1234, c.getFileAge());
-        assertEquals("uploading", c.getTempDir());
-        //TODO Assert specific properties are configured correctly
-
-
-    }
+	public void testSftpConfig() throws Exception
+	{
+		SftpConnector c = (SftpConnector) muleContext.getRegistry().lookupConnector("sftpConnector");
+		assertNotNull(c);
+		assertTrue(c.isConnected());
+		assertTrue(c.isStarted());
+		assertTrue(c.isAutoDelete());
+		assertEquals(c.getPollingFrequency(), 15000);
+		assertEquals(1234, c.getFileAge());
+		assertEquals("uploading", c.getTempDir());
+		assertEquals(42, c.getMaxConnectionPoolSize());
+	}
 }
