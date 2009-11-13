@@ -128,7 +128,7 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
 			HashMap<String, String> props = new HashMap<String, String>(1);
 			props.put(SftpConnector.PROPERTY_FILENAME, sendFile + ".txt");
 
-			client.send("vm://test.upload", sendFile, props);
+			client.dispatch("vm://test.upload", sendFile, props);
 		}
 
 		latch.await(TIMEOUT, TimeUnit.MILLISECONDS);

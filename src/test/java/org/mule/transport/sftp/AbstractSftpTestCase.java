@@ -310,7 +310,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		executeBaseAssertionsBeforeCall();
 
 		// Send the content using stream
-		client.send(sendUrl, os, props);
+		client.dispatch(sendUrl, os, props);
 
 		latch.await(timeout, TimeUnit.MILLISECONDS);
 
