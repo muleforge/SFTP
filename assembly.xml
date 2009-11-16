@@ -19,6 +19,8 @@ Assembly descriptor for the full SFTP distribution.
               <exclude>.project</exclude>
               <exclude>.classpath</exclude>
               <exclude>.mule</exclude>
+              <exclude>.idea/**</exclude>
+              <exclude>*.iml</exclude>
           </excludes>
     </fileSet>
     <fileSet>
