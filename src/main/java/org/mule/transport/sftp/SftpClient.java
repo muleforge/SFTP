@@ -89,36 +89,20 @@ public class SftpClient
 	}
 
 	/**
-     * Converts a relative path to an absolute path.
-	 * <p/>
-	 * Note! If this method is called twice or more on an absolute path the result will be wrong!
-	 * Example, the endpoint-address  "sftp://user@srv//tmp/muletest1/foo/inbound"
-	 * will first result in the path "/tmp/muletest1/foo/inbound" (correct), but the next
-	 * will result in "/home/user/tmp/muletest1/foo/inbound".
-	 * <p/>
+     * Converts a relative path to an absolute path according to http://tools.ietf.org/html/draft-ietf-secsh-scp-sftp-ssh-uri-04.
 	 *
 	 * @param path relative path
 	 * @return Absolute path
 	 */
 	public String getAbsolutePath(String path)
 	{
-		if (path.startsWith("//"))
-		{
-			// This is an absolute path! Just remove the first /
-			return path.substring(1);
-		}
-
-		if (!path.startsWith(home))
-		{
-			path = home + path;
-		}
-
 		if (path.startsWith("/~"))
-		{
-			path = home + path.substring(2, path.length());
-		}
-		// Now absolute!
-		return path;
+        {
+            return home + path.substring(2, path.length());
+        }
+
+        // Already absolute!
+        return path;
 	}
 
 	public void login(String user, String password) throws IOException

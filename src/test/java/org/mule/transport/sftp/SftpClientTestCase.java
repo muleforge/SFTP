@@ -26,17 +26,16 @@ public class SftpClientTestCase extends AbstractMuleTestCase
 		assertEquals("hostName", client.getHost());
 
 		// Relative paths
-		assertEquals("/home/user/foo", client.getAbsolutePath("/foo"));
-		assertEquals("/home/user/foo/bar", client.getAbsolutePath("/foo/bar"));
+		assertEquals("/home/user/foo", client.getAbsolutePath("/~/foo"));
+		assertEquals("/home/user/foo/bar", client.getAbsolutePath("/~/foo/bar"));
+
+		// Two calls to getAbsolutePath should return the same
+		assertEquals("/home/user/foo/bar", client.getAbsolutePath(client.getAbsolutePath("/~/foo/bar")));
 
 		// Absolute path
-		assertEquals("/opt/mule/files", client.getAbsolutePath("//opt/mule/files"));
+		assertEquals("/opt/mule/files", client.getAbsolutePath("/opt/mule/files"));
 
-		// Not desired, but since the path in the address starts with / this is unspecified...
-		assertEquals("/home/userfoo", client.getAbsolutePath("foo"));
-
-		// Since the the first getAbsolutePath call removes the // the next call will asume a relative path
-		assertEquals("/home/user/opt/mule/files", client.getAbsolutePath(client.getAbsolutePath("//opt/mule/files")));
-
+		// If the path did not contain any '/' we should not assume it is an relative path
+		assertEquals("foo", client.getAbsolutePath("foo"));
 	}
 }

@@ -21,7 +21,7 @@
 	<sftp:endpoint
 		name="inboundEndpoint"
 		synchronous="true"
-		address="sftp://${USER1_NAME}:${USER1_PASSWORD}@${SFTP_HOST}/data"/>
+		address="sftp://${USER1_NAME}:${USER1_PASSWORD}@${SFTP_HOST}/~/data"/>
 
 	<model name="send">
 		<service name="sending">
@@ -32,7 +32,7 @@
 				<pass-through-router>
 					<sftp:outbound-endpoint
                         name="outboundEndpoint"
-						address="sftp://${USER1_NAME}:${USER1_PASSWORD}@${SFTP_HOST}/data"
+						address="sftp://${USER1_NAME}:${USER1_PASSWORD}@${SFTP_HOST}/~/data"
 						outputPattern="${DATE}.dat"/>
 				</pass-through-router>
 			</outbound>

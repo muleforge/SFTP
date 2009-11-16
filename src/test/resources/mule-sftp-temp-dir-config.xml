@@ -19,14 +19,14 @@
     <model name="main">
         <service name="testComponent">
             <inbound>
-                <sftp:inbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/tempdir-test-inbound"
+                <sftp:inbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/~/tempdir-test-inbound"
                                        connector-ref="sftpCustomConnector"
                                        name="inboundEndpoint"/>
             </inbound>
 
             <outbound>
                 <pass-through-router>
-                    <sftp:outbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/tempdir-test-outbound"
+                    <sftp:outbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/~/tempdir-test-outbound"
                                             connector-ref="sftpCustomConnectorTempDir"
                                             name="outboundEndpoint">
                     </sftp:outbound-endpoint>

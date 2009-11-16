@@ -16,7 +16,7 @@
         <service name="testComponent">
             <inbound>
                 <sftp:inbound-endpoint connector-ref="sftpCustomConnector"
-                                       address="sftp://${USER1_NAME}@${SFTP_HOST}/fileage-test"
+                                       address="sftp://${USER1_NAME}@${SFTP_HOST}/~/fileage-test"
                                        name="inboundEndpoint"/>
             </inbound>
 
