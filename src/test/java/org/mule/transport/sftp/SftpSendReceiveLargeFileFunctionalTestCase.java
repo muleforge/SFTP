@@ -23,7 +23,7 @@ package org.mule.transport.sftp;
  */
 public class SftpSendReceiveLargeFileFunctionalTestCase extends AbstractSftpTestCase
 {
-	private static final long TIMEOUT = 30000;
+	private static final long TIMEOUT = 300000;
 
 	// Size of the generated stream - 200 Mb
 	final static int SEND_SIZE = 1024 * 1024 * 200;
@@ -46,7 +46,7 @@ public class SftpSendReceiveLargeFileFunctionalTestCase extends AbstractSftpTest
         super.doSetUp();
 
         initEndpointDirectory("inboundEndpoint");
-    }    
+    }
 
 	/**
 	 * Test sending and receiving a large file.
@@ -54,6 +54,6 @@ public class SftpSendReceiveLargeFileFunctionalTestCase extends AbstractSftpTest
 	 */
 	public void testSendAndReceiveLargeFile() throws Exception
 	{
-		executeBaseTest("inboundEndpoint", "vm://test.upload", "bigfile.txt", SEND_SIZE, "receiving", TIMEOUT * 10);
+		executeBaseTest("inboundEndpoint", "vm://test.upload", "bigfile.txt", SEND_SIZE, "receiving", TIMEOUT);
 	}
 }

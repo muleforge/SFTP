@@ -268,7 +268,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 						{
 							if (b != testByte)
 							{
-								fail("Incorrect received byte (was '" + b + "', excepected '" + testByte + "'");
+								fail("Incorrect received byte (was '" + b + "', excepted '" + testByte + "'");
 							}
 						}
 					}
@@ -312,7 +312,9 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		// Send the content using stream
 		client.dispatch(sendUrl, os, props);
 
-		latch.await(timeout, TimeUnit.MILLISECONDS);
+		boolean workDone = latch.await(timeout, TimeUnit.MILLISECONDS);
+
+    assertTrue("Test timed out. It took more than " + timeout + " milliseconds. If this error occurs the test probably needs a longer time out (on your computer/network)", workDone);
 
 		executeBaseAssertionsAfterCall(size, totalReceivedSize.intValue());
 	}
