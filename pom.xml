@@ -137,6 +137,21 @@
 			</plugin>
 			-->
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+              <!-- ensure that test-jar is created and installed as well -->
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+      </plugin>
+
 			<plugin>
 				<!-- ensure that source jar files are created and installed as well -->
 				<groupId>org.apache.maven.plugins</groupId>
