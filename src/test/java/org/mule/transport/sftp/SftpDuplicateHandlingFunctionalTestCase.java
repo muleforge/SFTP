@@ -12,7 +12,6 @@
 package org.mule.transport.sftp;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.mule.transport.sftp.notification.ExceptionListener;
 
 
 /**
@@ -21,9 +20,6 @@ import org.mule.transport.sftp.notification.ExceptionListener;
 public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCase
 {
 	private static final long TIMEOUT = 10000;
-
-	// TODO. Not very elegant solution, but the best I could figure out right now. Needs tp be improved over time...
-	private boolean expectException = false;
 
 	// Size of the generated stream - 2 Mb
 	final static int SEND_SIZE = 1024 * 1024 * 2;
@@ -51,9 +47,6 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
         initEndpointDirectory("inboundEndpoint1");
         initEndpointDirectory("inboundEndpoint2");
         initEndpointDirectory("inboundEndpoint3");
-        
-		ExceptionListener.reset();
-		expectException = false;
 	}
 
 
@@ -75,15 +68,13 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
 	{
 		// TODO. Add some tests specific to this test, i.e. not only rely on the tests performed by executeTest().
 
-		expectException = true;
-		assertNull(ExceptionListener.getStandardException());
-
-		executeBaseTest("inboundEndpoint2", "vm://test.upload2", "file2.txt", SEND_SIZE, "receiving2", TIMEOUT);
-
-		// Verify that a NotImplementedException exception was throwed...
-		Throwable ex = ExceptionListener.getStandardException();
-		assertNotNull(ex);
-		assertTrue(ex instanceof NotImplementedException);
+		try {
+			executeBaseTest("inboundEndpoint2", "vm://test.upload2", "file2.txt", SEND_SIZE, "receiving2", TIMEOUT, "sftp");
+			fail("Should have received an Exception");
+		} catch (Exception e) {
+			System.err.println("*** CATCHED AN EXPECTED EXCEPTION ***, " + e.getClass().getName());
+			assertTrue(e instanceof NotImplementedException);
+		}
 	}
 
 	/**
@@ -95,17 +86,5 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
 
 		executeBaseTest("inboundEndpoint3", "vm://test.upload3", "file3.txt", SEND_SIZE, "receiving3", TIMEOUT);
 	}
-
-	/**
-	 * To be overridden by the test-classes if required
-	 */
-	@Override
-	protected void executeBaseAssertionsAfterCall(int sendSize, int receivedSize) {
-
-		if (!expectException) {
-			super.executeBaseAssertionsAfterCall(sendSize, receivedSize);
-		}
-	}
-
 
 }

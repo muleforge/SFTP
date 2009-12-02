@@ -1,11 +1,8 @@
 package org.mule.transport.sftp.dataintegrity;
 
-import java.io.IOException;
-
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.module.client.MuleClient;
 import org.mule.transport.sftp.SftpClient;
-import org.mule.transport.sftp.notification.ExceptionListener;
 
 /**
  * Test the three different types of handling when duplicate files (i.e. file names) are being transferred by SftpTransport. 
@@ -57,6 +54,7 @@ public class SftpCheckDuplicateFileHandlingTestCase extends AbstractSftpDataInte
       muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
       // TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
       // for example since we dont have the TestComponent
+
       Thread.sleep(4000);
       // Make sure the file exists only in the outbound endpoint
       verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, false, true);
@@ -75,34 +73,4 @@ public class SftpCheckDuplicateFileHandlingTestCase extends AbstractSftpDataInte
     }
   }
 
-  /**
-   * Test transferring a duplicate file. The default handling of duplicates is to throw an exception.
-   */
-  public void testDuplicateDefaultExceptionHandling() throws Exception {
-    MuleClient muleClient = new MuleClient();
-    SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME2);
-
-    try {
-
-      // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-      muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME2), TEST_MESSAGE, fileNameProperties);
-
-      // TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
-      // for example since we dont have the TestComponent
-      Thread.sleep(4000);
-
-      verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME2, OUTBOUND_ENDPOINT_NAME2, false, true);
-
-      muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME2), TEST_MESSAGE, fileNameProperties);
-      Thread.sleep(4000);
-
-      verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME2, OUTBOUND_ENDPOINT_NAME2, true, true);
-      // Get the exception from mule
-      Throwable ex = ExceptionListener.getStandardException();
-      assertNotNull(ex);
-      assertTrue(ex instanceof IOException);
-    } finally {
-      sftpClient.disconnect();
-    }
-  }
 }

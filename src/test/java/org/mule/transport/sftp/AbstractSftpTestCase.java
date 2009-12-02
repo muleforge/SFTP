@@ -9,14 +9,12 @@
  */
 package org.mule.transport.sftp;
 
+import java.beans.ExceptionListener;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.SftpException;
-import org.apache.log4j.Logger;
 import org.mule.api.MuleEventContext;
 import org.mule.api.MuleException;
 import org.mule.api.endpoint.EndpointBuilder;
@@ -26,7 +24,11 @@ import org.mule.module.client.MuleClient;
 import org.mule.tck.FunctionalTestCase;
 import org.mule.tck.functional.EventCallback;
 import org.mule.tck.functional.FunctionalTestComponent;
+import org.mule.transport.sftp.util.ValueHolder;
 import org.mule.util.StringMessageUtils;
+
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpException;
 
 import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
@@ -34,16 +36,11 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * @author Lennart Häggkvist
+ * @author Lennart Häggkvist, Magnus Larsson
  *         Date: Jun 8, 2009
  */
 public abstract class AbstractSftpTestCase extends FunctionalTestCase
 {
-    /**
-     * Logger
-     */
-    private static final Logger log = Logger.getLogger(AbstractSftpTestCase.class);
-
 	/** Deletes all files in the directory, useful when testing to ensure that no files are in the way... */
 //	protected void cleanupRemoteFtpDirectory(MuleClient muleClient, String endpointName) throws IOException
 //	{
@@ -231,6 +228,12 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	/** Base method for executing tests... */
 	protected void executeBaseTest(String inputEndpointName, String sendUrl, String filename, final int size, String receivingTestComponentName, long timeout) throws Exception
 	{
+		executeBaseTest(inputEndpointName, sendUrl, filename, size, receivingTestComponentName, timeout, null);
+	}
+
+	/** Base method for executing tests... */
+	protected void executeBaseTest(String inputEndpointName, String sendUrl, String filename, final int size, String receivingTestComponentName, long timeout, String expectedFailingConnector) throws Exception
+	{
 		MuleClient client = new MuleClient();
 
 		// Do some cleaning so that the endpoint doesn't have any other files
@@ -281,8 +284,20 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 				latch.countDown();
 			}
 		};
-
 		getFunctionalTestComponent(receivingTestComponentName).setEventCallback(callback);
+		
+
+		final ValueHolder<Exception> exceptionHolder = new ValueHolder<Exception>();
+		if (expectedFailingConnector != null) {
+			// Register an exception-listener on the connector that expects to fail and count down the latch after saving the throwed exception
+			muleContext.getRegistry().lookupConnector(expectedFailingConnector).setExceptionListener(new ExceptionListener() {
+				public void exceptionThrown(Exception e) {
+					exceptionHolder.value = e;
+					latch.countDown();
+				}
+			});
+		}
+		
 
 		// InputStream that generates the data without using a file
 		InputStream os = new InputStream()
@@ -314,8 +329,12 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
 		boolean workDone = latch.await(timeout, TimeUnit.MILLISECONDS);
 
-    assertTrue("Test timed out. It took more than " + timeout + " milliseconds. If this error occurs the test probably needs a longer time out (on your computer/network)", workDone);
+		assertTrue("Test timed out. It took more than " + timeout + " milliseconds. If this error occurs the test probably needs a longer time out (on your computer/network)", workDone);
 
+		// Rethrow any exception that we have caught in an exception-listener
+    	if (exceptionHolder.value != null) {
+    		throw exceptionHolder.value;
+    	}
 		executeBaseAssertionsAfterCall(size, totalReceivedSize.intValue());
 	}
 
