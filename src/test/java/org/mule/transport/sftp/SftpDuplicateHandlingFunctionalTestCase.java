@@ -72,7 +72,6 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
 			executeBaseTest("inboundEndpoint2", "vm://test.upload2", "file2.txt", SEND_SIZE, "receiving2", TIMEOUT, "sftp");
 			fail("Should have received an Exception");
 		} catch (Exception e) {
-			System.err.println("*** CATCHED AN EXPECTED EXCEPTION ***, " + e.getClass().getName());
 			assertTrue(e instanceof NotImplementedException);
 		}
 	}
