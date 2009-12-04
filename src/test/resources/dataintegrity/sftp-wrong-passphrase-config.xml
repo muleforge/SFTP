@@ -19,7 +19,7 @@
             <outbound>
                 <pass-through-router>
                     <sftp:outbound-endpoint address="sftp://${USER1_NAME}:wrong-password@${SFTP_HOST}/~/outbound"
-                                            synchronous="true"
+                                            synchronous="true" keepFileOnError="true"
                                             name="outboundEndpoint" />
                 </pass-through-router>
             </outbound>

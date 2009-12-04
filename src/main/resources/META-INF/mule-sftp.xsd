@@ -79,7 +79,7 @@
                 <xsd:documentation>
                 	Required: no
                 	Default: 1000 ms
-                	
+
                     The frequency in milliseconds that the read directory should be checked.
                     Note that the read directory is specified by the endpoint of the listening component.
                 </xsd:documentation>
@@ -90,7 +90,7 @@
                 <xsd:documentation>
                 	Required: no
                 	Default: true
-                	
+
                     Whether to delete the file after successfully reading it.
                 </xsd:documentation>
             </xsd:annotation>
@@ -100,10 +100,10 @@
                 <xsd:documentation>
                 	Required: no
                 	Default: disabled
-                	
+
                     Miniumum age (in ms) for a file to be processed. This can be useful when consuming large files. It tells Mule to wait for a period of time before consuming the file, allowing the file to be completely written before the file is processed.
 
-                    WARNING: The fileAge attribute will only work properly if the servers where Mule and the sftp-server runs have synchronized time. 
+                    WARNING: The fileAge attribute will only work properly if the servers where Mule and the sftp-server runs have synchronized time.
 
                     NOTE: See attribute sizeCheckWaitTime for an alternate method of determing if a incoming file is ready for processing.
                 </xsd:documentation>
@@ -114,7 +114,7 @@
                 <xsd:documentation>
                 	Required: no
                 	Default: disabled
-                	
+
                     Wait time (in ms) between size-checks to determine if a file is ready to be processed.
                     Disabled if not set or set to a negative value.
                     This feature can be useful to avoid processing not yet completely written files (e.g. consuming large files).
@@ -130,7 +130,7 @@
 		        <xsd:documentation>
                 	Required: no
                 	Default: disabled
-                	
+
 					Archives a copy of the file in the specified directory on the file system where mule is running.
 					The archive folder must have been created before Mule is started and the user Mule runs under must have privileges to read and write to the folder.
 		        </xsd:documentation>
@@ -141,7 +141,7 @@
 		        <xsd:documentation>
                 	Required: no
                 	Default: disabled
-                	
+
 					If specified then the file to be archived is received in this folder and then moved to the archiveTempSendingDir while sent further on to the outbound endpoint.
 					This folder is created as a subfolder to the archiveDir.
 
@@ -154,7 +154,7 @@
 		        <xsd:documentation>
                 	Required: no
                 	Default: disabled
-                	
+
 					If specified then the file to be archived is sent to the outbound endpoint from this folder.
 					This folder is created as a subfolder to the archiveDir.
 					After the file is consumed by the outbound endpoint or the component itself (i.e. when the underlying InputStream is closed) it will be moved to the archive folder.
@@ -173,19 +173,27 @@
                 	Default: the message id, e.g. ee241e68-c619-11de-986b-adeb3d6db038
 
                     The pattern to use when writing a file to disk.
-                    This can use the patterns supported by the filename-parser configured for this connector, 
+                    This can use the patterns supported by the filename-parser configured for this connector,
                     by default the [Legacy Filename Parser|http://www.mulesoft.org/display/MULE2USER/File+Transport#FileTransport-LegacyFilenameParser] is used.
-                    
+
                     See section [Child Elements to File Connector|http://www.mulesoft.org/display/MULE2USER/File+Transport] for information on how to override the default parser.
                 </xsd:documentation>
             </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="keepFileOnError" type="mule:substitutableBoolean" default="false">
+          <xsd:annotation>
+            <xsd:documentation>
+              If true the file on the inbound-endpoint will not be deleted if an error occurs when writing to the outbound-endpoint.
+              Note that this assumes that both the inbound and outbound endpoints are using the SFTP-Transport.
+            </xsd:documentation>
+          </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="duplicateHandling" type="duplicateHandlingType" default="throwException">
             <xsd:annotation>
                 <xsd:documentation>
                 	Required: no
                 	Default: throwException
-                
+
                     Determines what to do if a file already exist on the outbound endpoint with the specified name.
                     throwException: Will throw an exception if a file already exists
                     overwrite: Will overwrite an existing file
@@ -249,7 +257,7 @@
         <xsd:documentation>
           Required: no
           Default: disabled
-          
+
           An identityFile location for a PKI private key.
         </xsd:documentation>
       </xsd:annotation>

@@ -153,23 +153,27 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		catch (Exception e)
 		{
 			logger.error("Unexpected exception attempting to write file, message was: " + e.getMessage(), e);
-			if (inputStream != null)
-			{
-				if (inputStream instanceof SftpInputStream)
-				{
-					// Ensure that the SftpInputStream knows about the error and dont delete the file
-					((SftpInputStream) inputStream).setErrorOccurred();
+      if(sftpUtil.isKeepFileOnError()) {
+          // If an exception occurs and the keepFileOnError property is true, keep the file on the originating endpoint
+          // Note: this is only supported when using the sftp transport on both inbound & outbound
+        if (inputStream != null)
+        {
+          if (inputStream instanceof SftpInputStream)
+          {
+            // Ensure that the SftpInputStream knows about the error and dont delete the file
+            ((SftpInputStream) inputStream).setErrorOccurred();
 
-				} else if (inputStream instanceof SftpFileArchiveInputStream)
-				{
-					// Ensure that the SftpFileArchiveInputStream knows about the error and don't delete the file
-					((SftpFileArchiveInputStream) inputStream).setErrorOccurred();
+          } else if (inputStream instanceof SftpFileArchiveInputStream)
+          {
+            // Ensure that the SftpFileArchiveInputStream knows about the error and don't delete the file
+            ((SftpFileArchiveInputStream) inputStream).setErrorOccurred();
 
-				} else
-				{
-					logger.warn("Neither SftpInputStream nor SftpFileArchiveInputStream used, errorOccured=true could not be set. Type is " + inputStream.getClass().getName());
-				}
-			}
+          } else
+          {
+            logger.warn("Neither SftpInputStream nor SftpFileArchiveInputStream used, errorOccured=true could not be set. Type is " + inputStream.getClass().getName());
+          }
+        }
+      }
 			if (useTempDir)
 			{
 				// Cleanup the remote temp dir!

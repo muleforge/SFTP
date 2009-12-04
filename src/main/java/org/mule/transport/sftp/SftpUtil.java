@@ -187,4 +187,16 @@ public class SftpUtil {
 			sftpClient.changeWorkingDirectory(tempDirAbs);
 		}
 	}
+
+  public boolean isKeepFileOnError() {
+    boolean keepFileOnError = connector.isKeepFileOnError();
+
+    // Override the value from the endpoint?
+    Object v = endpoint.getProperty(SftpConnector.PROPERTY_KEEP_FILE_ON_ERROR);
+    if (v != null) {
+      return Boolean.valueOf((String) v);
+    }
+
+    return keepFileOnError;
+  }
 }

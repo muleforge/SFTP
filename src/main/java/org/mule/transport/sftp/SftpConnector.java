@@ -68,6 +68,7 @@ public class SftpConnector extends AbstractConnector
 	public static final String PROPERTY_DUPLICATE_HANDLING_OVERWRITE = "overwrite";
 	public static final String PROPERTY_DUPLICATE_HANDLING_ASS_SEQ_NO = "addSeqNo";
 	public static final String PROPERTY_MAX_CONNECTION_POOL_SIZE = "maxConnectionPoolSize";
+  public static final String PROPERTY_KEEP_FILE_ON_ERROR = "keepFileOnError";
 
 	public static final int DEFAULT_POLLING_FREQUENCY = 1000;
 
@@ -98,6 +99,9 @@ public class SftpConnector extends AbstractConnector
 	private String archiveDir = "";
 	private String archiveTempReceivingDir = "";
 	private String archiveTempSendingDir = "";
+
+  /** Should the file be kept if an error occurs when writing the file on the outbound endpoint?  */
+  private boolean keepFileOnError;
 
 	/**
 	 * max pool size. 0 for no pool, -1 for no limit, otherwise the specified value
@@ -502,4 +506,12 @@ public class SftpConnector extends AbstractConnector
 		}
 		return maxConnectionPoolSize;
 	}
+
+  public boolean isKeepFileOnError() {
+    return keepFileOnError;
+  }
+
+  public void setKeepFileOnError(boolean pKeepFileOnError) {
+    keepFileOnError = pKeepFileOnError;
+  }
 }

@@ -19,7 +19,7 @@
             <outbound>
                 <pass-through-router>
                     <sftp:outbound-endpoint address="sftp://${USER1_NAME}@${SFTP_HOST}/~/DIRECTORY-MISSING"
-                                            name="outboundEndpointDirMissing">
+                                            name="outboundEndpointDirMissing" keepFileOnError="true">
                     </sftp:outbound-endpoint>
                 </pass-through-router>
             </outbound>
