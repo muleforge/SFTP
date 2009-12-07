@@ -160,12 +160,16 @@ public class SftpReceiverRequesterUtil
 
 		// Archive functionality...
 		String archive = sftpUtil.getArchiveDir();
+
+    // Retrieve the file stream
+    InputStream fileInputStream = client.retrieveFile(fileName);
+
 		if (!"".equals(archive))
 		{
 			String archiveTmpReceivingDir = sftpUtil.getArchiveTempReceivingDir();
 			String archiveTmpSendingDir = sftpUtil.getArchiveTempSendingDir();
 
-			InputStream is = new SftpInputStream(client, fileName, connector.isAutoDelete(), endpoint);
+			InputStream is = new SftpInputStream(client, fileInputStream, fileName, connector.isAutoDelete(), endpoint);
 
 			// TODO ML FIX. Refactor to util-class...
 			int idx = fileName.lastIndexOf('/');
@@ -187,7 +191,7 @@ public class SftpReceiverRequesterUtil
 
 		// This special InputStream closes the SftpClient when the stream is closed.
 		// The stream will be materialized in a Message Dispatcher or Service Component
-		return new SftpInputStream(client, fileName, connector.isAutoDelete(), endpoint);
+		return new SftpInputStream(client, fileInputStream, fileName, connector.isAutoDelete(), endpoint);
 	}
 
 	private InputStream archiveFileUsingTempDirs(String archive,
