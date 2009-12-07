@@ -31,6 +31,28 @@
                         name="inboundEndpoint2"/>
             </inbound>
         </service>
+
+        <service name="test3" >
+            <outbound>
+              <pass-through-router>
+                <sftp:outbound-endpoint
+                        address="sftp://user42:passw0rd@foobar-host:4243/data"
+                        name="outboundEndpoint1" />
+              </pass-through-router>
+
+            </outbound>
+        </service>
+
+        <service name="test4" >
+            <outbound>
+              <pass-through-router>
+                <sftp:outbound-endpoint
+                        address="sftp://user42:passw0rd@foobar-host:4243/data"
+                        name="outboundEndpoint2"
+                        keepFileOnError="false"/>
+              </pass-through-router>
+            </outbound>
+        </service>
     </model>
 
 </mule>

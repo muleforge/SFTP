@@ -73,6 +73,15 @@ public class SftpEndpointTestCase extends AbstractSftpTestCase {
         assertEquals("user42", url2.getUser());
 
         assertEquals(url1.getUri().toString(), url2.getUri().toString());
+
+        ImmutableEndpoint outboundEndpoint1 = (ImmutableEndpoint) muleClient.getProperty("outboundEndpoint1");
+        ImmutableEndpoint outboundEndpoint2 = (ImmutableEndpoint) muleClient.getProperty("outboundEndpoint2");
+
+        SftpUtil oUtil1 = new SftpUtil(outboundEndpoint1);
+        SftpUtil oUtil2 = new SftpUtil(outboundEndpoint2);
+
+        assertTrue("'keepFileOnError' should be on by default", oUtil1.isKeepFileOnError());
+        assertFalse("'keepFileOnError' should be false", oUtil2.isKeepFileOnError());
     }
 
 
