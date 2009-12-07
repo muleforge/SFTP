@@ -18,8 +18,8 @@ import org.apache.commons.io.IOUtils;
 import org.mule.api.MuleEventContext;
 import org.mule.module.client.MuleClient;
 import org.mule.tck.functional.EventCallback;
-import org.mule.tck.functional.FunctionalTestComponent;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +31,6 @@ import java.util.List;
 
 public class SftpPoolingFunctionalTestCase extends AbstractSftpTestCase
 {
-
 	private static final long TIMEOUT = 30000;
 
 	private List<String> sendFiles;
@@ -88,22 +87,38 @@ public class SftpPoolingFunctionalTestCase extends AbstractSftpTestCase
 			public void eventReceived(MuleEventContext context, Object component)
 				throws Exception
 			{
-				logger.info("called " + loopCount.incrementAndGet() + " times");
-				FunctionalTestComponent ftc = (FunctionalTestComponent) component;
 
-				SftpInputStream inputStream = (SftpInputStream) ftc.getLastReceivedMessage();
-				String o = IOUtils.toString(inputStream);
-				if (sendFiles.contains(o))
-				{
-					receiveFiles.add(o);
-				} else
-				{
-					fail("The received file was not sent. Received: '" + o + "'");
-				}
+        String filename = context.getMessage().getStringProperty(SftpConnector.PROPERTY_ORIGINAL_FILENAME, null);
+        SftpInputStream inputStream = null;
+        try {
+          logger.info("called " + loopCount.incrementAndGet() + " times. Filename = " + filename);
 
-				latch.countDown();
-				inputStream.close();
-			}
+         // This is not thread safe! (it should be safe if synchronous="true" is used)
+//          FunctionalTestComponent ftc = (FunctionalTestComponent) component;
+//          inputStream = (SftpInputStream) ftc.getLastReceivedMessage();
+
+          // Use this instead!
+          inputStream = (SftpInputStream) context.getMessage().getPayload();
+          String o = IOUtils.toString(inputStream);
+          if (sendFiles.contains(o))
+          {
+            logger.info("The received file was added. Received: '" + o + "'");
+            receiveFiles.add(o);
+          } else
+          {
+            fail("The received file was not sent. Received: '" + o + "'");
+          }
+
+          latch.countDown();
+        } catch (IOException e) {
+          logger.error("Error occured while processing callback for file=" + filename, e);
+          throw e;
+        } finally {
+          if(inputStream != null) {
+            inputStream.close();
+          }
+        }
+      }
 		};
 
 		getFunctionalTestComponent("receiving").setEventCallback(callback);
@@ -117,7 +132,8 @@ public class SftpPoolingFunctionalTestCase extends AbstractSftpTestCase
 			client.dispatch("vm://test.upload", sendFile, props);
 		}
 
-		latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
+		boolean done = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
+    assertTrue("The test should not time out", done);
 
 		logger.debug("Number of files sent: " + sendFiles.size());
 		logger.debug("Number of files received: " + receiveFiles.size());
