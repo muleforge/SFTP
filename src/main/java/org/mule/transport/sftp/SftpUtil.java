@@ -166,7 +166,16 @@ public class SftpUtil {
         return passphrase;
 	}
 
-	public void createSftpDirIfNotExists(SftpClient sftpClient, String endpointDir) throws IOException
+  /**
+   * Creates the directory if it not already exists.
+   * TODO: check if the SftpUtil & SftpClient methods can be merged
+   *
+   * Note, this method is synchronized because it in rare cases can be called from two threads at the same time and thus cause an error.
+   * @param sftpClient
+   * @param endpointDir
+   * @throws IOException
+   */
+	public synchronized void createSftpDirIfNotExists(SftpClient sftpClient, String endpointDir) throws IOException
 	{
 		String tempDir = getTempDir();
 

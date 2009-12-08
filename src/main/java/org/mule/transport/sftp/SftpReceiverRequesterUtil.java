@@ -131,14 +131,15 @@ public class SftpReceiverRequesterUtil
 		SftpClient client = connector.createSftpClient(endpoint, notifier);
 
 		// Check usage of tmpSendingDir
-		String tmpSedningDir = sftpUtil.getTempDir();
-		if (tmpSedningDir != null)
+		String tmpSendingDir = sftpUtil.getTempDir();
+		if (tmpSendingDir != null)
 		{
 			// Check usage of unique names of files during transfer
 			boolean addUniqueSuffix = sftpUtil.isUseTempFileTimestampSuffix();
 
-			client.createSftpDirIfNotExists(endpoint, tmpSedningDir);
-			String tmpSendingFileName = tmpSedningDir + "/" + fileName;
+      // TODO: is it possibly to move this to somekind of init method?
+			client.createSftpDirIfNotExists(endpoint, tmpSendingDir);
+			String tmpSendingFileName = tmpSendingDir + "/" + fileName;
 
 			if (addUniqueSuffix)
 			{

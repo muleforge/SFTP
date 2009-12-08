@@ -418,8 +418,8 @@ public class SftpClient
 		{
 			// Don't throw e.getmessage since we only get "2: No such file"..
 			throw new IOException("Could not create the directory '" + directoryName + "', caused by: " + e.getMessage());
+      }
 		}
-	}
 
 	public void deleteDirectory(String path) throws IOException
 	{
@@ -455,7 +455,16 @@ public class SftpClient
 		return channelSftp;
 	}
 
-	public void createSftpDirIfNotExists(ImmutableEndpoint endpoint, String newDir) throws IOException
+  /**
+   * Creates the directory if it not already exists.
+   * TODO: check if the SftpUtil & SftpClient methods can be merged
+   *
+   * Note, this method is synchronized because it in rare cases can be called from two threads at the same time and thus cause an error.
+   * @param endpoint
+   * @param newDir
+   * @throws IOException
+   */
+	public synchronized void createSftpDirIfNotExists(ImmutableEndpoint endpoint, String newDir) throws IOException
 	{
 		String newDirAbs = endpoint.getEndpointURI().getPath() + "/" + newDir;
 

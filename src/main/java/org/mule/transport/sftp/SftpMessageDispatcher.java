@@ -39,10 +39,28 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		sftpUtil = new SftpUtil(endpoint);
 	}
 
-	protected void doConnect() throws Exception
-	{
-		//no op
-	}
+//	protected void doConnect() throws Exception
+//	{
+//    super.doConnect();
+//
+//    SftpClient client = null;
+//    if (sftpUtil.isUseTempDir()) {
+//      if (logger.isDebugEnabled()) {
+//        logger.debug("Initializing temp directory for endpoint " + super.getEndpoint().getEndpointURI());
+//      }
+//
+//      try {
+//        client = connector.createSftpClient(endpoint, null);
+//
+//        sftpUtil.createSftpDirIfNotExists(client, endpoint.getEndpointURI().getPath());
+//      } finally {
+//        if (client != null) {
+//          // If the connection fails, the client will be null, otherwise disconnect.
+//          connector.releaseClient(endpoint, client);
+//        }
+//      }
+//    }
+//	}
 
 	protected void doDisconnect() throws Exception
 	{
@@ -129,6 +147,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			useTempDir = sftpUtil.isUseTempDir();
 			if (useTempDir)
 			{
+        // TODO move to a init-method like doConnect?
 				sftpUtil.createSftpDirIfNotExists(client, destDir);
 
 				// Add unique file-name (if configured) for use during transfer to temp-dir
