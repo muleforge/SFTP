@@ -98,7 +98,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 		} else
 		{
-			throw new IllegalArgumentException("Unexpected message type: java.io.InputStream or byte[] expected ");
+			throw new IllegalArgumentException("Unexpected message type: java.io.InputStream or byte[] expected. Got " + data.getClass().getName() );
 		}
 
 		if (logger.isDebugEnabled())

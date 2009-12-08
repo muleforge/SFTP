@@ -66,7 +66,7 @@ public class SftpUtil {
 			sftpClient.deleteFile(transferFileName);
 		} catch (Exception e)
 		{
-			logger.error("Could not delete the file '" + transferFileName + "' from the temp directory '" + tempDirAbs + " '", e);
+			logger.error("Could not delete the file '" + transferFileName + "' from the temp directory '" + tempDirAbs + "'", e);
 		}
 	}
 
