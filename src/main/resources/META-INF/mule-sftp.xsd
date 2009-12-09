@@ -29,7 +29,7 @@
         <xsd:complexContent>
             <xsd:extension base="mule:connectorType">
                 <xsd:sequence minOccurs="0" maxOccurs="1">
-                    <xsd:element ref="abstract-filenameParser"/>
+                    <xsd:element ref="file:abstract-filenameParser"/>
                 </xsd:sequence>
                 <xsd:attributeGroup ref="poolingAttributes"/>
                 <xsd:attributeGroup ref="inboundAttributes"/>
@@ -249,7 +249,6 @@
             </xsd:annotation>
         </xsd:attribute>
   </xsd:attributeGroup>
-  <xsd:element name="abstract-filenameParser" abstract="true" type="file:filenameParserType"/>
 
   <xsd:attributeGroup name="commonKeyAuthenticationAttributes">
      <xsd:attribute name="identityFile" type="xsd:string">
