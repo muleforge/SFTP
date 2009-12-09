@@ -103,9 +103,8 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
 				throws Exception
 			{
 				logger.info("called " + loopCount.incrementAndGet() + " times");
-				FunctionalTestComponent ftc = (FunctionalTestComponent) component;
 
-				SftpInputStream inputStream = (SftpInputStream) ftc.getLastReceivedMessage();
+				SftpInputStream inputStream = (SftpInputStream) context.getMessage().getPayload();
 				String o = IOUtils.toString(inputStream);
 				if (sendFiles.contains(o))
 				{

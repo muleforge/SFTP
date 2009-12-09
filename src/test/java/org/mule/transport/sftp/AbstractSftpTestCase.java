@@ -253,9 +253,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 				throws Exception
 			{
 				logger.info("called " + loopCount.incrementAndGet() + " times");
-				FunctionalTestComponent ftc = (FunctionalTestComponent) component;
 
-				InputStream sftpInputStream = (InputStream) ftc.getLastReceivedMessage();
+				InputStream sftpInputStream = (InputStream) context.getMessage().getPayload();
 				BufferedInputStream bif = new BufferedInputStream(sftpInputStream);
 				byte[] buffer = new byte[1024 * 4];
 
@@ -285,7 +284,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			}
 		};
 		getFunctionalTestComponent(receivingTestComponentName).setEventCallback(callback);
-		
+
 
 		final ValueHolder<Exception> exceptionHolder = new ValueHolder<Exception>();
 		if (expectedFailingConnector != null) {
@@ -297,7 +296,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 				}
 			});
 		}
-		
+
 
 		// InputStream that generates the data without using a file
 		InputStream os = new InputStream()

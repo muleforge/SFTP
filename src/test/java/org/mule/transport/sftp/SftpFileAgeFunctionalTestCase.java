@@ -65,11 +65,10 @@ public class SftpFileAgeFunctionalTestCase extends AbstractSftpTestCase
                 try
                 {
                     logger.info("called " + loopCount.incrementAndGet() + " times");
-                    FunctionalTestComponent ftc = (FunctionalTestComponent) component;
                     // without this we may have problems with the many repeats
                     if (1 == latch.getCount())
                     {
-                        String o = IOUtils.toString((SftpInputStream) ftc.getLastReceivedMessage());
+                        String o = IOUtils.toString((SftpInputStream) context.getMessage().getPayload());
                         message.set(o);
                         latch.countDown();
                     }
