@@ -41,8 +41,7 @@ public class SftpExpressionFilenameParserTestCase extends AbstractSftpTestCase
 	public void testExpressionFilenameParser() throws Exception
 	{
 		MuleClient muleClient = new MuleClient();
-
-		dispatchAndWaitForDelivery("sftpConnector", INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME);
+		dispatchAndWaitForDelivery(new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME));
 
 		SftpClient sftpClient = null;
         try {

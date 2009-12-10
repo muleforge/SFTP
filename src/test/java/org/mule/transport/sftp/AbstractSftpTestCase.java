@@ -9,21 +9,26 @@
  */
 package org.mule.transport.sftp;
 
+import static org.mule.context.notification.EndpointMessageNotification.MESSAGE_DISPATCHED;
+
 import java.beans.ExceptionListener;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.mule.api.MuleEventContext;
 import org.mule.api.MuleException;
+import org.mule.api.context.notification.EndpointMessageNotificationListener;
+import org.mule.api.context.notification.ServerNotification;
 import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.EndpointURI;
 import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.context.notification.EndpointMessageNotification;
 import org.mule.module.client.MuleClient;
 import org.mule.tck.FunctionalTestCase;
 import org.mule.tck.functional.EventCallback;
-import org.mule.tck.functional.FunctionalTestComponent;
 import org.mule.transport.sftp.util.ValueHolder;
 import org.mule.util.StringMessageUtils;
 
@@ -41,6 +46,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class AbstractSftpTestCase extends FunctionalTestCase
 {
+	
 	/** Deletes all files in the directory, useful when testing to ensure that no files are in the way... */
 //	protected void cleanupRemoteFtpDirectory(MuleClient muleClient, String endpointName) throws IOException
 //	{
@@ -420,4 +426,202 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
             sftpClient.disconnect();
         }
     }
+
+    /*
+     * Helper method for initiating a test and wait for the test to complete.
+     * The method sends a file to an inbound endpoint and waits for a dispatch event on a outbound endpoint,
+     * i.e. that the file has been consumed by the inbound endpoint and that the content of the file has been sent to the outgoing endpoint.
+     * 
+     * @param p @see DispatchParameters for details.
+     */
+    protected void dispatchAndWaitForDelivery(final DispatchParameters p)
+    		// , MuleClient muleClient, String sftpConnector, String inboundEndpoint, String message, String filename, final String outboundEndpoint, long timeout)
+    {
+    	// Declare countdown latch and listener
+		final CountDownLatch latch = new CountDownLatch(1);
+		EndpointMessageNotificationListener listener = null;
+		MuleClient muleClient = p.getMuleClient();
+		boolean localMuleClient = muleClient == null;
+
+		try {
+			// First create a local muleClient instance if not supplied
+			if (localMuleClient) muleClient = new MuleClient();
+			
+			// Next create a listener that listens for dispatch events on the outbound endpoint
+			listener = new EndpointMessageNotificationListener() {
+				public void onNotification(ServerNotification notification) {
+
+					// Only care about EndpointMessageNotification
+					if (notification instanceof EndpointMessageNotification) {
+						EndpointMessageNotification endpointNotification = (EndpointMessageNotification)notification;
+
+						// Extract action and name of the endpoint
+						int    action   = endpointNotification.getAction();
+						String endpoint = endpointNotification.getEndpoint().getName();
+
+						// If it is a dispatch event on our outbound endpoint then countdown the latch.
+						if (action == MESSAGE_DISPATCHED && endpoint.equals(p.getOutboundEndpoint())) {
+							logger.debug("Expected notification received on " + p.getOutboundEndpoint() + ", time to countdown the latch");
+							latch.countDown();
+						}
+					}
+				}
+			};
+			
+			// Now register the listener
+			muleContext.getNotificationManager().addListener(listener);
+
+			// Initiate the test by sending a file to the SFTP server, which the inbound-endpoint then can pick up
+
+			// Prepare message headers, set filename-header and if supplied any headers supplied in the call.
+			Map<String, String> headers = new HashMap<String, String>();
+			headers.put("filename", p.getFilename());
+			if (p.getHeaders() != null) {
+				headers.putAll(p.getHeaders());
+			}
+
+			// Setup conect string and perform the actual dispatch
+			String connectString = (p.getSftpConnector() == null) ? "" : "?connector=" + p.getSftpConnector();
+			muleClient.dispatch(getAddressByEndpoint(muleClient, p.getInboundEndpoint()) + connectString, TEST_MESSAGE, headers);
+			
+			// Wait for the delivery to occur...
+			boolean workDone = latch.await(p.getTimeout(), TimeUnit.MILLISECONDS);
+			
+			// Raise a fault if the test timed out
+			assertTrue("Test timed out. It took more than " + p.getTimeout() + " milliseconds. If this error occurs the test probably needs a longer time out (on your computer/network)", workDone);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("An unexpected error occurred: " + e.getMessage());
+
+		} finally {
+			// Dispose muleClient if created locally
+			if (localMuleClient) muleClient.dispose();
+			
+			// Always remove the listener if created
+			if (listener != null) muleContext.getNotificationManager().removeListener(listener);			
+		}
+    }
+
+	/**
+	 * Helper class for dynamic assignment of parameters to the method dispatchAndWaitForDelivery()
+	 * Only inboundEndpoint and outboundEndpoint are mandatory, the rest of the parameters are optional.
+	 * 
+	 * @author Magnus Larsson
+	 */
+	public class DispatchParameters {
+		
+		/**
+		 * Optional MuleClient, the method will create an own if not supplied.
+		 */
+		private MuleClient muleClient = null;
+
+		/**
+		 * Optional name of sftp-connector, if not supplied it is assumed that only one sftp-conector is speficied in the mule configuration.
+		 * If more than one sftp-connector is specified this paramter has to be specified to point out what connector to use for the dispatch.
+		 */
+		private String sftpConnector = null;
+		
+		/** 
+		 * Mandatory name of the inbound endpoint, i.e. where to dispatch the file
+		 */
+		private String inboundEndpoint = null;
+
+		/**
+		 * Optional message headers
+		 */
+		private Map<String, String> headers = null;
+				
+		/**
+		 * Optional content of the file, if not specified then it defaults to AbstractMuleTestCase.TEST_MESSAGE.
+		 */
+		private String message = TEST_MESSAGE;
+
+		/**
+		 * Optional name of the file, defaults to "file.txt"
+		 */
+		private String filename = "file.txt";
+		
+		/**
+		 * Mandatory name of the outbound endpoint, i.e. where we will wait for a message to be delivered to in the end
+		 */
+		private String outboundEndpoint = null;
+		
+		/** 
+		 * Optional timeout for how long we will wait for a message to be delivered to the outbound endpoint
+		 */
+		private long timeout = 10000;
+		
+		public DispatchParameters(String inboundEndpoint, String outboundEndpoint) {
+			this.inboundEndpoint = inboundEndpoint;
+			this.outboundEndpoint = outboundEndpoint;
+		}
+
+		public MuleClient getMuleClient() {
+			return muleClient;
+		}
+
+		public void setMuleClient(MuleClient muleClient) {
+			this.muleClient = muleClient;
+		}
+
+		public String getSftpConnector() {
+			return sftpConnector;
+		}
+
+		public void setSftpConnector(String sftpConnector) {
+			this.sftpConnector = sftpConnector;
+		}
+
+		public String getInboundEndpoint() {
+			return inboundEndpoint;
+		}
+
+		public void setInboundEndpoint(String inboundEndpoint) {
+			this.inboundEndpoint = inboundEndpoint;
+		}
+
+		public Map<String, String> getHeaders() {
+			return headers;
+		}
+
+		public void setHeaders(Map<String, String> headers) {
+			this.headers = headers;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public void setMessage(String message) {
+			this.message = message;
+		}
+
+		public String getFilename() {
+			return filename;
+		}
+
+		public void setFilename(String filename) {
+			this.filename = filename;
+		}
+
+		public String getOutboundEndpoint() {
+			return outboundEndpoint;
+		}
+
+		public void setOutboundEndpoint(String outboundEndpoint) {
+			this.outboundEndpoint = outboundEndpoint;
+		}
+
+		public long getTimeout() {
+			return timeout;
+		}
+
+		public void setTimeout(long timeout) {
+			this.timeout = timeout;
+		}
+
+				
+	}
+
 }

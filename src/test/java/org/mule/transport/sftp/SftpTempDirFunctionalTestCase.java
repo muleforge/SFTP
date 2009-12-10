@@ -11,17 +11,17 @@
 
 package org.mule.transport.sftp;
 
-import org.mule.module.client.MuleClient;
-import org.mule.api.endpoint.EndpointURI;
-import org.mule.api.endpoint.ImmutableEndpoint;
-
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.IOException;
 
+import org.mule.api.endpoint.EndpointURI;
+import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.module.client.MuleClient;
+ 
 /**
- * @author Lennart Häggkvist
- * <code>SftpFileAgeFunctionalTestCase</code> tests the fileAge functionality.
+ * @author Lennart Häggkvist, Magnus Larsson
+ * <code>SftpTempDirFunctionalTestCase</code> tests the tempDir functionality.
  */
 
 public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
@@ -56,19 +56,9 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
 	{
 		MuleClient muleClient = new MuleClient();
 
-		// Ensure that no other files exists
-//		cleanupRemoteFtpDirectory(muleClient, OUTBOUND_ENDPOINT_NAME);
-//		cleanupRemoteFtpDirectory(muleClient, INBOUND_ENDPOINT_NAME);
-
-		// Delete the temp directory so that we can ensure that it is created
-//		deleteRemoteDirectory(muleClient, OUTBOUND_ENDPOINT_NAME, TEMP_DIR);
-
-		// Send an file to the SFTP server, which the inbound-endpoint then can pick up
-		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME) + "?connector=sftpCustomConnector", TEST_MESSAGE, fileNameProperties);
-
-		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
-		//   for example since we dont have the TestComp
-		Thread.sleep(10000);
+		DispatchParameters p = new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME);
+		p.setSftpConnector("sftpCustomConnector");
+		dispatchAndWaitForDelivery(p);
 
         SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
         try

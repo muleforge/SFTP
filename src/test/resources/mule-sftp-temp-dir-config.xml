@@ -16,6 +16,12 @@
                     identityFile="${USER1_IDENTITYFILE}" passphrase="${USER1_IDENTITYFILE_PASSPHRASE}"
                     tempDir="uploading"/>
 
+	<spring:bean name="endpointMessageNotificationLogger" class="org.mule.transport.sftp.notification.EndpointMessageNotificationTestListener"/>
+	<notifications>
+		<notification event="ENDPOINT-MESSAGE"/>
+		<notification-listener ref="endpointMessageNotificationLogger"/>
+	</notifications>
+
     <model name="main">
         <service name="testComponent">
             <inbound>
