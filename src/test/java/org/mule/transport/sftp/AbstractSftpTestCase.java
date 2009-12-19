@@ -10,6 +10,7 @@
 package org.mule.transport.sftp;
 
 import static org.mule.context.notification.EndpointMessageNotification.MESSAGE_DISPATCHED;
+import static org.mule.context.notification.EndpointMessageNotification.MESSAGE_SENT;
 
 import java.beans.ExceptionListener;
 import java.io.BufferedInputStream;
@@ -31,6 +32,8 @@ import org.mule.tck.FunctionalTestCase;
 import org.mule.tck.functional.EventCallback;
 import org.mule.transport.sftp.util.ValueHolder;
 import org.mule.util.StringMessageUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
@@ -47,6 +50,8 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractSftpTestCase extends FunctionalTestCase
 {
 	
+	protected final Logger logger = LoggerFactory.getLogger(AbstractSftpTestCase.class);
+
 	/** Deletes all files in the directory, useful when testing to ensure that no files are in the way... */
 //	protected void cleanupRemoteFtpDirectory(MuleClient muleClient, String endpointName) throws IOException
 //	{
@@ -107,12 +112,12 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 				sftpClient.deleteDirectory(path);
 			} catch (Exception e)
 			{
-				logger.debug("", e);
+				if (logger.isDebugEnabled()) logger.debug("Failed delete directory " + path, e);
 			}
 
 		} catch (Exception e)
 		{
-			logger.debug("", e);
+			if (logger.isDebugEnabled()) logger.debug("Failed to recursivly delete directory " + path, e);
 		}
 	}
 
@@ -258,7 +263,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			public void eventReceived(MuleEventContext context, Object component)
 				throws Exception
 			{
-				logger.info("called " + loopCount.incrementAndGet() + " times");
+				if (logger.isInfoEnabled()) logger.info("called " + loopCount.incrementAndGet() + " times");
 
 				InputStream sftpInputStream = (InputStream) context.getMessage().getPayload();
 				BufferedInputStream bif = new BufferedInputStream(sftpInputStream);
@@ -325,7 +330,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		HashMap<String, String> props = new HashMap<String, String>(1);
 		props.put(SftpConnector.PROPERTY_FILENAME, filename);
 
-		logger.info(StringMessageUtils.getBoilerPlate("Note! If this test fails due to timeout please add '-Dmule.test.timeoutSecs=XX' to the mvn command!"));
+		if (logger.isInfoEnabled()) logger.info(StringMessageUtils.getBoilerPlate("Note! If this test fails due to timeout please add '-Dmule.test.timeoutSecs=XX' to the mvn command!"));
 
 		executeBaseAssertionsBeforeCall();
 
@@ -355,8 +360,10 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	protected void executeBaseAssertionsAfterCall(int sendSize, int receivedSize) {
 
 		// Make sure that the file we received had the same size as the one we sent
-		logger.info("Sent size: " + sendSize);
-		logger.info("Received size: " + receivedSize);
+		if (logger.isInfoEnabled()) {
+			logger.info("Sent size: " + sendSize);
+			logger.info("Received size: " + receivedSize);
+		}
 
 		assertEquals("The received file should have the same size as the sent file", sendSize, receivedSize);
 	}
@@ -417,25 +424,25 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
                 recursiveDelete(muleClient, sftpClient, endpointName, "");
             } catch (IOException e)
             {
-                logger.error("", e);
+    			if (logger.isErrorEnabled()) logger.error("Failed to recursivly delete endpoint " + endpointName, e);
             }
 
             String path = getPathByEndpoint(muleClient, sftpClient, endpointName);
             channelSftp.mkdir(path);
         } finally {
             sftpClient.disconnect();
+            if (logger.isDebugEnabled()) logger.debug("Done init endpoint directory: " + endpointName);
         }
     }
 
-    /*
-     * Helper method for initiating a test and wait for the test to complete.
-     * The method sends a file to an inbound endpoint and waits for a dispatch event on a outbound endpoint,
-     * i.e. that the file has been consumed by the inbound endpoint and that the content of the file has been sent to the outgoing endpoint.
-     * 
-     * @param p @see DispatchParameters for details.
-     */
-    protected void dispatchAndWaitForDelivery(final DispatchParameters p)
-    		// , MuleClient muleClient, String sftpConnector, String inboundEndpoint, String message, String filename, final String outboundEndpoint, long timeout)
+	/**
+	 * Helper method for initiating a test and wait for the test to complete.
+	 * The method sends a file to an inbound endpoint and waits for a dispatch event on a outbound endpoint,
+	 * i.e. that the file has been consumed by the inbound endpoint and that the content of the file has been sent to the outgoing endpoint.
+	 * 
+	 * @param p where inboundEndpoint and outboundEndpoint are mandatory, @see DispatchParameters for details.
+	 */
+	protected void dispatchAndWaitForDelivery(final DispatchParameters p)
     {
     	// Declare countdown latch and listener
 		final CountDownLatch latch = new CountDownLatch(1);
@@ -459,9 +466,11 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 						int    action   = endpointNotification.getAction();
 						String endpoint = endpointNotification.getEndpoint().getName();
 
+						System.err.println("### action: " + endpointNotification.getActionName() + ", endpoint: " + endpoint);
+						
 						// If it is a dispatch event on our outbound endpoint then countdown the latch.
-						if (action == MESSAGE_DISPATCHED && endpoint.equals(p.getOutboundEndpoint())) {
-							logger.debug("Expected notification received on " + p.getOutboundEndpoint() + ", time to countdown the latch");
+						if ((action == MESSAGE_DISPATCHED || action == MESSAGE_SENT) && endpoint.equals(p.getOutboundEndpoint())) {
+							if (logger.isDebugEnabled()) logger.debug("Expected notification received on " + p.getOutboundEndpoint() + " (action: " + action + "), time to countdown the latch");
 							latch.countDown();
 						}
 					}
@@ -480,13 +489,15 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 				headers.putAll(p.getHeaders());
 			}
 
-			// Setup conect string and perform the actual dispatch
+			// Setup connect string and perform the actual dispatch
 			String connectString = (p.getSftpConnector() == null) ? "" : "?connector=" + p.getSftpConnector();
 			muleClient.dispatch(getAddressByEndpoint(muleClient, p.getInboundEndpoint()) + connectString, TEST_MESSAGE, headers);
 			
 			// Wait for the delivery to occur...
-			boolean workDone = latch.await(p.getTimeout(), TimeUnit.MILLISECONDS);
-			
+			if (logger.isDebugEnabled()) logger.debug("Waiting for file to be delivered to the endpoint...");
+			boolean workDone = latch.await(p.getTimeout(), TimeUnit.MILLISECONDS);			
+			if (logger.isDebugEnabled()) logger.debug((workDone) ? "File delivered, continue..." : "No file delivered, timeout occurred!");
+
 			// Raise a fault if the test timed out
 			assertTrue("Test timed out. It took more than " + p.getTimeout() + " milliseconds. If this error occurs the test probably needs a longer time out (on your computer/network)", workDone);
 
@@ -501,6 +512,75 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			// Always remove the listener if created
 			if (listener != null) muleContext.getNotificationManager().removeListener(listener);			
 		}
+    }
+
+    /**
+     * Helper method for initiating a test and wait for an exception to be catched by the sftp-connector.
+     * 
+	 * @param p where sftpConnector and inboundEndpoint are mandatory, @see DispatchParameters for details.
+     * @return
+     */
+    protected Exception dispatchAndWaitForException(final DispatchParameters p, String expectedFailingConnector)
+    {
+    	// Declare countdown latch and listener
+		final CountDownLatch latch = new CountDownLatch(1);
+		ExceptionListener listener = null;
+		MuleClient muleClient = p.getMuleClient();
+		boolean localMuleClient = muleClient == null;
+		ExceptionListener currentExceptionListener = null;
+		final ValueHolder<Exception> exceptionHolder = new ValueHolder<Exception>();
+
+		try {
+			// First create a local muleClient instance if not supplied
+			if (localMuleClient) muleClient = new MuleClient();
+			
+			// Next create a listener that listens for exception on the sftp-connector
+			listener = new ExceptionListener() {
+				public void exceptionThrown(Exception e) {
+					exceptionHolder.value = e;
+					if (logger.isDebugEnabled()) logger.debug("Expected exception occurred: " + e.getMessage() + ", time to countdown the latch");
+					latch.countDown();
+				}
+			};
+
+			// Now register an exception-listener on the connector that expects to fail
+			currentExceptionListener = muleContext.getRegistry().lookupConnector(expectedFailingConnector).getExceptionListener();
+			muleContext.getRegistry().lookupConnector(expectedFailingConnector).setExceptionListener(listener);
+
+			// Initiate the test by sending a file to the SFTP server, which the inbound-endpoint then can pick up
+
+			// Prepare message headers, set filename-header and if supplied any headers supplied in the call.
+			Map<String, String> headers = new HashMap<String, String>();
+			headers.put("filename", p.getFilename());
+			if (p.getHeaders() != null) {
+				headers.putAll(p.getHeaders());
+			}
+
+			// Setup connect string and perform the actual dispatch
+			String connectString = (p.getSftpConnector() == null) ? "" : "?connector=" + p.getSftpConnector();
+			muleClient.dispatch(getAddressByEndpoint(muleClient, p.getInboundEndpoint()) + connectString, TEST_MESSAGE, headers);
+			
+			// Wait for the exception to occur...
+			if (logger.isDebugEnabled()) logger.debug("Waiting for an exception to occur...");
+			boolean workDone = latch.await(p.getTimeout(), TimeUnit.MILLISECONDS);
+			if (logger.isDebugEnabled()) logger.debug((workDone) ? "Exception occurred, continue..." : "No exception, instead a timeout occurred!");
+			
+			// Raise a fault if the test timed out
+			assertTrue("Test timed out. It took more than " + p.getTimeout() + " milliseconds. If this error occurs the test probably needs a longer time out (on your computer/network)", workDone);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("An unexpected error occurred: " + e.getMessage());
+
+		} finally {
+			// Dispose muleClient if created locally
+			if (localMuleClient) muleClient.dispose();
+			
+			// Always reset the current listener
+			muleContext.getRegistry().lookupConnector(expectedFailingConnector).setExceptionListener(currentExceptionListener);
+		}
+		
+		return (Exception)exceptionHolder.value;
     }
 
 	/**

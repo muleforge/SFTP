@@ -23,17 +23,24 @@ public class EndpointMessageNotificationTestListener implements EndpointMessageN
 			return;
 		}
 
-		String endpoint   = endpointNotification.getEndpoint().getEndpointURI().toString();
-		String action     = notification.getActionName();
-		String resourceId = notification.getResourceIdentifier();
-		String timestamp  = new Date(notification.getTimestamp()).toString();
-
 		MuleMessage message  = (MuleMessage)endpointNotification.getSource();
 		String msgType       = message.getPayload().getClass().getName();
-		String correlationId = message.getStringProperty("MULE_CORRELATION_ID",        "?");
+		String correlationId = message.getStringProperty("MULE_CORRELATION_ID", "?");
+		String endpointUri   = endpointNotification.getEndpoint().getEndpointURI().toString();
+		String endpointName  = endpointNotification.getEndpoint().getName();
+		String action        = notification.getActionName();
+		String resourceId    = notification.getResourceIdentifier();
+		String timestamp     = new Date(notification.getTimestamp()).toString();
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("*** OnNotification: " + notification.EVENT_NAME + "\nTimestamp=" + timestamp + "\nMsgType=" + msgType + "\nAction=" + action + "\nResourceId=" + resourceId + "\nEndpoint=" + endpoint + "\nCorrelationId=" + correlationId + "");
+			logger.debug("OnNotification: " + notification.EVENT_NAME + 
+				"\nTimestamp=" + timestamp + 
+				"\nMsgType=" + msgType + 
+				"\nAction=" + action + 
+				"\nResourceId=" + resourceId + 
+				"\nEndpointName=" + endpointName + 
+				"\nEndpointUri=" + endpointUri + 
+				"\nCorrelationId=" + correlationId + "");
 		}
 	}
 

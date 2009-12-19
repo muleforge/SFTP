@@ -64,7 +64,7 @@ public class SftpTransportNotificationTestListener implements SftpTransportNotif
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("OnNotification: " + notification.EVENT_NAME + "\nTimestamp=" + timestamp + "\nMsgType=" + msgType + "\nAction=" + action + " " + info + " " + size + "\nResourceId=" + resourceId + "\nEndpoint=" + endpoint + "\nCorrelationId=" + correlationId + "");
+			logger.debug("OnNotification: " + notification.EVENT_NAME + "\nAction=" + action + " " + info + " " + size + "\nEndpoint=" + endpoint + "\nTimestamp=" + timestamp + "\nMsgType=" + msgType + "\nResourceId=" + resourceId + "\nCorrelationId=" + correlationId + "");
 		}
 	}
 

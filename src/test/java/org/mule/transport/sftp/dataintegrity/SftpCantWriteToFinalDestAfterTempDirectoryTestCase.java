@@ -1,5 +1,7 @@
 package org.mule.transport.sftp.dataintegrity;
 
+import java.io.IOException;
+
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.module.client.MuleClient;
 import org.mule.transport.sftp.SftpClient;
@@ -43,17 +45,17 @@ public class SftpCantWriteToFinalDestAfterTempDirectoryTestCase extends Abstract
         SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
 
         try {
-		// change the chmod to "dr-x------" on the outbound-directory
-		remoteChmod(muleClient, sftpClient, OUTBOUND_ENDPOINT_NAME, 00500);
-
-		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
-
-		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
-		//   for example since we dont have the TestComponent
-		Thread.sleep(4000);
-
-		verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
+			// change the chmod to "dr-x------" on the outbound-directory
+			remoteChmod(muleClient, sftpClient, OUTBOUND_ENDPOINT_NAME, 00500);
+	
+	        // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
+	        // Expect an error, permission denied
+	    	Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME), "sftp");
+	        assertNotNull(exception);
+	        assertTrue(exception instanceof IOException);
+	        assertEquals("Permission denied", exception.getMessage());
+	
+			verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
 
             ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_ENDPOINT_NAME);
             assertFalse("The inbound file should not be left in the TEMP-dir", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath() + "/" + TEMP_DIR, FILE_NAME));

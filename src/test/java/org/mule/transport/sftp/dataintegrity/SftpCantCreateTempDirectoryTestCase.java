@@ -1,5 +1,7 @@
 package org.mule.transport.sftp.dataintegrity;
 
+import java.io.IOException;
+
 import org.mule.module.client.MuleClient;
 import org.mule.transport.sftp.SftpClient;
 
@@ -39,16 +41,16 @@ public class SftpCantCreateTempDirectoryTestCase extends AbstractSftpDataIntegri
         SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
 
         try {
-// change the chmod to "dr-x------" on the outbound-directory
+        	// change the chmod to "dr-x------" on the outbound-directory
             // --> the temp directory should not be able to be created
             remoteChmod(muleClient, sftpClient, OUTBOUND_ENDPOINT_NAME, 00500);
 
             // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-            muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
-
-            // TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
-            //   for example since we don't have the TestComponent because we want to have to Sftp-endpoints?
-            Thread.sleep(5000);
+            // Expect an error, permission denied
+        	Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME), "sftp");
+            assertNotNull(exception);
+            assertTrue(exception instanceof IOException);
+            assertEquals("Could not create the directory 'uploading', caused by: Permission denied", exception.getMessage());
 
             verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
         } finally {
@@ -65,12 +67,8 @@ public class SftpCantCreateTempDirectoryTestCase extends AbstractSftpDataIntegri
 //	{
 //		MuleClient muleClient = new MuleClient();
 //
-//		muleClient.dispatch(getAddressByEndpoint(muleClient, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
-//
-//		// TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
-//		//   for example since we don't have the TestComponent because we want to have to Sftp-endpoints?
-//		Thread.sleep(2000);
-//
+//	    dispatchAndWaitForDelivery(new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME));
+//	
 //		verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, false, true);
 //	}
 

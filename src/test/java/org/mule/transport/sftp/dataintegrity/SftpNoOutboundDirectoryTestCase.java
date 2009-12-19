@@ -1,5 +1,7 @@
 package org.mule.transport.sftp.dataintegrity;
 
+import java.io.IOException;
+
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.module.client.MuleClient;
 import org.mule.transport.sftp.SftpClient;
@@ -32,12 +34,12 @@ public class SftpNoOutboundDirectoryTestCase extends AbstractSftpDataIntegrityTe
         MuleClient muleClient = new MuleClient();
 
         // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-        muleClient.dispatch(getAddressByEndpoint(muleClient, ENDPOINT_NAME), TEST_MESSAGE, fileNameProperties);
-
-        // TODO dont know any better way to wait for the above to finish? We cant use the same as SftpFileAgeFunctionalTestCase
-        //   for example since we dont have the TestComponent
-        Thread.sleep(2000);
-
+    	Exception exception = dispatchAndWaitForException(new DispatchParameters(ENDPOINT_NAME, null), "sftp");
+        assertNotNull(exception);
+        assertTrue(exception instanceof IOException);
+        assertTrue(exception.getMessage().startsWith("Error 'No such file' occurred when trying to CDW to '"));
+        assertTrue(exception.getMessage().endsWith("/DIRECTORY-MISSING'."));
+          
         SftpClient sftpClient = getSftpClient(muleClient, ENDPOINT_NAME);
         try {
             ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(ENDPOINT_NAME);
