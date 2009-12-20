@@ -16,7 +16,9 @@ import java.beans.ExceptionListener;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.mule.api.MuleEventContext;
@@ -26,6 +28,7 @@ import org.mule.api.context.notification.ServerNotification;
 import org.mule.api.endpoint.EndpointBuilder;
 import org.mule.api.endpoint.EndpointURI;
 import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.api.service.Service;
 import org.mule.context.notification.EndpointMessageNotification;
 import org.mule.module.client.MuleClient;
 import org.mule.tck.FunctionalTestCase;
@@ -407,7 +410,36 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		channelSftp.chmod(permissions, sftpClient.getAbsolutePath(endpointURI.getPath()));
 	}
 
-    /**
+	/**
+	 * Initiates a list of sftp-endpoint-directories. 
+	 * Ensures that affected services are stopped during the initiation.
+	 * 
+	 * @param serviceNames
+	 * @param endpointNames
+	 * @throws Exception
+	 */
+	protected void initEndpointDirectories(String[] serviceNames, String[] endpointNames) throws Exception {
+
+		// Stop all names services
+		List<Service> services = new ArrayList<Service>();
+		for (String serviceName : serviceNames) {
+			Service service = muleContext.getRegistry().lookupService(serviceName);
+			service.stop();
+			services.add(service);
+		}
+
+		// Now init the directory for each named endpoint, one by one
+		for (String endpointName : endpointNames) {
+			initEndpointDirectory(endpointName);
+		}
+
+		// We are done, startup the services again so that the test can begin...
+		for (Service service : services) {
+			service.start();
+		}
+	}
+
+	/**
      * Ensures that the directory exists and is writable by deleting the directory and then recreate it.
      *
      * @param endpointName
@@ -468,8 +500,6 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 						int    action   = endpointNotification.getAction();
 						String endpoint = endpointNotification.getEndpoint().getName();
 
-						System.err.println("### action: " + endpointNotification.getActionName() + ", endpoint: " + endpoint);
-						
 						// If it is a dispatch event on our outbound endpoint then countdown the latch.
 						if ((action == MESSAGE_DISPATCHED || action == MESSAGE_SENT) && endpoint.equals(p.getOutboundEndpoint())) {
 							if (logger.isDebugEnabled()) logger.debug("Expected notification received on " + p.getOutboundEndpoint() + " (action: " + action + "), time to countdown the latch");
