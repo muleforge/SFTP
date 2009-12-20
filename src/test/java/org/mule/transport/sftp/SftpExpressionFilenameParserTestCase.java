@@ -48,7 +48,7 @@ public class SftpExpressionFilenameParserTestCase extends AbstractSftpTestCase
     		// Make sure a new file with name according to the notation has been created
     		sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
     		ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_ENDPOINT_NAME);
-    		assertTrue("A new file in the outbound endpoint should exist", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath(), "file.txt"));
+    		assertTrue("A new file in the outbound endpoint should exist", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath(), FILE_NAME));
         } finally {
             sftpClient.disconnect();
         }

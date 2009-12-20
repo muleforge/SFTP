@@ -50,6 +50,8 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractSftpTestCase extends FunctionalTestCase
 {
 	
+    protected static final String FILE_NAME = "file.txt";
+
 	protected final Logger logger = LoggerFactory.getLogger(AbstractSftpTestCase.class);
 
 	/** Deletes all files in the directory, useful when testing to ensure that no files are in the way... */
@@ -618,9 +620,9 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		private String message = TEST_MESSAGE;
 
 		/**
-		 * Optional name of the file, defaults to "file.txt"
+		 * Optional name of the file, defaults to FILE_NAME
 		 */
-		private String filename = "file.txt";
+		private String filename = FILE_NAME;
 		
 		/**
 		 * Mandatory name of the outbound endpoint, i.e. where we will wait for a message to be delivered to in the end

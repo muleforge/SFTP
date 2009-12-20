@@ -42,6 +42,6 @@ public class SftpQuartzRequesterFunctionalTestCase extends AbstractSftpTestCase
 	{
 		// TODO. Add some tests specific to sizeCheck, i.e. create a very large file and ensure that the sizeChec prevents the inbound enpoint to read the file during creation of it
 
-		executeBaseTest("inboundEndpoint", "vm://test.upload", "file.txt", SEND_SIZE, "receiving", TIMEOUT);
+		executeBaseTest("inboundEndpoint", "vm://test.upload", FILE_NAME, SEND_SIZE, "receiving", TIMEOUT);
 	}
 }

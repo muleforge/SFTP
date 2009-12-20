@@ -31,14 +31,6 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
 	private static final String INBOUND_ENDPOINT_NAME = "inboundEndpoint";
 	private static final String TEMP_DIR = "uploading";
 
-	private static final String fileName = "file.txt";
-	// Map that is used to set the filename in the outbound directory
-	private static final Map<String, String> fileNameProperties = new HashMap<String, String>();
-	static
-	{
-		fileNameProperties.put("filename", fileName);
-	}
-
 	protected String getConfigResources()
 	{
 		return "mule-sftp-temp-dir-config.xml";
@@ -76,8 +68,8 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
         try {
             sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
             ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_ENDPOINT_NAME);
-            assertTrue("The file should exist in the final destination", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), fileName));
-            assertFalse("No file should exist in the temp directory", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath() + "/uploading", fileName));
+            assertTrue("The file should exist in the final destination", super.verifyFileExists(sftpClient, endpoint.getEndpointURI(), FILE_NAME));
+            assertFalse("No file should exist in the temp directory", super.verifyFileExists(sftpClient, endpoint.getEndpointURI().getPath() + "/uploading", FILE_NAME));
         } finally {
             sftpClient.disconnect();
         }
