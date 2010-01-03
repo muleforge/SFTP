@@ -196,7 +196,7 @@ public class SftpClient
 		{
 			if (logger.isDebugEnabled())
 			{
-				logger.debug("Will try to rename " + filename + " to " + absolutePath);
+				logger.debug("Will try to rename " + currentDirectory + "/" + filename + " to " + absolutePath);
 			}
 			channelSftp.rename(filename, absolutePath);
 		}
