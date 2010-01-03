@@ -48,6 +48,9 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver
 		if (files.length == 0)
 		{
 			logger.debug("No matching files found at endpoint " + endpoint.getEndpointURI());
+		} else
+		{
+		  	logger.debug(files.length + " files found at endpoint " + endpoint.getEndpointURI());
 		}
 
 		for (String file : files)
