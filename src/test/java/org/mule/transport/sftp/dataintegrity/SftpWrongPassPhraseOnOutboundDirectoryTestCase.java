@@ -41,7 +41,7 @@ public class SftpWrongPassPhraseOnOutboundDirectoryTestCase extends AbstractSftp
         assertNotNull(exception);
         assertTrue(exception instanceof IOException);
         assertTrue(exception.getMessage().startsWith("Error during login to"));
-        assertTrue(exception.getMessage().endsWith("Auth cancel"));
+        assertTrue(exception.getMessage().endsWith("Auth fail"));
 
 		SftpClient sftpClient = getSftpClient(muleClient, INBOUND_ENDPOINT_NAME);
         try {
