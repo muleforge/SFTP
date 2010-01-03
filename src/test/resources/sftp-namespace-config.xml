@@ -14,7 +14,7 @@
 		            pollingFrequency="15000"
 		            autoDelete="true"
                     fileAge="1234"
-                    tempDir="uploading"
+                    tempDirOutbound="uploading"
 					maxConnectionPoolSize="42"
 		            >
 

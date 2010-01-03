@@ -144,7 +144,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			filename = client.duplicateHandling(destDir, filename, sftpUtil.getDuplicateHandling());
 			transferFilename = filename;
 
-			useTempDir = sftpUtil.isUseTempDir();
+			useTempDir = sftpUtil.isUseTempDirOutbound();
 			if (useTempDir)
 			{
         // TODO move to a init-method like doConnect?
@@ -196,7 +196,8 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			if (useTempDir)
 			{
 				// Cleanup the remote temp dir!
-				sftpUtil.cleanupTempDir(client, transferFilename);
+				String tempDir = sftpUtil.getTempDirOutbound();
+				sftpUtil.cleanupTempDir(client, transferFilename, tempDir);
 			}
 			throw e;
 		}

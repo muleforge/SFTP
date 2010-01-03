@@ -131,7 +131,7 @@ public class SftpReceiverRequesterUtil
 		SftpClient client = connector.createSftpClient(endpoint, notifier);
 
 		// Check usage of tmpSendingDir
-		String tmpSendingDir = sftpUtil.getTempDir();
+		String tmpSendingDir = sftpUtil.getTempDirInbound();
 		if (tmpSendingDir != null)
 		{
 			// Check usage of unique names of files during transfer

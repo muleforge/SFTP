@@ -27,7 +27,7 @@ public class SftpNamespaceHandlerTestCase extends FunctionalTestCase
 		assertTrue(c.isAutoDelete());
 		assertEquals(c.getPollingFrequency(), 15000);
 		assertEquals(1234, c.getFileAge());
-		assertEquals("uploading", c.getTempDir());
+		assertEquals("uploading", c.getTempDirOutbound());
 		assertEquals(42, c.getMaxConnectionPoolSize());
 	}
 }

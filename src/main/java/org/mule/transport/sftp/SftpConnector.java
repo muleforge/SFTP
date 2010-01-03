@@ -89,9 +89,10 @@ public class SftpConnector extends AbstractConnector
 	private boolean checkFileAge = false;
 	private long fileAge = 0;
 
-	private String tempDir = null;
+  private String tempDirInbound = null;
+  private String tempDirOutbound = null;
 
-	private Map<EndpointURI, GenericObjectPool> pools = new HashMap<EndpointURI, GenericObjectPool>();
+  private Map<EndpointURI, GenericObjectPool> pools = new HashMap<EndpointURI, GenericObjectPool>();
 
 	private String duplicateHandling = "throwException";
 	private boolean useTempFileTimestampSuffix = false;
@@ -411,17 +412,23 @@ public class SftpConnector extends AbstractConnector
 		return checkFileAge;
 	}
 
-	public String getTempDir()
-	{
-		return tempDir;
-	}
+  public String getTempDirInbound() {
+    return tempDirInbound;
+  }
 
-	public void setTempDir(String tempDir)
-	{
-		this.tempDir = tempDir;
-	}
+  public void setTempDirInbound(String pTempDirInbound) {
+    tempDirInbound = pTempDirInbound;
+  }
 
-	// Need this method to be public for SftpNotifier
+  public String getTempDirOutbound() {
+    return tempDirOutbound;
+  }
+
+  public void setTempDirOutbound(String pTempDirOutbound) {
+    tempDirOutbound = pTempDirOutbound;
+  }
+
+  // Need this method to be public for SftpNotifier
 	@Override
 	public boolean isEnableMessageEvents()
 	{

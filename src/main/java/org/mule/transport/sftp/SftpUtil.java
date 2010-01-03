@@ -40,8 +40,8 @@ public class SftpUtil {
 	}
 
 
-    public String getTempDir() {
-        String tempDir = connector.getTempDir();
+    public String getTempDirInbound() {
+        String tempDir = connector.getTempDirInbound();
 
         // Override the value from the endpoint?
         Object v = endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR);
@@ -52,13 +52,30 @@ public class SftpUtil {
         return tempDir;
 	}
 
-	public boolean isUseTempDir()
+	public boolean isUseTempDirInbound()
 	{
-		return getTempDir() != null;
+		return getTempDirInbound() != null;
 	}
 
-	public void cleanupTempDir(SftpClient sftpClient, String transferFileName) {
-		String tempDir = getTempDir();
+	public String getTempDirOutbound() {
+
+        String tempDir = connector.getTempDirOutbound();
+
+        // Override the value from the endpoint?
+        Object v = endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR);
+        if(v != null) {
+        	tempDir = (String)v;
+        }
+
+        return tempDir;
+	}
+
+	public boolean isUseTempDirOutbound()
+	{
+		return getTempDirOutbound() != null;
+	}
+
+	public void cleanupTempDir(SftpClient sftpClient, String transferFileName, String tempDir) {
 		String tempDirAbs = sftpClient.getAbsolutePath(endpoint.getEndpointURI().getPath() + "/" + tempDir);
 		try
 		{
@@ -169,6 +186,7 @@ public class SftpUtil {
   /**
    * Creates the directory if it not already exists.
    * TODO: check if the SftpUtil & SftpClient methods can be merged
+   * TODO: this assumes that it is run on the outbound endpoint
    *
    * Note, this method is synchronized because it in rare cases can be called from two threads at the same time and thus cause an error.
    * @param sftpClient
@@ -177,7 +195,7 @@ public class SftpUtil {
    */
 	public synchronized void createSftpDirIfNotExists(SftpClient sftpClient, String endpointDir) throws IOException
 	{
-		String tempDir = getTempDir();
+		String tempDir = getTempDirOutbound();
 
 		String tempDirAbs = sftpClient.getAbsolutePath(endpointDir + "/" + tempDir);
 
