@@ -148,7 +148,8 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			if (useTempDir)
 			{
         // TODO move to a init-method like doConnect?
-				sftpUtil.createSftpDirIfNotExists(client, destDir);
+        // cd to tempDir and create it if it doesn't already exist
+				sftpUtil.cwdToTempDirOnOutbound(client, destDir);
 
 				// Add unique file-name (if configured) for use during transfer to temp-dir
 				boolean addUniqueSuffix = sftpUtil.isUseTempFileTimestampSuffix();

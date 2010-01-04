@@ -184,16 +184,14 @@ public class SftpUtil {
 	}
 
   /**
-   * Creates the directory if it not already exists.
-   * TODO: check if the SftpUtil & SftpClient methods can be merged
-   * TODO: this assumes that it is run on the outbound endpoint
+   * Changes the directory to the temp-dir on the <b>outbound</b> endpoint. Will create the directory if it not already exists.
    *
    * Note, this method is synchronized because it in rare cases can be called from two threads at the same time and thus cause an error.
    * @param sftpClient
    * @param endpointDir
    * @throws IOException
    */
-	public synchronized void createSftpDirIfNotExists(SftpClient sftpClient, String endpointDir) throws IOException
+	public synchronized void cwdToTempDirOnOutbound(SftpClient sftpClient, String endpointDir) throws IOException
 	{
 		String tempDir = getTempDirOutbound();
 
