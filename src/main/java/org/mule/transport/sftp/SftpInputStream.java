@@ -22,7 +22,7 @@ import java.io.InputStream;
  * <code>SftpInputStream</code> wraps an sftp InputStream.
  */
 
-public class SftpInputStream extends BufferedInputStream
+public class SftpInputStream extends BufferedInputStream implements ErrorOccurredDecorator
 {
 	private final Log logger = LogFactory.getLog(getClass());
 

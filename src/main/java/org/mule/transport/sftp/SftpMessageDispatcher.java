@@ -178,19 +178,14 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
           // Note: this is only supported when using the sftp transport on both inbound & outbound
         if (inputStream != null)
         {
-          if (inputStream instanceof SftpInputStream)
+          if (inputStream instanceof ErrorOccurredDecorator)
           {
-            // Ensure that the SftpInputStream knows about the error and dont delete the file
-            ((SftpInputStream) inputStream).setErrorOccurred();
-
-          } else if (inputStream instanceof SftpFileArchiveInputStream)
-          {
-            // Ensure that the SftpFileArchiveInputStream knows about the error and don't delete the file
-            ((SftpFileArchiveInputStream) inputStream).setErrorOccurred();
+            // Ensure that the SftpInputStream or SftpFileArchiveInputStream knows about the error and dont delete the file
+            ((ErrorOccurredDecorator) inputStream).setErrorOccurred();
 
           } else
           {
-            logger.warn("Neither SftpInputStream nor SftpFileArchiveInputStream used, errorOccured=true could not be set. Type is " + inputStream.getClass().getName());
+            logger.warn("Class " + inputStream.getClass().getName() + " did not implement the 'ErrorOccurred' decorator, errorOccured=true could not be set.");
           }
         }
       }

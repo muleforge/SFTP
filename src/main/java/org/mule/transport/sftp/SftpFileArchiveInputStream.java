@@ -14,7 +14,7 @@ import java.io.IOException;
  *
  * @author Magnus Larsson
  */
-public class SftpFileArchiveInputStream extends FileInputStream
+public class SftpFileArchiveInputStream extends FileInputStream implements ErrorOccurredDecorator
 {
 	/**
 	 * logger used by this class
