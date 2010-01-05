@@ -84,7 +84,7 @@
 
 	<!-- Various attributes for the connector -->
 	<xsd:attributeGroup name="connectorAttributes">
-		<xsd:attribute name="tempDirInbound " type="xsd:string">
+		<xsd:attribute name="tempDirInbound" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
 					Required: No
@@ -104,7 +104,7 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="tempDirOutbound " type="xsd:string">
+		<xsd:attribute name="tempDirOutbound" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
 					Required: No
