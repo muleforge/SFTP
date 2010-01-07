@@ -12,6 +12,8 @@
 package org.mule.transport.sftp;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.module.client.MuleClient;
 
 
 /**
@@ -47,6 +49,7 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
         initEndpointDirectory("inboundEndpoint1");
         initEndpointDirectory("inboundEndpoint2");
         initEndpointDirectory("inboundEndpoint3");
+        initEndpointDirectory("inboundEndpoint4");
 	}
 
 
@@ -84,6 +87,22 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
 		// TODO. Add some tests specific to this test, i.e. not only rely on the tests performed by executeTest().
 
 		executeBaseTest("inboundEndpoint3", "vm://test.upload3", "file3.txt", SEND_SIZE, "receiving3", TIMEOUT);
+	}
+
+  /**
+	 * Test 4 - test duplicate handling by adding a sequence number to the new file using default value on connector
+	 */
+	public void testDuplicateHandlingAddSeqNoUsingConnector() throws Exception
+	{
+		// TODO. Add some tests specific to this test, i.e. not only rely on the tests performed by executeTest().
+
+		executeBaseTest("inboundEndpoint4", "vm://test.upload4", "file4.txt", SEND_SIZE, "receiving4", TIMEOUT);
+
+    MuleClient muleClient = new MuleClient();
+    ImmutableEndpoint endpoint = getImmutableEndpoint(muleClient, "send4outbound");
+    SftpUtil util = new SftpUtil(endpoint);
+
+    assertEquals("The value on the connector should be used", "addSeqNo", util.getDuplicateHandling());
 	}
 
 }

@@ -52,7 +52,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class AbstractSftpTestCase extends FunctionalTestCase
 {
-	
+
     protected static final String FILE_NAME = "file.txt";
 
 	protected final Logger logger = LoggerFactory.getLogger(AbstractSftpTestCase.class);
@@ -373,7 +373,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		assertEquals("The received file should have the same size as the sent file", sendSize, receivedSize);
 	}
 
-	private ImmutableEndpoint getImmutableEndpoint(MuleClient muleClient,
+	protected ImmutableEndpoint getImmutableEndpoint(MuleClient muleClient,
 													 String endpointName) throws IOException
 	{
 		ImmutableEndpoint endpoint = null;
@@ -411,9 +411,9 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	}
 
 	/**
-	 * Initiates a list of sftp-endpoint-directories. 
+	 * Initiates a list of sftp-endpoint-directories.
 	 * Ensures that affected services are stopped during the initiation.
-	 * 
+	 *
 	 * @param serviceNames
 	 * @param endpointNames
 	 * @throws Exception
@@ -473,7 +473,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	 * Helper method for initiating a test and wait for the test to complete.
 	 * The method sends a file to an inbound endpoint and waits for a dispatch event on a outbound endpoint,
 	 * i.e. that the file has been consumed by the inbound endpoint and that the content of the file has been sent to the outgoing endpoint.
-	 * 
+	 *
 	 * @param p where inboundEndpoint and outboundEndpoint are mandatory, @see DispatchParameters for details.
 	 */
 	protected void dispatchAndWaitForDelivery(final DispatchParameters p)
@@ -487,7 +487,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		try {
 			// First create a local muleClient instance if not supplied
 			if (localMuleClient) muleClient = new MuleClient();
-			
+
 			// Next create a listener that listens for dispatch events on the outbound endpoint
 			listener = new EndpointMessageNotificationListener() {
 				public void onNotification(ServerNotification notification) {
@@ -508,7 +508,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 					}
 				}
 			};
-			
+
 			// Now register the listener
 			muleContext.getNotificationManager().addListener(listener);
 
@@ -524,10 +524,10 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			// Setup connect string and perform the actual dispatch
 			String connectString = (p.getSftpConnector() == null) ? "" : "?connector=" + p.getSftpConnector();
 			muleClient.dispatch(getAddressByEndpoint(muleClient, p.getInboundEndpoint()) + connectString, TEST_MESSAGE, headers);
-			
+
 			// Wait for the delivery to occur...
 			if (logger.isDebugEnabled()) logger.debug("Waiting for file to be delivered to the endpoint...");
-			boolean workDone = latch.await(p.getTimeout(), TimeUnit.MILLISECONDS);			
+			boolean workDone = latch.await(p.getTimeout(), TimeUnit.MILLISECONDS);
 			if (logger.isDebugEnabled()) logger.debug((workDone) ? "File delivered, continue..." : "No file delivered, timeout occurred!");
 
 			// Raise a fault if the test timed out
@@ -540,15 +540,15 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		} finally {
 			// Dispose muleClient if created locally
 			if (localMuleClient) muleClient.dispose();
-			
+
 			// Always remove the listener if created
-			if (listener != null) muleContext.getNotificationManager().removeListener(listener);			
+			if (listener != null) muleContext.getNotificationManager().removeListener(listener);
 		}
     }
 
     /**
      * Helper method for initiating a test and wait for an exception to be catched by the sftp-connector.
-     * 
+     *
 	 * @param p where sftpConnector and inboundEndpoint are mandatory, @see DispatchParameters for details.
      * @return
      */
@@ -565,7 +565,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		try {
 			// First create a local muleClient instance if not supplied
 			if (localMuleClient) muleClient = new MuleClient();
-			
+
 			// Next create a listener that listens for exception on the sftp-connector
 			listener = new ExceptionListener() {
 				public void exceptionThrown(Exception e) {
@@ -591,12 +591,12 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			// Setup connect string and perform the actual dispatch
 			String connectString = (p.getSftpConnector() == null) ? "" : "?connector=" + p.getSftpConnector();
 			muleClient.dispatch(getAddressByEndpoint(muleClient, p.getInboundEndpoint()) + connectString, TEST_MESSAGE, headers);
-			
+
 			// Wait for the exception to occur...
 			if (logger.isDebugEnabled()) logger.debug("Waiting for an exception to occur...");
 			boolean workDone = latch.await(p.getTimeout(), TimeUnit.MILLISECONDS);
 			if (logger.isDebugEnabled()) logger.debug((workDone) ? "Exception occurred, continue..." : "No exception, instead a timeout occurred!");
-			
+
 			// Raise a fault if the test timed out
 			assertTrue("Test timed out. It took more than " + p.getTimeout() + " milliseconds. If this error occurs the test probably needs a longer time out (on your computer/network)", workDone);
 
@@ -607,22 +607,22 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		} finally {
 			// Dispose muleClient if created locally
 			if (localMuleClient) muleClient.dispose();
-			
+
 			// Always reset the current listener
 			muleContext.getRegistry().lookupConnector(expectedFailingConnector).setExceptionListener(currentExceptionListener);
 		}
-		
+
 		return (Exception)exceptionHolder.value;
     }
 
 	/**
 	 * Helper class for dynamic assignment of parameters to the method dispatchAndWaitForDelivery()
 	 * Only inboundEndpoint and outboundEndpoint are mandatory, the rest of the parameters are optional.
-	 * 
+	 *
 	 * @author Magnus Larsson
 	 */
 	public class DispatchParameters {
-		
+
 		/**
 		 * Optional MuleClient, the method will create an own if not supplied.
 		 */
@@ -633,8 +633,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		 * If more than one sftp-connector is specified this paramter has to be specified to point out what connector to use for the dispatch.
 		 */
 		private String sftpConnector = null;
-		
-		/** 
+
+		/**
 		 * Mandatory name of the inbound endpoint, i.e. where to dispatch the file
 		 */
 		private String inboundEndpoint = null;
@@ -643,7 +643,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		 * Optional message headers
 		 */
 		private Map<String, String> headers = null;
-				
+
 		/**
 		 * Optional content of the file, if not specified then it defaults to AbstractMuleTestCase.TEST_MESSAGE.
 		 */
@@ -653,17 +653,17 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		 * Optional name of the file, defaults to FILE_NAME
 		 */
 		private String filename = FILE_NAME;
-		
+
 		/**
 		 * Mandatory name of the outbound endpoint, i.e. where we will wait for a message to be delivered to in the end
 		 */
 		private String outboundEndpoint = null;
-		
-		/** 
+
+		/**
 		 * Optional timeout for how long we will wait for a message to be delivered to the outbound endpoint
 		 */
 		private long timeout = 10000;
-		
+
 		public DispatchParameters(String inboundEndpoint, String outboundEndpoint) {
 			this.inboundEndpoint = inboundEndpoint;
 			this.outboundEndpoint = outboundEndpoint;
@@ -733,7 +733,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			this.timeout = timeout;
 		}
 
-				
+
 	}
 
 }
