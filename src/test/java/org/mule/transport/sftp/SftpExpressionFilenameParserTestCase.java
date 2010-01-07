@@ -13,7 +13,7 @@ package org.mule.transport.sftp;
 
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.module.client.MuleClient;
- 
+
 /**
  * @author Magnus Larsson
  * <code>SftpExpressionFilenameParserTestCase</code> tests usage of the Expression Filename Parser instead of the default Legacy Parser.
@@ -27,7 +27,7 @@ public class SftpExpressionFilenameParserTestCase extends AbstractSftpTestCase
 
 	protected String getConfigResources()
 	{
-		return "mule-sftp-expressionFilenaemParser-config.xml";
+		return "mule-sftp-expressionFilenameParser-config.xml";
 	}
 
     @Override
