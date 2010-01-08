@@ -68,7 +68,7 @@ public class SftpConnector extends AbstractConnector
 	public static final String PROPERTY_DUPLICATE_HANDLING_OVERWRITE = "overwrite";
 	public static final String PROPERTY_DUPLICATE_HANDLING_ASS_SEQ_NO = "addSeqNo";
 	public static final String PROPERTY_MAX_CONNECTION_POOL_SIZE = "maxConnectionPoolSize";
-  public static final String PROPERTY_KEEP_FILE_ON_ERROR = "keepFileOnError";
+  	public static final String PROPERTY_KEEP_FILE_ON_ERROR = "keepFileOnError";
 
 	public static final int DEFAULT_POLLING_FREQUENCY = 1000;
 
@@ -94,15 +94,15 @@ public class SftpConnector extends AbstractConnector
 
   private Map<EndpointURI, GenericObjectPool> pools = new HashMap<EndpointURI, GenericObjectPool>();
 
-	private String duplicateHandling = "throwException";
-	private boolean useTempFileTimestampSuffix = false;
-	private long sizeCheckWaitTime = -1;
+	private String duplicateHandling = null;
+	private Boolean useTempFileTimestampSuffix = null;
+	private Long sizeCheckWaitTime = null;
 	private String archiveDir = "";
 	private String archiveTempReceivingDir = "";
 	private String archiveTempSendingDir = "";
 
-  /** Should the file be kept if an error occurs when writing the file on the outbound endpoint?  */
-  private boolean keepFileOnError;
+  	/** Should the file be kept if an error occurs when writing the file on the outbound endpoint?  */
+  	private Boolean keepFileOnError;
 
 	/**
 	 * max pool size. 0 for no pool, -1 for no limit, otherwise the specified value
@@ -445,22 +445,22 @@ public class SftpConnector extends AbstractConnector
 		return duplicateHandling;
 	}
 
-	public void setUseTempFileTimestampSuffix(boolean useTempFileTimestampSuffix)
+	public void setUseTempFileTimestampSuffix(Boolean useTempFileTimestampSuffix)
 	{
 		this.useTempFileTimestampSuffix = useTempFileTimestampSuffix;
 	}
 
-	public boolean isUseTempFileTimestampSuffix()
+	public Boolean isUseTempFileTimestampSuffix()
 	{
 		return useTempFileTimestampSuffix;
 	}
 
-	public void setSizeCheckWaitTime(long sizeCheckWaitTime)
+	public void setSizeCheckWaitTime(Long sizeCheckWaitTime)
 	{
 		this.sizeCheckWaitTime = sizeCheckWaitTime;
 	}
 
-	public long getSizeCheckWaitTime()
+	public Long getSizeCheckWaitTime()
 	{
 		return sizeCheckWaitTime;
 	}
@@ -514,11 +514,11 @@ public class SftpConnector extends AbstractConnector
 		return maxConnectionPoolSize;
 	}
 
-  public boolean isKeepFileOnError() {
+  public Boolean isKeepFileOnError() {
     return keepFileOnError;
   }
 
-  public void setKeepFileOnError(boolean pKeepFileOnError) {
+  public void setKeepFileOnError(Boolean pKeepFileOnError) {
     keepFileOnError = pKeepFileOnError;
   }
 }

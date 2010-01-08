@@ -242,7 +242,7 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="keepFileOnError" type="mule:substitutableBoolean" default="true">
+		<xsd:attribute name="keepFileOnError" type="mule:substitutableBoolean">
 			<xsd:annotation>
 				<xsd:documentation>
 					Required: no
@@ -253,7 +253,7 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="duplicateHandling" type="duplicateHandlingType" default="throwException">
+		<xsd:attribute name="duplicateHandling" type="duplicateHandlingType">
 			<xsd:annotation>
 				<xsd:documentation>
 					Required: no
@@ -350,7 +350,7 @@
 
 	<!-- Various attributes both on the endpoints and connectors -->
 	<xsd:attributeGroup name="commonEndpointAndConnectorAttributes">
-		<xsd:attribute name="useTempFileTimestampSuffix" type="xsd:boolean" default="false">
+		<xsd:attribute name="useTempFileTimestampSuffix" type="xsd:boolean">
 			<xsd:annotation>
 				<xsd:documentation>
 					Required: No
@@ -388,7 +388,7 @@
 	</xsd:attributeGroup>
 
 	<xsd:attributeGroup name="poolingAttributes">
-		<xsd:attribute name="maxConnectionPoolSize" type="mule:substitutableInt" default="0">
+		<xsd:attribute name="maxConnectionPoolSize" type="mule:substitutableInt">
 			<xsd:annotation>
 				<xsd:documentation>
 					Required: No

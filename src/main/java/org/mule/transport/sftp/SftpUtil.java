@@ -11,21 +11,28 @@ import org.mule.api.endpoint.ImmutableEndpoint;
  * Contains reusable methods not directly related to usage of the jsch sftp library (they can be found in the class SftpClient).
  *
  * @author Magnus Larsson
- *
  */
-public class SftpUtil {
+public class SftpUtil
+{
 	/** Logger */
 	private static final Logger logger = Logger.getLogger(SftpUtil.class);
 
 	private SftpConnector connector;
 	private ImmutableEndpoint endpoint;
 
-	public SftpUtil(ImmutableEndpoint endpoint) {
+	private static final String DUPLICATE_HANDLING_DEFAULT = SftpConnector.PROPERTY_DUPLICATE_HANDLING_THROW_EXCEPTION;
+	private static final boolean KEEP_FILE_ON_ERROR_DEFAULT = true;
+	private static final boolean USE_TEMP_FILE_TIMESTAMP_SUFFIX_DEFAULT = false;
+	private static final long SIZE_CHECK_WAIT_TIME_DEFAULT = -1;
+
+	public SftpUtil(ImmutableEndpoint endpoint)
+	{
 		this.endpoint = endpoint;
-		this.connector = (SftpConnector)endpoint.getConnector();
+		this.connector = (SftpConnector) endpoint.getConnector();
 	}
 
-    public String createUniqueSuffix(String filename) {
+	public String createUniqueSuffix(String filename)
+	{
 
 		// TODO. Add code for handling no '.'
 		int fileTypeIdx = filename.lastIndexOf('.');
@@ -33,23 +40,28 @@ public class SftpUtil {
 
 		filename = filename.substring(0, fileTypeIdx); // Strip off the leading '/' from the filename
 
-    	SimpleDateFormat timestampFormatter = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+		SimpleDateFormat timestampFormatter = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 		String timstampStr = '_' + timestampFormatter.format(new Date());
 
 		return filename + timstampStr + fileType;
 	}
 
 
-    public String getTempDirInbound() {
-        String tempDir = connector.getTempDirInbound();
+	public String getTempDirInbound()
+	{
+		String endpointValue = (String) endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR);
+		if (endpointValue != null)
+		{
+			return endpointValue;
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR);
-        if(v != null) {
-        	tempDir = (String)v;
-        }
+		String connectorValue = connector.getTempDirInbound();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        return tempDir;
+		return null;
 	}
 
 	public boolean isUseTempDirInbound()
@@ -57,17 +69,21 @@ public class SftpUtil {
 		return getTempDirInbound() != null;
 	}
 
-	public String getTempDirOutbound() {
+	public String getTempDirOutbound()
+	{
+		String endpointValue = (String) endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR);
+		if (endpointValue != null)
+		{
+			return endpointValue;
+		}
 
-        String tempDir = connector.getTempDirOutbound();
+		String connectorValue = connector.getTempDirOutbound();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_TEMP_DIR);
-        if(v != null) {
-        	tempDir = (String)v;
-        }
-
-        return tempDir;
+		return null;
 	}
 
 	public boolean isUseTempDirOutbound()
@@ -75,7 +91,8 @@ public class SftpUtil {
 		return getTempDirOutbound() != null;
 	}
 
-	public void cleanupTempDir(SftpClient sftpClient, String transferFileName, String tempDir) {
+	public void cleanupTempDir(SftpClient sftpClient, String transferFileName, String tempDir)
+	{
 		String tempDirAbs = sftpClient.getAbsolutePath(endpoint.getEndpointURI().getPath() + "/" + tempDir);
 		try
 		{
@@ -87,110 +104,151 @@ public class SftpUtil {
 		}
 	}
 
-    public long getSizeCheckWaitTime() {
-        long sizeCheckWaitTime = connector.getSizeCheckWaitTime();
+	public long getSizeCheckWaitTime()
+	{
+		Object endpointValue = endpoint.getProperty(SftpConnector.PROPERTY_SIZE_CHECK_WAIT_TIME);
+		if (endpointValue != null)
+		{
+			return Long.valueOf((String) endpointValue);
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_SIZE_CHECK_WAIT_TIME);
-        if(v != null) {
-        	sizeCheckWaitTime = Long.valueOf((String)v);
-        }
+		Long connectorValue = connector.getSizeCheckWaitTime();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        return sizeCheckWaitTime;
+		return SIZE_CHECK_WAIT_TIME_DEFAULT;
 	}
 
-    public String getArchiveDir() {
-        String archiveDir = connector.getArchiveDir();
+	public String getArchiveDir()
+	{
+		String endpointValue = (String) endpoint.getProperty(SftpConnector.PROPERTY_ARCHIVE_DIR);
+		if (endpointValue != null)
+		{
+			return endpointValue;
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_ARCHIVE_DIR);
-        if(v != null) {
-        	archiveDir = (String)v;
-        }
+		String connectorValue = connector.getArchiveDir();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        return archiveDir;
+		return null;
 	}
 
-    public String getArchiveTempReceivingDir() {
-        String archiveTempReceivingDir = connector.getArchiveTempReceivingDir();
+	public String getArchiveTempReceivingDir()
+	{
+		String endpointValue = (String) endpoint.getProperty(SftpConnector.PROPERTY_ARCHIVE_TEMP_RECEIVING_DIR);
+		if (endpointValue != null)
+		{
+			return endpointValue;
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_ARCHIVE_TEMP_RECEIVING_DIR);
-        if(v != null) {
-        	archiveTempReceivingDir = (String)v;
-        }
+		String connectorValue = connector.getArchiveTempReceivingDir();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        return archiveTempReceivingDir;
+		return null;
 	}
 
-    public String getArchiveTempSendingDir() {
-        String archiveTempSendingDir = connector.getArchiveTempSendingDir();
+	public String getArchiveTempSendingDir()
+	{
+		String endpointValue = (String) endpoint.getProperty(SftpConnector.PROPERTY_ARCHIVE_TEMP_SENDING_DIR);
+		if (endpointValue != null)
+		{
+			return endpointValue;
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_ARCHIVE_TEMP_SENDING_DIR);
-        if(v != null) {
-        	archiveTempSendingDir = (String)v;
-        }
+		String connectorValue = connector.getArchiveTempSendingDir();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        return archiveTempSendingDir;
+		return null;
 	}
 
-    public boolean isUseTempFileTimestampSuffix() {
-        boolean useTempFileTimestampSuffix = connector.isUseTempFileTimestampSuffix();
+	public boolean isUseTempFileTimestampSuffix()
+	{
+		Object endpointValue = endpoint.getProperty(SftpConnector.PROPERTY_USE_TEMP_FILE_TIMESTAMP_SUFFIX);
+		if (endpointValue != null)
+		{
+			return Boolean.valueOf((String) endpointValue);
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_USE_TEMP_FILE_TIMESTAMP_SUFFIX);
-        if(v != null) {
-        	useTempFileTimestampSuffix = Boolean.valueOf((String)v);
-        }
+		Boolean connectorValue = connector.isUseTempFileTimestampSuffix();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        return useTempFileTimestampSuffix;
+		return USE_TEMP_FILE_TIMESTAMP_SUFFIX_DEFAULT;
 	}
 
-    public String getDuplicateHandling() {
-        String duplicateHandling = connector.getDuplicateHandling();
+	public String getDuplicateHandling()
+	{
+		String endpointValue = (String) endpoint.getProperty(SftpConnector.PROPERTY_DUPLICATE_HANDLING);
+		if (endpointValue != null)
+		{
+			return endpointValue;
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_DUPLICATE_HANDLING);
-        if(v != null) {
-        	duplicateHandling = (String)v;
-        }
+		String connectorValue = connector.getDuplicateHandling();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        return duplicateHandling;
+		return DUPLICATE_HANDLING_DEFAULT;
 	}
 
-    public String getIdentityFile() {
-        String identityFile = connector.getIdentityFile();
+	public String getIdentityFile()
+	{
+		String endpointValue = (String) endpoint.getProperty(SftpConnector.PROPERTY_IDENTITY_FILE);
+		if (endpointValue != null)
+		{
+			return endpointValue;
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_IDENTITY_FILE);
-        if(v != null) {
-        	identityFile = (String)v;
-        }
+		String connectorValue = connector.getIdentityFile();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        return identityFile;
+		return null;
 	}
 
-    public String getPassphrase() {
-        String passphrase = connector.getPassphrase();
+	public String getPassphrase()
+	{
+		String endpointValue = (String) endpoint.getProperty(SftpConnector.PROPERTY_PASS_PHRASE);
+		if (endpointValue != null)
+		{
+			return endpointValue;
+		}
 
-        // Override the value from the endpoint?
-        Object v = endpoint.getProperty(SftpConnector.PROPERTY_PASS_PHRASE);
-        if(v != null) {
-        	passphrase = (String)v;
-        }
+		String connectorValue = connector.getPassphrase();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-        return passphrase;
+		return null;
 	}
 
-  /**
-   * Changes the directory to the temp-dir on the <b>outbound</b> endpoint. Will create the directory if it not already exists.
-   *
-   * Note, this method is synchronized because it in rare cases can be called from two threads at the same time and thus cause an error.
-   * @param sftpClient
-   * @param endpointDir
-   * @throws IOException
-   */
+	/**
+	 * Changes the directory to the temp-dir on the <b>outbound</b> endpoint. Will create the directory if it not already exists.
+	 * <p/>
+	 * Note, this method is synchronized because it in rare cases can be called from two threads at the same time and thus cause an error.
+	 *
+	 * @param sftpClient
+	 * @param endpointDir
+	 * @throws IOException
+	 */
 	public synchronized void cwdToTempDirOnOutbound(SftpClient sftpClient, String endpointDir) throws IOException
 	{
 		String tempDir = getTempDirOutbound();
@@ -213,15 +271,20 @@ public class SftpUtil {
 		}
 	}
 
-  public boolean isKeepFileOnError() {
-    boolean keepFileOnError = connector.isKeepFileOnError();
+	public boolean isKeepFileOnError()
+	{
+		Object endpointValue = endpoint.getProperty(SftpConnector.PROPERTY_KEEP_FILE_ON_ERROR);
+		if (endpointValue != null)
+		{
+			return Boolean.valueOf((String) endpointValue);
+		}
 
-    // Override the value from the endpoint?
-    Object v = endpoint.getProperty(SftpConnector.PROPERTY_KEEP_FILE_ON_ERROR);
-    if (v != null) {
-      return Boolean.valueOf((String) v);
-    }
+		Boolean connectorValue = connector.isKeepFileOnError();
+		if (connectorValue != null)
+		{
+			return connectorValue;
+		}
 
-    return keepFileOnError;
+		return KEEP_FILE_ON_ERROR_DEFAULT;
   }
 }
