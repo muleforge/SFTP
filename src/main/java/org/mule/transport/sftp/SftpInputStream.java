@@ -39,7 +39,7 @@ public class SftpInputStream extends BufferedInputStream implements ErrorOccurre
 	 *
 	 * @param client	 The SftpClient instance.  Will be destroyed when stream closed.
 	 * @param is         The stream that should be used
-   * @param fileName   name of the file to be retrieved
+     * @param fileName   name of the file to be retrieved
 	 * @param autoDelete whether the file specified by fileName should be deleted
 	 * @param endpoint   the endpoint associated to a specific client (connector) pool.
 	 * @throws Exception if failing to retrieve internal input stream.
@@ -83,6 +83,7 @@ public class SftpInputStream extends BufferedInputStream implements ErrorOccurre
 
 	public void setErrorOccurred()
 	{
+		if (logger.isDebugEnabled()) logger.debug("setErrorOccurred() called");
 		this.errorOccured = true;
 	}
 

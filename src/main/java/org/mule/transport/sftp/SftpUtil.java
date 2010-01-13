@@ -1,9 +1,13 @@
 package org.mule.transport.sftp;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.mule.api.endpoint.ImmutableEndpoint;
 
@@ -287,4 +291,73 @@ public class SftpUtil
 
 		return KEEP_FILE_ON_ERROR_DEFAULT;
   }
+
+	/**
+	 * Should be moved to a util class that is not based on an endpoint...
+	 * 
+	 * @param input
+	 * @param destination
+	 * @throws IOException
+	 */
+	public synchronized void copyStreamToFile(InputStream input, File destination) throws IOException
+	{
+	    try
+	    {
+			File folder = destination.getParentFile();
+		    if (!folder.exists())
+		    {
+		        throw new IOException("Destination folder does not exist: " + folder);
+		    }
+
+		    if (!folder.canWrite())
+		    {
+		        throw new IOException("Destination folder is not writeable: " + folder);
+		    }
+
+	        FileOutputStream output = new FileOutputStream(destination);
+	        try
+	        {
+	            IOUtils.copy(input, output);
+	        }
+	        finally
+	        {
+	            if (output != null) output.close();
+	        }
+	    } 
+	    catch (IOException ex) 
+	    {
+			setErrorOccurredOnInputStream(input);
+			throw ex;
+	    }
+	    catch (RuntimeException ex) 
+	    {
+			setErrorOccurredOnInputStream(input);
+			throw ex;
+	    }
+	    finally
+	    {
+	        if (input != null) input.close();
+	    }
+	}
+
+	public void setErrorOccurredOnInputStream(InputStream inputStream) {
+		
+		if (isKeepFileOnError()) {
+			// If an exception occurs and the keepFileOnError property is
+			// true, keep the file on the originating endpoint
+			// Note: this is only supported when using the sftp transport on
+			// both inbound & outbound
+			if (inputStream != null) {
+				if (inputStream instanceof ErrorOccurredDecorator) {
+					// Ensure that the SftpInputStream or
+					// SftpFileArchiveInputStream knows about the error and
+					// dont delete the file
+					((ErrorOccurredDecorator) inputStream).setErrorOccurred();
+
+				} else {
+					logger.warn("Class " + inputStream.getClass().getName() + " did not implement the 'ErrorOccurred' decorator, errorOccured=true could not be set.");
+				}
+			}
+		}
+	}
 }

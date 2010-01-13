@@ -57,6 +57,7 @@ public class SftpFileArchiveInputStream extends FileInputStream implements Error
 
 	public void setErrorOccurred()
 	{
+		if (logger.isDebugEnabled()) logger.debug("setErrorOccurred() called");
 		this.errorOccured = true;
 	}
 }

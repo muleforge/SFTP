@@ -173,25 +173,12 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 		catch (Exception e)
 		{
 			logger.error("Unexpected exception attempting to write file, message was: " + e.getMessage(), e);
-      if(sftpUtil.isKeepFileOnError()) {
-          // If an exception occurs and the keepFileOnError property is true, keep the file on the originating endpoint
-          // Note: this is only supported when using the sftp transport on both inbound & outbound
-        if (inputStream != null)
-        {
-          if (inputStream instanceof ErrorOccurredDecorator)
-          {
-            // Ensure that the SftpInputStream or SftpFileArchiveInputStream knows about the error and dont delete the file
-            ((ErrorOccurredDecorator) inputStream).setErrorOccurred();
-
-          } else
-          {
-            logger.warn("Class " + inputStream.getClass().getName() + " did not implement the 'ErrorOccurred' decorator, errorOccured=true could not be set.");
-          }
-        }
-      }
+			
+			sftpUtil.setErrorOccurredOnInputStream(inputStream);
+			
 			if (useTempDir)
 			{
-				// Cleanup the remote temp dir!
+				// Cleanup the remote temp dir from the not fullt completely transferred file!
 				String tempDir = sftpUtil.getTempDirOutbound();
 				sftpUtil.cleanupTempDir(client, transferFilename, tempDir);
 			}

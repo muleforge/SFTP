@@ -209,8 +209,7 @@ public class SftpReceiverRequesterUtil
 			{
 				logger.info("Creates " + archiveTmpReceivingFolder.getAbsolutePath());
 			}
-			//noinspection ResultOfMethodCallIgnored
-			archiveTmpReceivingFolder.mkdirs();
+			if (!archiveTmpReceivingFolder.mkdirs()) throw new IOException("Failed to create archive-tmp-receiving-folder: " + archiveTmpReceivingFolder);
 		}
 
 		File archiveTmpSendingFolder = FileUtils.newFile(archive + '/' + archiveTmpSendingDir);
@@ -221,15 +220,14 @@ public class SftpReceiverRequesterUtil
 			{
 				logger.info("Creates " + archiveTmpSendingFolder.getAbsolutePath());
 			}
-			//noinspection ResultOfMethodCallIgnored
-			archiveTmpSendingFolder.mkdirs();
+			if (!archiveTmpSendingFolder.mkdirs()) throw new IOException("Failed to create archive-tmp-sending-folder: " + archiveTmpSendingFolder);
 		}
 
 		if (logger.isInfoEnabled())
 		{
 			logger.info("Copy SftpInputStream to archiveTmpReceivingFile... " + archiveTmpReceivingFile.getAbsolutePath());
 		}
-		FileUtils.copyStreamToFile(is, archiveTmpReceivingFile);
+		sftpUtil.copyStreamToFile(is, archiveTmpReceivingFile);
 
 		// TODO. ML FIX. Should be performed before the sftp:delete - operation, i.e. in the SftpInputStream in the operation above...
 		if (logger.isInfoEnabled())
@@ -247,11 +245,21 @@ public class SftpReceiverRequesterUtil
 
 	private InputStream archiveFile(InputStream is, File archiveFile) throws IOException
 	{
+		File archiveFolder = FileUtils.newFile(archiveFile.getParentFile().getPath());
+		if (!archiveFolder.exists())
+		{
+			if (logger.isInfoEnabled())
+			{
+				logger.info("Creates " + archiveFolder.getAbsolutePath());
+			}
+			if (!archiveFolder.mkdirs()) throw new IOException("Failed to create archive-folder: " + archiveFolder);
+		}
+
 		if (logger.isInfoEnabled())
 		{
 			logger.info("Copy SftpInputStream to archiveFile... " + archiveFile.getAbsolutePath());
 		}
-		FileUtils.copyStreamToFile(is, archiveFile);
+		sftpUtil.copyStreamToFile(is, archiveFile);
 
 		if (logger.isDebugEnabled())
 		{
