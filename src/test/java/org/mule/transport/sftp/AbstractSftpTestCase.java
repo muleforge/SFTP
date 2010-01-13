@@ -14,9 +14,11 @@ import static org.mule.context.notification.EndpointMessageNotification.MESSAGE_
 
 import java.beans.ExceptionListener;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -233,7 +235,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
 		for (String remoteFile : files)
 		{
-			if (file.equals(remoteFile))
+			if (remoteFile.equals(file))
 			{
 				return true;
 			}
@@ -307,6 +309,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			// Register an exception-listener on the connector that expects to fail and count down the latch after saving the throwed exception
 			muleContext.getRegistry().lookupConnector(expectedFailingConnector).setExceptionListener(new ExceptionListener() {
 				public void exceptionThrown(Exception e) {
+					if (logger.isInfoEnabled()) logger.info("expected exception occurred: " + e, e);
 					exceptionHolder.value = e;
 					latch.countDown();
 				}
@@ -420,7 +423,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	 */
 	protected void initEndpointDirectories(String[] serviceNames, String[] endpointNames) throws Exception {
 
-		// Stop all names services
+		// Stop all named services
 		List<Service> services = new ArrayList<Service>();
 		for (String serviceName : serviceNames) {
 			Service service = muleContext.getRegistry().lookupService(serviceName);
@@ -615,6 +618,193 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		return (Exception)exceptionHolder.value;
     }
 
+    protected void recursiveDeleteInLocalFilesystem(File parent) {
+    	
+    	// If this file is a directory then first delete all its children
+    	if (parent.isDirectory()) {
+    		for (File child : parent.listFiles()) {
+    			recursiveDeleteInLocalFilesystem(child);
+    		}
+    	}
+    		
+    	// Now delete this file
+    	parent.delete();
+    }
+    
+
+    /**
+     * Asserts that there are no files found on the path <i>path</i>.
+     * @param path The path in the local filesystem to check
+     * @throws IOException Exception
+     */
+    protected void assertNoFilesInLocalFilesystem(String path) throws IOException {
+    	assertFilesInLocalFilesystem(path, new String[] {});
+    }
+    
+    /**
+     * Asserts that no files are found on the path that the <i>endpointName</i> use.
+     * @param muleClient MuleClient
+     * @param endpointName The endpoint name
+     * @param  expectedFiles Expected files
+     * @throws IOException Exception
+     */
+    protected void assertNoFilesInEndpoint(MuleClient muleClient, String endpointName) throws IOException {
+    	assertFilesInEndpoint(muleClient, endpointName, new String[] {});
+    }
+
+    /**
+     * Asserts that no files are found on the sub directory <i>subDirectory</i> under the path that <i>endpointName</i> use.
+     * @param muleClient MuleClient
+     * @param endpointName The endpoint name
+     * @param subDirectory The sub directory
+     * @throws IOException Exception
+     */
+    protected void assertNoFilesInEndpoint(MuleClient muleClient, String endpointName, String subDirectory) throws IOException {
+    	assertFilesInEndpoint(muleClient, endpointName, subDirectory, new String[] {});
+    }
+
+    /**
+     * Asserts that only the <i>expectedFile</i> is found on the path <i>path</i>, where filenames can be expressed as a regular expression.
+     * @param path The path in the local filesystem to check
+     * @param expectedFile Expected file
+     * @throws IOException Exception
+     */
+    protected void assertFilesInLocalFilesystem(String path, String expectedFile) throws IOException {
+    	assertFilesInLocalFilesystem(path, new String[] {expectedFile});
+    }
+
+    /**
+     * Asserts that only the <i>expectedFiles</i> are found on the path <i>path</i>, where filenames can be expressed as a regular expression.
+     * @param path The path in the local filesystem to check
+     * @param expectedFiles Expected files
+     * @throws IOException Exception
+     */
+    protected void assertFilesInLocalFilesystem(String path, String[] expectedFiles) throws IOException {
+
+      File parent = new File(path);
+      String[] files = parent.list();
+
+      assertFilesInFileArray(path, expectedFiles, files);
+    }
+
+    /**
+     * Asserts that only the <i>expectedFile</i> is found on the path that the <i>endpointName</i> use, where filenames can be expressed as a regular expression.
+     * @param muleClient MuleClient
+     * @param endpointName The endpoint name
+     * @param  expectedFile Expected file
+     * @throws IOException Exception
+     */
+    protected void assertFilesInEndpoint(MuleClient muleClient, String endpointName, String expectedFile) throws IOException {
+    	assertFilesInEndpoint(muleClient, endpointName, null, new String[] {expectedFile});
+    }
+
+    /**
+     * Asserts that only the <i>expectedFiles</i> are found on the path that the <i>endpointName</i> use, where filenames can be expressed as a regular expression.
+     * @param muleClient MuleClient
+     * @param endpointName The endpoint name
+     * @param  expectedFiles Expected files
+     * @throws IOException Exception
+     */
+    protected void assertFilesInEndpoint(MuleClient muleClient, String endpointName, String[] expectedFiles) throws IOException {
+    	assertFilesInEndpoint(muleClient, endpointName, null, expectedFiles);
+    }
+
+    /**
+     * Asserts that only the <i>expectedFile</i> is found on the sub directory <i>subDirectory</i> under the path that <i>endpointName</i> use, where filenames can be expressed as a regular expression.
+     * @param muleClient MuleClient
+     * @param endpointName The endpoint name
+     * @param subDirectory The sub directory
+     * @param  expectedFile Expected files
+     * @throws IOException Exception
+     */
+    protected void assertFilesInEndpoint(MuleClient muleClient, String endpointName, String subDirectory, String expectedFile) throws IOException {
+    	assertFilesInEndpoint(muleClient, endpointName, subDirectory, new String[] {expectedFile});
+    }
+
+    /**
+     * Asserts that only the <i>expectedFiles</i> are found on the sub directory <i>subDirectory</i> under the path that <i>endpointName</i> use, where filenames can be expressed as a regular expression.
+     * @param muleClient MuleClient
+     * @param endpointName The endpoint name
+     * @param subDirectory The sub directory
+     * @param  expectedFiles Expected files
+     * @throws IOException Exception
+     */
+    protected void assertFilesInEndpoint(MuleClient muleClient, String endpointName, String subDirectory, String[] expectedFiles) throws IOException {
+      SftpClient sftpClient = getSftpClient(muleClient, endpointName);
+      ImmutableEndpoint tEndpoint = (ImmutableEndpoint) muleClient.getProperty(endpointName);
+      try {
+    	String path = tEndpoint.getEndpointURI().getPath();
+    	if (subDirectory != null) {
+    		path += '/' + subDirectory;
+    	}
+        assertFilesInPath(sftpClient, path, expectedFiles);
+      } finally {
+        sftpClient.disconnect();
+      }
+    }
+
+    /**
+     * Asserts that only the <i>expectedFiles</i> are found on the path <i>path</i>, where filenames can be expressed as a regular expression.
+     * @param sftpClient SftpClient
+     * @param path The path to check
+     * @param expectedFiles Expected files
+     * @throws IOException Exception
+     */
+    private void assertFilesInPath(SftpClient sftpClient, String path, String[] expectedFiles) throws IOException {
+
+      sftpClient.changeWorkingDirectory(sftpClient.getAbsolutePath(path));
+      String[] files = sftpClient.listFiles();
+		
+      assertFilesInFileArray(path, expectedFiles, files);
+    }
+
+    /**
+     * Asserts that only the <i>expectedFiles</i> are found in the file-array <i>path</i>, where filenames can be expressed as a regular expression.
+     * 
+     * @param path
+     * @param expectedFileList
+     * @param foundFiles
+     */
+	private void assertFilesInFileArray(String path, String[] expectedFiles, String[] foundFiles) {
+
+	      // First, make a list of the array of found files
+	      List<String> foundFileList = new ArrayList<String>(foundFiles.length);
+	      foundFileList.addAll(Arrays.asList(foundFiles));
+		
+		// lookup each expected file in the list of found files and remove each found file that match the expected file
+	    // Note that the expected file can contain a regexp
+		for (String expectedFile : expectedFiles) {
+		    String foundFile = lookupListByRegexp(foundFileList, expectedFile);
+			if (foundFile != null) {
+		      foundFileList.remove(foundFile);
+		    } else {
+		      fail("File " + expectedFile + " was not found in path '" + path + "'");
+		    }
+		  }
+		  // Check if that no remaining files are left in the list of found files, i.e. unwanted found files
+		  assertTrue("The following file(s) was found but not expected: " + foundFileList + " on path " + path, foundFileList.size() == 0);
+	}      
+
+    /**
+     * Return the first string in a string-list that matches the regexp
+     * @param list
+     * @param regexpName
+     * @return the first string that match the regexp or null if no match
+     */
+	private String lookupListByRegexp(List<String> list, String regexp) {
+		
+		// Look for matches of the regexp in the list
+		for (String value : list) {
+			if (value.matches(regexp)) {
+				// Found it, return the full string that matched
+				return value;
+			}
+		}
+		
+		// Noop, nothing found, return null
+		return null;
+	}
+
 	/**
 	 * Helper class for dynamic assignment of parameters to the method dispatchAndWaitForDelivery()
 	 * Only inboundEndpoint and outboundEndpoint are mandatory, the rest of the parameters are optional.
@@ -732,8 +922,6 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		public void setTimeout(long timeout) {
 			this.timeout = timeout;
 		}
-
-
 	}
 
 }
