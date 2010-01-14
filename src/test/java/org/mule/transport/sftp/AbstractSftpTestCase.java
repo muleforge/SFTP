@@ -618,7 +618,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		return (Exception)exceptionHolder.value;
     }
 
-    protected void recursiveDeleteInLocalFilesystem(File parent) {
+    protected void recursiveDeleteInLocalFilesystem(File parent) throws IOException {
 
     	// If this file is a directory then first delete all its children
     	if (parent.isDirectory()) {
@@ -627,8 +627,12 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
     		}
     	}
 
-    	// Now delete this file
-    	parent.delete();
+    	// Now delete this file, but first check write permissions on its parent...
+    	File parentParent = parent.getParentFile();
+    	if (!parentParent.canWrite()) {
+			if (!parentParent.setWritable(true)) throw new IOException("Failed to set readonly-folder: " + parentParent + " to writeable");
+    	}
+		if (!parent.delete()) throw new IOException("Failed to delete folder: " + parent);
     }
 
 
