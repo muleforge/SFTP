@@ -48,12 +48,13 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 	final static int SEND_SIZE = 1024 * 1024 * 2;
 	
 	private String archive = null;
+    private String archiveCanonicalPath = null;
 
-	public SftpArchiveFunctionalTestCase() throws MuleException {
+	public SftpArchiveFunctionalTestCase() throws Exception {
 		
 		ResourceBundle rb = ResourceBundle.getBundle("sftp-settings");
 		archive = rb.getString("ARCHIVE");
-		if (!archive.endsWith("/")) archive += "/";
+        archiveCanonicalPath = new File(archive).getCanonicalPath();
 	}
 
 	protected String getConfigResources()
@@ -96,8 +97,8 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		// (with some unknown timestamp in the filename)
 		// and that the tmp-archive-folders are empty
 		assertFilesInLocalFilesystem(archive, new String[] {TMP_RECEIVING, TMP_SENDING, FILE2_TMP_REGEXP});
-		assertNoFilesInLocalFilesystem(archive + "/" + TMP_RECEIVING);
-		assertNoFilesInLocalFilesystem(archive + "/" + TMP_SENDING);
+		assertNoFilesInLocalFilesystem(archive + File.separatorChar + TMP_RECEIVING);
+		assertNoFilesInLocalFilesystem(archive + File.separatorChar + TMP_SENDING);
 
 		// Assert that the file is gone from the inbound endpoint (including its tmp-folders)
 		// Note that directories are not returned in this listing
@@ -137,8 +138,8 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		// Assert that the file now exists in the archive 
 		// and that the tmp-archive-folders are empty
 		assertFilesInLocalFilesystem(archive, new String[] {TMP_RECEIVING, TMP_SENDING, FILE4_TXT});
-		assertNoFilesInLocalFilesystem(archive + "/" + TMP_RECEIVING);
-		assertNoFilesInLocalFilesystem(archive + "/" + TMP_SENDING);		
+		assertNoFilesInLocalFilesystem(archive + File.separatorChar + TMP_RECEIVING);
+		assertNoFilesInLocalFilesystem(archive + File.separatorChar + TMP_SENDING);		
 		
 		// Assert that the file is gone from the inbound endpoint
 		MuleClient mc = new MuleClient();
@@ -157,7 +158,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		} catch (Exception e) {
 	        assertNotNull(e);
 	        assertTrue(e instanceof IOException);
-	        assertEquals("Destination folder is not writeable: " + archive, e.getMessage() + File.separatorChar);
+			assertEquals("Destination folder is not writeable: " + archiveCanonicalPath, e.getMessage());
 		}
 		
 		// Assert that file still exists in the inbound endpoint after the failure
@@ -172,6 +173,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 	 */
 	public void testCantWriteToArchive2() throws Exception
 	{
+		makeArchiveTmpFolderReadOnly();
 		makeArchiveReadOnly();
 		try {
 			executeBaseTest(INBOUND_ENDPOINT2, "vm://test.upload2", FILE2_TXT, SEND_SIZE, "receiving2", TIMEOUT, "sftp");
@@ -179,7 +181,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		} catch (Exception e) {
 	        assertNotNull(e);
 	        assertTrue(e instanceof IOException);
-	        assertTrue(e.getMessage().startsWith("Failed to create archive-tmp-receiving-folder: " + archive + TMP_RECEIVING));
+	        assertEquals("Destination folder is not writeable: " + archiveCanonicalPath + File.separatorChar + TMP_RECEIVING, e.getMessage());
 		}
 
 		// Assert that the file still exists in the inbound endpoint's tmp-folder after the failure
@@ -190,8 +192,8 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		assertNoFilesInEndpoint(mc, INBOUND_ENDPOINT2, TMP_RECEIVING);
 		assertFilesInEndpoint(mc, INBOUND_ENDPOINT2, TMP_SENDING, FILE2_TMP_REGEXP);
 
-		// Assert that no files exists in the archive after the error
-		assertNoFilesInLocalFilesystem(archive);
+		// Assert that no files exists in the archive after the error except from the temp-folders 
+		assertFilesInLocalFilesystem(archive, new String[] {TMP_RECEIVING, TMP_SENDING});
 	}
 
 	/**
@@ -206,7 +208,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		} catch (Exception e) {
 	        assertNotNull(e);
 	        assertTrue(e instanceof IOException);
-	        assertEquals("Destination folder is not writeable: " + archive, e.getMessage() + File.separatorChar);
+	        assertEquals("Destination folder is not writeable: " + archiveCanonicalPath, e.getMessage());
 		}
 
 		// Assert that the file still exists in the inbound endpoint's tmp-folder after the failure
@@ -226,6 +228,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 	 */
 	public void testCantWriteToArchive4() throws Exception
 	{
+		makeArchiveTmpFolderReadOnly();
 		makeArchiveReadOnly();
 		try {
 			executeBaseTest(INBOUND_ENDPOINT4, "vm://test.upload4", FILE4_TXT, SEND_SIZE, "receiving4", TIMEOUT, "sftp");
@@ -233,19 +236,29 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		} catch (Exception e) {
 	        assertNotNull(e);
 	        assertTrue(e instanceof IOException);
-	        assertTrue(e.getMessage().startsWith("Failed to create archive-tmp-receiving-folder: " + archive + TMP_RECEIVING));
+	        assertEquals("Destination folder is not writeable: " + archiveCanonicalPath + File.separatorChar + TMP_RECEIVING, e.getMessage());
 		}
 
 		// Assert that file still exists in the inbound endpoint after the failure
 		assertFilesInEndpoint(new MuleClient(), INBOUND_ENDPOINT4, FILE4_TXT);
 
-		// Assert that no files exists in the archive after the error
-		assertNoFilesInLocalFilesystem(archive);
+		// Assert that no files exists in the archive after the error except from the temp-folders 
+		assertFilesInLocalFilesystem(archive, new String[] {TMP_RECEIVING, TMP_SENDING});
 	}
 
 	private void makeArchiveReadOnly() throws IOException {
-		File archiveFolder = new File(archive);
-		if (!archiveFolder.mkdirs()) throw new IOException("Failed to create archive-folder: " + archive);
-		if (!archiveFolder.setWritable(false)) throw new IOException("Failed to make archive-folder readonly: " + archive);
+		makeFolderReadOnly(archive);
 	}
+	private void makeArchiveTmpFolderReadOnly() throws IOException {
+		makeFolderReadOnly(archive + File.separator + TMP_SENDING);
+		makeFolderReadOnly(archive + File.separator + TMP_RECEIVING);
+	}
+	private void makeFolderReadOnly(String folderName) throws IOException {
+		File folder = new File(folderName);
+		if (!folder.exists()) {
+			if (!folder.mkdirs()) throw new IOException("Failed to create folder: " + folderName);
+		}
+		if (!folder.setWritable(false)) throw new IOException("Failed to make folder readonly: " + folderName);
+	}
+
 }
