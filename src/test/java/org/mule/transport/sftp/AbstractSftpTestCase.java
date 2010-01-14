@@ -773,8 +773,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	      // First, make a list of the array of found files
 	      List<String> foundFileList = new ArrayList<String>(foundFiles.length);
 	      foundFileList.addAll(Arrays.asList(foundFiles));
-	      List<String> unexpectedFileList = new ArrayList<String>();
-
+	      List<String> missingExpectedFiles = new ArrayList<String>();
+      
 		// lookup each expected file in the list of found files and remove each found file that match the expected file
 	    // Note that the expected file can contain a regexp
 		for (String expectedFile : expectedFiles) {
@@ -782,12 +782,12 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			if (foundFile != null) {
 		      foundFileList.remove(foundFile);
 		    } else {
-		      unexpectedFileList.add(expectedFile);
+		      missingExpectedFiles.add(expectedFile);
 		    }
 		  }
 		  // Check if that no remaining files are left in the list of found files, i.e. unwanted found files
 		  assertTrue("The following file(s) was found but not expected: " + foundFileList + " on path " + path, foundFileList.size() == 0);
-		  assertTrue("Unexpected file(s) found on path " + path + ". File(s):" + unexpectedFileList, unexpectedFileList.size() == 0);
+		  assertTrue("Expected files not found on path " + path + ". File(s):" + missingExpectedFiles, missingExpectedFiles.size() == 0);
 	}
 
     /**
