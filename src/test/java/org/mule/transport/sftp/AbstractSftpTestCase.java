@@ -619,18 +619,18 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
     }
 
     protected void recursiveDeleteInLocalFilesystem(File parent) {
-    	
+
     	// If this file is a directory then first delete all its children
     	if (parent.isDirectory()) {
     		for (File child : parent.listFiles()) {
     			recursiveDeleteInLocalFilesystem(child);
     		}
     	}
-    		
+
     	// Now delete this file
     	parent.delete();
     }
-    
+
 
     /**
      * Asserts that there are no files found on the path <i>path</i>.
@@ -640,12 +640,11 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
     protected void assertNoFilesInLocalFilesystem(String path) throws IOException {
     	assertFilesInLocalFilesystem(path, new String[] {});
     }
-    
+
     /**
      * Asserts that no files are found on the path that the <i>endpointName</i> use.
      * @param muleClient MuleClient
      * @param endpointName The endpoint name
-     * @param  expectedFiles Expected files
      * @throws IOException Exception
      */
     protected void assertNoFilesInEndpoint(MuleClient muleClient, String endpointName) throws IOException {
@@ -754,15 +753,15 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
       sftpClient.changeWorkingDirectory(sftpClient.getAbsolutePath(path));
       String[] files = sftpClient.listFiles();
-		
+
       assertFilesInFileArray(path, expectedFiles, files);
     }
 
     /**
      * Asserts that only the <i>expectedFiles</i> are found in the file-array <i>path</i>, where filenames can be expressed as a regular expression.
-     * 
+     *
      * @param path
-     * @param expectedFileList
+     * @param expectedFiles
      * @param foundFiles
      */
 	private void assertFilesInFileArray(String path, String[] expectedFiles, String[] foundFiles) {
@@ -770,7 +769,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	      // First, make a list of the array of found files
 	      List<String> foundFileList = new ArrayList<String>(foundFiles.length);
 	      foundFileList.addAll(Arrays.asList(foundFiles));
-		
+	      List<String> unexpectedFileList = new ArrayList<String>();
+
 		// lookup each expected file in the list of found files and remove each found file that match the expected file
 	    // Note that the expected file can contain a regexp
 		for (String expectedFile : expectedFiles) {
@@ -778,21 +778,22 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			if (foundFile != null) {
 		      foundFileList.remove(foundFile);
 		    } else {
-		      fail("File " + expectedFile + " was not found in path '" + path + "'");
+		      unexpectedFileList.add(expectedFile);
 		    }
 		  }
 		  // Check if that no remaining files are left in the list of found files, i.e. unwanted found files
 		  assertTrue("The following file(s) was found but not expected: " + foundFileList + " on path " + path, foundFileList.size() == 0);
-	}      
+		  assertTrue("Unexpected file(s) found on path " + path + ". File(s):" + unexpectedFileList, unexpectedFileList.size() == 0);
+	}
 
     /**
      * Return the first string in a string-list that matches the regexp
      * @param list
-     * @param regexpName
+     * @param regexp
      * @return the first string that match the regexp or null if no match
      */
 	private String lookupListByRegexp(List<String> list, String regexp) {
-		
+
 		// Look for matches of the regexp in the list
 		for (String value : list) {
 			if (value.matches(regexp)) {
@@ -800,7 +801,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 				return value;
 			}
 		}
-		
+
 		// Noop, nothing found, return null
 		return null;
 	}
