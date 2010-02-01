@@ -11,6 +11,9 @@
 package org.mule.transport.sftp;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pool.ObjectPool;
@@ -28,9 +31,6 @@ import org.mule.transport.AbstractConnector;
 import org.mule.transport.file.FilenameParser;
 import org.mule.transport.file.SimpleFilenameParser;
 import org.mule.transport.sftp.notification.SftpNotifier;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -163,26 +163,38 @@ public class SftpConnector extends AbstractConnector
 
 	public SftpClient createSftpClient(ImmutableEndpoint endpoint, SftpNotifier notifier) throws Exception
 	{
-		SftpClient client;
-		if (useConnectionPool())
-		{
-			ObjectPool pool = getClientPool(endpoint);
-			client = (SftpClient) pool.borrowObject();
-		} else
-		{
-			client = SftpConnectionFactory.createClient(endpoint);
-		}
+		SftpClient client = null;
+		boolean ok = false;
 
-		// We have to set the working directory before returning
-		String dir = endpoint.getEndpointURI().getPath();
-		client.changeWorkingDirectory(dir);
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("Successfully changed working directory to: " + dir);
-		}
+		try {
+			if (useConnectionPool())
+			{
+				ObjectPool pool = getClientPool(endpoint);
+				client = (SftpClient) pool.borrowObject();
+			} else
+			{
+				client = SftpConnectionFactory.createClient(endpoint);
+			}
+	
+			// We have to set the working directory before returning
+			String dir = endpoint.getEndpointURI().getPath();
+			client.changeWorkingDirectory(dir);
+			if (logger.isDebugEnabled())
+			{
+				logger.debug("Successfully changed working directory to: " + dir);
+			}
+	
+			// TODO ML: Is this always necessary?
+			client.setNotifier(notifier);
 
-		// TODO ML: Is this always necessary?
-		client.setNotifier(notifier);
+			ok = true;
+			
+		} finally {
+			// Release the client if it was created but something failed after that, otherwise we start to waste ssh-processes...
+			if (!ok && client != null) {
+				releaseClient(endpoint, client);
+			}
+		}
 
 		return client;
 	}

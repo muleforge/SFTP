@@ -9,6 +9,8 @@ import org.mule.transport.sftp.SftpConnector;
 
 public class SftpInvalidInboundEndpointTestCase extends AbstractSftpDataIntegrityTestCase {
 
+	private static final int NO_OF_INVALID_ATTEMPTS = 150;
+	
 	@Override
 	protected String getConfigResources() {
 		return "dataintegrity/sftp-invalid-inbound-endpoint-config.xml";
@@ -28,8 +30,8 @@ public class SftpInvalidInboundEndpointTestCase extends AbstractSftpDataIntegrit
 		
 		// Verify that failed creations of sftp-clients don't leak resources (e.g. ssh-servers)
 		// In v2.2.1-RC2 this tests fails after 132 attempts on a Mac OSX 10.6 machine 
-		for (int i = 0; i < 150; i++) {
-			System.err.println(i);
+		for (int i = 0; i < NO_OF_INVALID_ATTEMPTS; i++) {
+			if (logger.isDebugEnabled()) logger.debug("CreateSftpClient invalid atempt #" + i + " of " + NO_OF_INVALID_ATTEMPTS);
 			try {
 				c.createSftpClient(ep);
 				fail("Should have received an exception here!!!");
