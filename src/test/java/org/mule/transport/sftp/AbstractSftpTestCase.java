@@ -632,7 +632,9 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
     	if (!parentParent.canWrite()) {
 			if (!parentParent.setWritable(true)) throw new IOException("Failed to set readonly-folder: " + parentParent + " to writeable");
     	}
-		if (!parent.delete()) throw new IOException("Failed to delete folder: " + parent);
+      if(parent.exists()) {
+		    if (!parent.delete()) throw new IOException("Failed to delete folder: " + parent);
+      }
     }
 
 
@@ -774,7 +776,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 	      List<String> foundFileList = new ArrayList<String>(foundFiles.length);
 	      foundFileList.addAll(Arrays.asList(foundFiles));
 	      List<String> missingExpectedFiles = new ArrayList<String>();
-      
+
 		// lookup each expected file in the list of found files and remove each found file that match the expected file
 	    // Note that the expected file can contain a regexp
 		for (String expectedFile : expectedFiles) {
