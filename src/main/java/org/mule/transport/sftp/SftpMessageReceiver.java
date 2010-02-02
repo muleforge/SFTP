@@ -20,6 +20,7 @@ import org.mule.transport.AbstractPollingMessageReceiver;
 import org.mule.transport.sftp.notification.SftpNotifier;
 
 import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * <code>SftpMessageReceiver</code> polls and receives files from an sftp
@@ -41,23 +42,33 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver
 		sftpRRUtil = new SftpReceiverRequesterUtil(endpoint);
 	}
 
-	public void poll() throws Exception
-	{
-		String[] files = sftpRRUtil.getAvailableFiles(false);
+  public void poll() throws Exception {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Pooling. Called at endpoint " + endpoint.getEndpointURI());
+    }
+    try {
+      String[] files = sftpRRUtil.getAvailableFiles(false);
 
-		if (files.length == 0)
-		{
-			logger.debug("No matching files found at endpoint " + endpoint.getEndpointURI());
-		} else
-		{
-		  	logger.debug(files.length + " files found at endpoint " + endpoint.getEndpointURI());
-		}
-
-		for (String file : files)
-		{
-			routeFile(file);
-		}
-	}
+      if (files.length == 0) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Pooling. No matching files found at endpoint " + endpoint.getEndpointURI());
+        }
+      } else {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Pooling. " + files.length + " files found at " + endpoint.getEndpointURI() + ":" + Arrays.toString(files));
+        }
+        for (String file : files) {
+          routeFile(file);
+        }
+        if (logger.isDebugEnabled()) {
+          logger.debug("Pooling. Routed all " + files.length + " files found at " + endpoint.getEndpointURI());
+        }
+      }
+    } catch (Exception e) {
+      logger.error("Error in poll", e);
+      throw e;
+    }
+  }
 
 	protected void routeFile(String path) throws Exception
 	{
@@ -79,6 +90,11 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver
 		notifier.setMessage(message);
 
 		routeMessage(message, endpoint.isSynchronous());
+
+    if (logger.isDebugEnabled())
+		{
+			logger.debug("Routed file: " + path);
+		}
 	}
 
 	public void doConnect() throws Exception

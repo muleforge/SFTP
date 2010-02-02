@@ -56,6 +56,9 @@ public class SftpInputStream extends BufferedInputStream implements ErrorOccurre
 
 	public void close() throws IOException
 	{
+    if(logger.isDebugEnabled()) {
+      logger.debug("Closing the stream for the file "+ fileName);
+    }
      try {
       super.close();
 
