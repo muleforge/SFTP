@@ -29,7 +29,9 @@ public class SftpUtil
 	private static final boolean USE_TEMP_FILE_TIMESTAMP_SUFFIX_DEFAULT = false;
 	private static final long SIZE_CHECK_WAIT_TIME_DEFAULT = -1;
 
-	public SftpUtil(ImmutableEndpoint endpoint)
+  private final static Object lock = new Object();
+
+  public SftpUtil(ImmutableEndpoint endpoint)
 	{
 		this.endpoint = endpoint;
 		this.connector = (SftpConnector) endpoint.getConnector();
@@ -253,26 +255,29 @@ public class SftpUtil
 	 * @param endpointDir
 	 * @throws IOException
 	 */
-	public synchronized void cwdToTempDirOnOutbound(SftpClient sftpClient, String endpointDir) throws IOException
+	public void cwdToTempDirOnOutbound(SftpClient sftpClient, String endpointDir) throws IOException
 	{
-		String tempDir = getTempDirOutbound();
+    String tempDir = getTempDirOutbound();
+    String tempDirAbs = sftpClient.getAbsolutePath(endpointDir + "/" + tempDir);
 
-		String tempDirAbs = sftpClient.getAbsolutePath(endpointDir + "/" + tempDir);
-
-		// Try to change directory to the temp dir, if it fails - create it
-		try
-		{
-			// This method will throw an exception if the directory does not exist.
-			sftpClient.changeWorkingDirectory(tempDirAbs);
-		} catch (IOException e)
-		{
-			logger.info("Got an exception when trying to change the working directory to the temp dir. " +
-				"Will try to create the directory " + tempDirAbs);
-			sftpClient.changeWorkingDirectory(endpointDir);
-			sftpClient.mkdir(tempDir);
-			// Now it should exist!
-			sftpClient.changeWorkingDirectory(tempDirAbs);
-		}
+    // We need to have a synchronized block if two++ threads tries to
+    //  create the same directory at the same time
+    synchronized (lock) {
+      // Try to change directory to the temp dir, if it fails - create it
+      try
+      {
+        // This method will throw an exception if the directory does not exist.
+        sftpClient.changeWorkingDirectory(tempDirAbs);
+      } catch (IOException e)
+      {
+        logger.info("Got an exception when trying to change the working directory to the temp dir. " +
+          "Will try to create the directory " + tempDirAbs);
+        sftpClient.changeWorkingDirectory(endpointDir);
+        sftpClient.mkdir(tempDir);
+        // Now it should exist!
+        sftpClient.changeWorkingDirectory(tempDirAbs);
+      }
+    }
 	}
 
 	public boolean isKeepFileOnError()
@@ -294,7 +299,7 @@ public class SftpUtil
 
 	/**
 	 * Should be moved to a util class that is not based on an endpoint...
-	 * 
+	 * TODO: why is this method synchronized?
 	 * @param input
 	 * @param destination
 	 * @throws IOException
@@ -323,13 +328,13 @@ public class SftpUtil
 	        {
 	            if (output != null) output.close();
 	        }
-	    } 
-	    catch (IOException ex) 
+	    }
+	    catch (IOException ex)
 	    {
 			setErrorOccurredOnInputStream(input);
 			throw ex;
 	    }
-	    catch (RuntimeException ex) 
+	    catch (RuntimeException ex)
 	    {
 			setErrorOccurredOnInputStream(input);
 			throw ex;
@@ -341,7 +346,7 @@ public class SftpUtil
 	}
 
 	public void setErrorOccurredOnInputStream(InputStream inputStream) {
-		
+
 		if (isKeepFileOnError()) {
 			// If an exception occurs and the keepFileOnError property is
 			// true, keep the file on the originating endpoint

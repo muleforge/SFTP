@@ -55,7 +55,9 @@ public class SftpClient
 	// Keep track of the current working directory for improved logging.
 	private String currentDirectory = "";
 
-	public SftpClient(String host)
+  private static final Object lock = new Object();
+
+  public SftpClient(String host)
 	{
 		this(host, null);
 	}
@@ -203,6 +205,7 @@ public class SftpClient
 		catch (SftpException e)
 		{
 			throw new IOException(e.getMessage());
+			// throw new IOException("Error occured when renaming " + currentDirectory + "/" + filename + " to " + absolutePath + ". Error Message=" + e.getMessage());
 		}
 	}
 
@@ -417,7 +420,8 @@ public class SftpClient
 		} catch (SftpException e)
 		{
 			// Don't throw e.getmessage since we only get "2: No such file"..
-			throw new IOException("Could not create the directory '" + directoryName + "', caused by: " + e.getMessage());
+      throw new IOException("Could not create the directory '" + directoryName + "' in '" + currentDirectory + "', caused by: " + e.getMessage());
+			// throw new IOException("Could not create the directory '" + directoryName + "', caused by: " + e.getMessage());
       }
 		}
 
@@ -464,38 +468,43 @@ public class SftpClient
    * @param newDir
    * @throws IOException
    */
-	public synchronized void createSftpDirIfNotExists(ImmutableEndpoint endpoint, String newDir) throws IOException
+	public void createSftpDirIfNotExists(ImmutableEndpoint endpoint, String newDir) throws IOException
 	{
 		String newDirAbs = endpoint.getEndpointURI().getPath() + "/" + newDir;
 
 		String currDir = currentDirectory;
 
-		// Try to change directory to the new dir, if it fails - create it
-		try
-		{
-			// This method will throw an exception if the directory does not exist.
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("CHANGE DIR FROM " + currentDirectory + " TO " + newDirAbs);
-			}
-			changeWorkingDirectory(newDirAbs);
-		} catch (IOException e)
-		{
-			logger.info("Got an exception when trying to change the working directory to the new dir. " +
-				"Will try to create the directory " + newDirAbs);
-			changeWorkingDirectory(endpoint.getEndpointURI().getPath());
-			mkdir(newDir);
+    if (logger.isDebugEnabled())
+    {
+      logger.debug("CHANGE DIR FROM " + currentDirectory + " TO " + newDirAbs);
+    }
 
-			// Now it should exist!
-			changeWorkingDirectory(newDirAbs);
-		} finally
-		{
-			changeWorkingDirectory(currDir);
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("DIR IS NOW BACK TO " + currentDirectory);
-			}
-		}
+     // We need to have a synchronized block if two++ threads tries to
+     //  create the same directory at the same time
+     synchronized (lock) {
+      // Try to change directory to the new dir, if it fails - create it
+      try
+      {
+        // This method will throw an exception if the directory does not exist.
+        changeWorkingDirectory(newDirAbs);
+      } catch (IOException e)
+      {
+        logger.info("Got an exception when trying to change the working directory to the new dir. " +
+          "Will try to create the directory " + newDirAbs);
+        changeWorkingDirectory(endpoint.getEndpointURI().getPath());
+        mkdir(newDir);
+
+        // Now it should exist!
+        changeWorkingDirectory(newDirAbs);
+      } finally
+      {
+        changeWorkingDirectory(currDir);
+        if (logger.isDebugEnabled())
+        {
+          logger.debug("DIR IS NOW BACK TO " + currentDirectory);
+        }
+      }
+     }
 	}
 
 	public String duplicateHandling(String destDir, String filename, String duplicateHandling) throws IOException
