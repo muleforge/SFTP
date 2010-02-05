@@ -420,8 +420,8 @@ public class SftpClient
 		} catch (SftpException e)
 		{
 			// Don't throw e.getmessage since we only get "2: No such file"..
-      throw new IOException("Could not create the directory '" + directoryName + "' in '" + currentDirectory + "', caused by: " + e.getMessage());
-			// throw new IOException("Could not create the directory '" + directoryName + "', caused by: " + e.getMessage());
+      throw new IOException("Could not create the directory '" + directoryName + "', caused by: " + e.getMessage());
+//      throw new IOException("Could not create the directory '" + directoryName + "' in '" + currentDirectory + "', caused by: " + e.getMessage());
       }
 		}
 
