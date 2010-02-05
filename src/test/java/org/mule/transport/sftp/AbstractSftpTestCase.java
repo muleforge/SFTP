@@ -426,10 +426,15 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		// Stop all named services
 		List<Service> services = new ArrayList<Service>();
 		for (String serviceName : serviceNames) {
-			Service service = muleContext.getRegistry().lookupService(serviceName);
-			service.stop();
-			services.add(service);
-		}
+      try {
+        Service service = muleContext.getRegistry().lookupService(serviceName);
+        service.stop();
+        services.add(service);
+      } catch (Exception e) {
+        logger.error("Error '" + e.getMessage() + "' occured while stopping the service " + serviceName + ". Perhaps the service did not exist in the config?");
+        throw e;
+      }
+    }
 
 		// Now init the directory for each named endpoint, one by one
 		for (String endpointName : endpointNames) {
