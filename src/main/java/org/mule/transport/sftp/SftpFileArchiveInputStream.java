@@ -27,7 +27,7 @@ public class SftpFileArchiveInputStream extends FileInputStream implements Error
 	
     // Log every 10 000 000 bytes read at debug-level
 	// Good if really large files are transferred and you tend to get nervous by not seeing any progress in the logfile...
-	private static final int LOG_BYTE_INTERVAL = 1000000;
+	private static final int LOG_BYTE_INTERVAL = 10000000;
 	private long bytesRead = 0;
 	private long nextLevelToLogBytesRead = LOG_BYTE_INTERVAL;
 
