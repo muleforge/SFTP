@@ -24,6 +24,12 @@ public class SftpFileArchiveInputStream extends FileInputStream implements Error
 	private File file;
 	private File archiveFile;
 	private boolean errorOccured = false;
+	
+    // Log every 10 000 000 bytes read at debug-level
+	// Good if really large files are transferred and you tend to get nervous by not seeing any progress in the logfile...
+	private static final int LOG_BYTE_INTERVAL = 1000000;
+	private long bytesRead = 0;
+	private long nextLevelToLogBytesRead = LOG_BYTE_INTERVAL;
 
 	public SftpFileArchiveInputStream(File file) throws FileNotFoundException
 	{
@@ -41,8 +47,30 @@ public class SftpFileArchiveInputStream extends FileInputStream implements Error
 		this.archiveFile = archiveFile;
 	}
 
+	
+	@Override
+	public int read() throws IOException {
+		logReadBytes(1);
+		return super.read();
+	}
+
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException {
+		logReadBytes(len);
+		return super.read(b, off, len);
+	}
+
+	@Override
+	public int read(byte[] b) throws IOException {
+		logReadBytes(b.length);
+		return super.read(b);
+	}
+
 	public void close() throws IOException
 	{
+	    if(logger.isDebugEnabled()) {
+	        logger.debug("Closing the stream for the file "+ file);
+	      }
 		super.close();
 
 		if (!errorOccured && archiveFile != null)
@@ -60,4 +88,15 @@ public class SftpFileArchiveInputStream extends FileInputStream implements Error
 		if (logger.isDebugEnabled()) logger.debug("setErrorOccurred() called");
 		this.errorOccured = true;
 	}
+
+	private void logReadBytes(int newBytesRead) {
+		if (!logger.isDebugEnabled()) return;
+		
+		this.bytesRead += newBytesRead;
+		if (this.bytesRead >= nextLevelToLogBytesRead) {
+			logger.debug("Read " + this.bytesRead + " bytes and couting...");
+			nextLevelToLogBytesRead += LOG_BYTE_INTERVAL;
+		}
+	}
+
 }
