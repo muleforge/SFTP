@@ -530,15 +530,24 @@ public class SftpClient
 	{
 		int fileIdx = 1;
 
-		// TODO. Add code for handling no '.'
+    String filename;
+    String fileType;
 		int fileTypeIdx = path.lastIndexOf('.');
-		String fileType = path.substring(fileTypeIdx); // Let the fileType include the leading '.'
-		String filename = path.substring(0, fileTypeIdx);
+    if(fileTypeIdx == -1)
+    {
+      // No file type/extension found
+      filename = path;
+      fileType = "";
+    } else
+    {
+      fileType = path.substring(fileTypeIdx); // Let the fileType include the leading '.'
+      filename = path.substring(0, fileTypeIdx);
+    }
 
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("Create a unique name for: " + path + " (" + dir + " - " + filename + " - " + fileType + ")");
-		}
+    if (logger.isDebugEnabled())
+    {
+      logger.debug("Create a unique name for: " + path + " (" + dir + " - " + filename + " - " + fileType + ")");
+    }
 
 		String uniqueFilename = filename;
 		String[] existingFiles = listFiles(getAbsolutePath(dir));

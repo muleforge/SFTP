@@ -15,6 +15,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.module.client.MuleClient;
 
+import java.util.HashMap;
 
 /**
  * Test the archive features.
@@ -50,6 +51,7 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
         initEndpointDirectory("inboundEndpoint2");
         initEndpointDirectory("inboundEndpoint3");
         initEndpointDirectory("inboundEndpoint4");
+        initEndpointDirectory("outboundEndpoint5");
 	}
 
 
@@ -105,4 +107,36 @@ public class SftpDuplicateHandlingFunctionalTestCase extends AbstractSftpTestCas
     assertEquals("The value on the connector should be used", "addSeqNo", util.getDuplicateHandling());
 	}
 
+ 	/**
+	 * Test 5 - test duplicate handling by adding a sequence number to the new file without file extension
+	 */
+	public void testDuplicateHandlingAddSeqNoWithNoFileExtension() throws Exception
+	{
+		MuleClient muleClient = new MuleClient();
+
+    HashMap<String, String> txtProps = new HashMap<String, String>(1);
+		txtProps.put(SftpConnector.PROPERTY_FILENAME, "file5");
+    muleClient.dispatch("vm://test.upload5", TEST_MESSAGE, txtProps);
+
+    // TODO: make a executeBaseTest that doesn't require a FunctionalTestComponent
+    Thread.sleep(5000);
+
+    // File #2
+    muleClient.dispatch("vm://test.upload5", TEST_MESSAGE, txtProps);
+
+    Thread.sleep(5000);
+
+    SftpClient sftpClient = null;
+    try {
+      sftpClient = getSftpClient(muleClient, "outboundEndpoint5");
+      ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty("outboundEndpoint5");
+
+      assertTrue("The file should exist in the directory", verifyFileExists(sftpClient, endpoint.getEndpointURI(), "file5"));
+      assertTrue("The file should exist in the directory", verifyFileExists(sftpClient, endpoint.getEndpointURI(), "file5_1"));
+    } finally {
+      if (sftpClient != null) {
+        sftpClient.disconnect();
+      }
+    }
+	}
 }
