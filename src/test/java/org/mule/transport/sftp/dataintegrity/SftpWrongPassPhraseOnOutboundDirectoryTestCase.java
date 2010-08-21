@@ -3,6 +3,7 @@ package org.mule.transport.sftp.dataintegrity;
 import java.io.IOException;
 
 import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.api.transport.DispatchException;
 import org.mule.module.client.MuleClient;
 import org.mule.transport.sftp.SftpClient;
 
@@ -34,13 +35,14 @@ public class SftpWrongPassPhraseOnOutboundDirectoryTestCase extends AbstractSftp
 	 */
 	public void testWrongPassPhraseOnOutboundDirectory() throws Exception
 	{
-		MuleClient muleClient = new MuleClient();
-
+		MuleClient muleClient = new MuleClient(muleContext);
+		assertTrue(muleContext.isStarted());
 		// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-    	Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME, null), "sftp");
+    	final Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME, null), "sftp", "service");
         assertNotNull(exception);
-        assertTrue(exception instanceof IOException);
-        assertTrue(exception.getMessage().startsWith("Error during login to"));
+        assertTrue("expected DispatchException, but got " + exception.getClass().toString(), exception instanceof DispatchException);
+        assertTrue("expected IOException, but got " + exception.getCause().getClass().toString(),exception.getCause() instanceof IOException);
+        assertTrue("wrong message : " + exception.getCause().getMessage(), exception.getCause().getMessage().startsWith("Error during login to"));
 
 		SftpClient sftpClient = getSftpClient(muleClient, INBOUND_ENDPOINT_NAME);
         try {

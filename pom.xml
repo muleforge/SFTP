@@ -8,11 +8,11 @@
 	<artifactId>mule-transport-sftp</artifactId>
 	<packaging>jar</packaging>
 	<name>Mule SFTP Transport</name>
-	<version>2.2.1-RC4-SNAPSHOT</version>
+	<version>3.0.0-RC1-SNAPSHOT</version>
 	<description>SFTP connectivity</description>
 
 	<properties>
-		<mule.version>2.2.1</mule.version>
+		<mule.version>3.0.0-RC2-SNAPSHOT</mule.version>
 	</properties>
 
 	<!-- Mule Forge Configuration -->
@@ -70,6 +70,7 @@
 	</repositories>
 
 	<build>
+        <defaultGoal>install</defaultGoal>	
 		<!--
 			 Ensure that variables, like ${SFTP_HOST} is replace with a real host.
 		     The variables is a workaround for not having an embedded SFTP server

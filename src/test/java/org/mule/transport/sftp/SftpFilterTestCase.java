@@ -43,7 +43,7 @@ public class SftpFilterTestCase extends AbstractSftpDataIntegrityTestCase
 
 	public void testFilter() throws Exception
 	{
-		MuleClient muleClient = new MuleClient();
+		MuleClient muleClient = new MuleClient(muleContext);
 
 		// Send .txt file using muleclient.dipatch directly (since the file won't be delivered to the endpoint (due to filter settings) we can't wait for a delivery notification....
 		HashMap<String, String> txtProps = new HashMap<String, String>(1);

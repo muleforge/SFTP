@@ -3,6 +3,7 @@ package org.mule.transport.sftp.dataintegrity;
 import java.io.IOException;
 
 import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.api.transport.DispatchException;
 import org.mule.module.client.MuleClient;
 import org.mule.transport.sftp.SftpClient;
 
@@ -29,10 +30,13 @@ public class SftpCheckDuplicateFileHandlingTestCase extends AbstractSftpDataInte
   }
 
   @Override
-  protected void doSetUp() throws Exception {
+  protected void doSetUp() throws Exception 
+  {
     initEndpointDirectories(
     	new String[] {"serviceDuplicateHandlingRename", "serviceDuplicateHandlingThrowException"} , 
     	new String[] {INBOUND_ENDPOINT_NAME, INBOUND_ENDPOINT_NAME2, OUTBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME2});
+
+    muleContext.setExceptionListener(new org.mule.transport.sftp.notification.ExceptionListener());
   }
 
     /**
@@ -40,12 +44,12 @@ public class SftpCheckDuplicateFileHandlingTestCase extends AbstractSftpDataInte
 	 */
 	public void testDuplicateChangeNameHandling() throws Exception {
 
-		MuleClient muleClient = new MuleClient();
+		MuleClient muleClient = new MuleClient(muleContext);
 		SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
 
 		try {
 
-			// Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
+			// Send a file to the SFTP server, which the inbound-outboundEndpoint then can pick up
 			dispatchAndWaitForDelivery(new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME));
 
 			// Make sure the file exists only in the outbound endpoint
@@ -71,7 +75,7 @@ public class SftpCheckDuplicateFileHandlingTestCase extends AbstractSftpDataInte
    */
   public void testDuplicateDefaultExceptionHandling() throws Exception {
 
-	MuleClient muleClient = new MuleClient();
+	MuleClient muleClient = new MuleClient(muleContext);
     SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME2);
 
     try {
@@ -81,10 +85,11 @@ public class SftpCheckDuplicateFileHandlingTestCase extends AbstractSftpDataInte
 
       verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME2, OUTBOUND_ENDPOINT_NAME2, false, true);
 
-  	  Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME2, OUTBOUND_ENDPOINT_NAME2), "sftp");
+  	  Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME2, OUTBOUND_ENDPOINT_NAME2), "sftp", "serviceDuplicateHandlingThrowException");
       assertNotNull(exception);
-      assertTrue(exception instanceof IOException);
-      assertEquals("Failure", exception.getMessage());
+      assertTrue(exception instanceof DispatchException);
+      assertTrue(exception.getCause() instanceof IOException);
+      assertEquals("Failure", exception.getCause().getMessage());
 
       verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME2, OUTBOUND_ENDPOINT_NAME2, true, true);
 

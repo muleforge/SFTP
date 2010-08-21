@@ -12,7 +12,31 @@ package org.mule.transport.sftp;
 import static org.mule.context.notification.EndpointMessageNotification.MESSAGE_DISPATCHED;
 import static org.mule.context.notification.EndpointMessageNotification.MESSAGE_SENT;
 
-import java.beans.ExceptionListener;
+import org.mule.api.MuleEvent;
+import org.mule.api.MuleEventContext;
+import org.mule.api.MuleException;
+import org.mule.api.component.Component;
+import org.mule.api.context.notification.EndpointMessageNotificationListener;
+import org.mule.api.context.notification.ServerNotification;
+import org.mule.api.endpoint.EndpointBuilder;
+import org.mule.api.endpoint.EndpointURI;
+import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.api.endpoint.InboundEndpoint;
+import org.mule.api.exception.MessagingExceptionHandler;
+import org.mule.api.exception.SystemExceptionHandler;
+import org.mule.api.model.Model;
+import org.mule.api.service.Service;
+import org.mule.api.transport.Connector;
+import org.mule.context.notification.EndpointMessageNotification;
+import org.mule.module.client.MuleClient;
+import org.mule.tck.FunctionalTestCase;
+import org.mule.tck.functional.EventCallback;
+import org.mule.transport.sftp.util.ValueHolder;
+import org.mule.util.StringMessageUtils;
+
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpException;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -20,32 +44,16 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.mule.api.MuleEventContext;
-import org.mule.api.MuleException;
-import org.mule.api.context.notification.EndpointMessageNotificationListener;
-import org.mule.api.context.notification.ServerNotification;
-import org.mule.api.endpoint.EndpointBuilder;
-import org.mule.api.endpoint.EndpointURI;
-import org.mule.api.endpoint.ImmutableEndpoint;
-import org.mule.api.service.Service;
-import org.mule.context.notification.EndpointMessageNotification;
-import org.mule.module.client.MuleClient;
-import org.mule.tck.FunctionalTestCase;
-import org.mule.tck.functional.EventCallback;
-import org.mule.transport.sftp.util.ValueHolder;
-import org.mule.util.StringMessageUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.SftpException;
 
 import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
 import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
 import edu.emory.mathcs.backport.java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -249,10 +257,15 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		executeBaseTest(inputEndpointName, sendUrl, filename, size, receivingTestComponentName, timeout, null);
 	}
 
-	/** Base method for executing tests... */
 	protected void executeBaseTest(String inputEndpointName, String sendUrl, String filename, final int size, String receivingTestComponentName, long timeout, String expectedFailingConnector) throws Exception
+    {
+	    executeBaseTest(inputEndpointName, sendUrl, filename, size, receivingTestComponentName, timeout, expectedFailingConnector, null);
+    }
+	
+	/** Base method for executing tests... */
+	protected void executeBaseTest(String inputEndpointName, String sendUrl, String filename, final int size, String receivingTestComponentName, long timeout, String expectedFailingConnector, String serviceName) throws Exception
 	{
-		MuleClient client = new MuleClient();
+		MuleClient client = new MuleClient(muleContext);
 
 		// Do some cleaning so that the endpoint doesn't have any other files
         // We don't need to do this anymore since we are deleting and then creating the directory for each test
@@ -270,6 +283,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			public void eventReceived(MuleEventContext context, Object component)
 				throws Exception
 			{
+
 				if (logger.isInfoEnabled()) logger.info("called " + loopCount.incrementAndGet() + " times");
 
 				InputStream sftpInputStream = (InputStream) context.getMessage().getPayload();
@@ -288,7 +302,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 						{
 							if (b != testByte)
 							{
-								fail("Incorrect received byte (was '" + b + "', excepted '" + testByte + "'");
+								fail("Incorrect received byte (was '" + b + "', expected '" + testByte + "'");
 							}
 						}
 					}
@@ -296,8 +310,6 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 				{
 					bif.close();
 				}
-
-
 				latch.countDown();
 			}
 		};
@@ -306,14 +318,30 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
 		final ValueHolder<Exception> exceptionHolder = new ValueHolder<Exception>();
 		if (expectedFailingConnector != null) {
-			// Register an exception-listener on the connector that expects to fail and count down the latch after saving the throwed exception
-			muleContext.getRegistry().lookupConnector(expectedFailingConnector).setExceptionListener(new ExceptionListener() {
-				public void exceptionThrown(Exception e) {
-					if (logger.isInfoEnabled()) logger.info("expected exception occurred: " + e, e);
-					exceptionHolder.value = e;
-					latch.countDown();
-				}
-			});
+			// Register an exception-listener on the connector that expects to fail and count down the latch after saving the thrown exception
+			muleContext.setExceptionListener(new SystemExceptionHandler()
+            {                
+                public void handleException(Exception e)
+                {
+                    if (logger.isInfoEnabled()) logger.info("expected exception occurred: " + e, e);
+                    exceptionHolder.value = e;
+                    latch.countDown();
+                }
+            });
+
+			if(serviceName != null && !serviceName.isEmpty())
+			{
+			    muleContext.getRegistry().lookupService(serviceName).setExceptionListener(new MessagingExceptionHandler()
+			    {
+			        public MuleEvent handleException(Exception e, MuleEvent event)
+			        {
+			            if (logger.isInfoEnabled()) logger.info("expected exception occurred: " + e, e);
+			            exceptionHolder.value = e;
+			            latch.countDown();
+			            return event;
+			        }
+			    });
+			}
 		}
 
 
@@ -337,6 +365,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
 		HashMap<String, String> props = new HashMap<String, String>(1);
 		props.put(SftpConnector.PROPERTY_FILENAME, filename);
+		props.put(SftpConnector.PROPERTY_ORIGINAL_FILENAME, filename);
 
 		if (logger.isInfoEnabled()) logger.info(StringMessageUtils.getBoilerPlate("Note! If this test fails due to timeout please add '-Dmule.test.timeoutSecs=XX' to the mvn command!"));
 
@@ -457,7 +486,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
      */
     protected void initEndpointDirectory(String endpointName) throws MuleException, IOException, SftpException
     {
-        MuleClient muleClient = new MuleClient();
+        MuleClient muleClient = new MuleClient(muleContext);
         SftpClient sftpClient = getSftpClient(muleClient, endpointName);
         try {
             ChannelSftp channelSftp = sftpClient.getChannelSftp();
@@ -494,7 +523,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
 		try {
 			// First create a local muleClient instance if not supplied
-			if (localMuleClient) muleClient = new MuleClient();
+			if (localMuleClient) muleClient = new MuleClient(muleContext);
 
 			// Next create a listener that listens for dispatch events on the outbound endpoint
 			listener = new EndpointMessageNotificationListener() {
@@ -506,7 +535,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
 						// Extract action and name of the endpoint
 						int    action   = endpointNotification.getAction();
-						String endpoint = endpointNotification.getEndpoint().getName();
+						String endpoint = endpointNotification.getEndpoint();
 
 						// If it is a dispatch event on our outbound endpoint then countdown the latch.
 						if ((action == MESSAGE_DISPATCHED || action == MESSAGE_SENT) && endpoint.equals(p.getOutboundEndpoint())) {
@@ -525,6 +554,7 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			// Prepare message headers, set filename-header and if supplied any headers supplied in the call.
 			Map<String, String> headers = new HashMap<String, String>();
 			headers.put("filename", p.getFilename());
+
 			if (p.getHeaders() != null) {
 				headers.putAll(p.getHeaders());
 			}
@@ -539,7 +569,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			if (logger.isDebugEnabled()) logger.debug((workDone) ? "File delivered, continue..." : "No file delivered, timeout occurred!");
 
 			// Raise a fault if the test timed out
-			assertTrue("Test timed out. It took more than " + p.getTimeout() + " milliseconds. If this error occurs the test probably needs a longer time out (on your computer/network)", workDone);
+			// FIXME DZ: i dont this is necessary since we have an overall test timeout
+			//assertTrue("Test timed out. It took more than " + p.getTimeout() + " milliseconds. If this error occurs the test probably needs a longer time out (on your computer/network)", workDone);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -554,44 +585,69 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		}
     }
 
+	protected Exception dispatchAndWaitForException(final DispatchParameters p, String expectedFailingConnector)
+	{
+	    return dispatchAndWaitForException(p, expectedFailingConnector, null);
+	}
+	
     /**
-     * Helper method for initiating a test and wait for an exception to be catched by the sftp-connector.
+     * Helper method for initiating a test and wait for an exception to be caught by the sftp-connector.
      *
 	 * @param p where sftpConnector and inboundEndpoint are mandatory, @see DispatchParameters for details.
      * @return
      */
-    protected Exception dispatchAndWaitForException(final DispatchParameters p, String expectedFailingConnector)
+    protected Exception dispatchAndWaitForException(final DispatchParameters p, String expectedFailingConnector, String serviceName)
     {
     	// Declare countdown latch and listener
 		final CountDownLatch latch = new CountDownLatch(1);
-		ExceptionListener listener = null;
+		SystemExceptionHandler listener = null;
+		MessagingExceptionHandler messagingListener = null;
 		MuleClient muleClient = p.getMuleClient();
 		boolean localMuleClient = muleClient == null;
-		ExceptionListener currentExceptionListener = null;
+		SystemExceptionHandler currentExceptionListener = null;
+		MessagingExceptionHandler currentMessagingListener = null;
 		final ValueHolder<Exception> exceptionHolder = new ValueHolder<Exception>();
 
 		try {
 			// First create a local muleClient instance if not supplied
-			if (localMuleClient) muleClient = new MuleClient();
+			if (localMuleClient) muleClient = new MuleClient(muleContext);
 
 			// Next create a listener that listens for exception on the sftp-connector
-			listener = new ExceptionListener() {
-				public void exceptionThrown(Exception e) {
-					exceptionHolder.value = e;
-					if (logger.isDebugEnabled()) logger.debug("Expected exception occurred: " + e.getMessage() + ", time to countdown the latch");
-					latch.countDown();
-				}
+			listener = new SystemExceptionHandler()
+            {
+                
+                public void handleException(Exception e)
+                {
+                    exceptionHolder.value = e;
+                    if (logger.isDebugEnabled()) logger.debug("Expected exception occurred: " + e.getMessage() + ", time to countdown the latch");
+                    latch.countDown();
+                }
 			};
+			
+			messagingListener = new MessagingExceptionHandler()
+            {                
+                public MuleEvent handleException(Exception e, MuleEvent event)
+                {
+                    exceptionHolder.value = e;
+                    if (logger.isDebugEnabled()) logger.debug("Expected exception occurred: " + e.getMessage() + ", time to countdown the latch");
+                    latch.countDown();
+                    return event;
+                }
+            };
 
+            currentMessagingListener = muleContext.getRegistry().lookupService(serviceName).getExceptionListener();
+            muleContext.getRegistry().lookupService(serviceName).setExceptionListener(messagingListener);
+            
 			// Now register an exception-listener on the connector that expects to fail
-			currentExceptionListener = muleContext.getRegistry().lookupConnector(expectedFailingConnector).getExceptionListener();
-			muleContext.getRegistry().lookupConnector(expectedFailingConnector).setExceptionListener(listener);
+			currentExceptionListener = muleContext.getExceptionListener();
+			muleContext.setExceptionListener(listener);
 
 			// Initiate the test by sending a file to the SFTP server, which the inbound-endpoint then can pick up
 
 			// Prepare message headers, set filename-header and if supplied any headers supplied in the call.
 			Map<String, String> headers = new HashMap<String, String>();
 			headers.put("filename", p.getFilename());
+
 			if (p.getHeaders() != null) {
 				headers.putAll(p.getHeaders());
 			}
@@ -617,7 +673,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 			if (localMuleClient) muleClient.dispose();
 
 			// Always reset the current listener
-			muleContext.getRegistry().lookupConnector(expectedFailingConnector).setExceptionListener(currentExceptionListener);
+			muleContext.setExceptionListener(currentExceptionListener);
+			muleContext.getRegistry().lookupService(serviceName).setExceptionListener(currentMessagingListener);
 		}
 
 		return (Exception)exceptionHolder.value;
@@ -634,7 +691,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 
     	// Now delete this file, but first check write permissions on its parent...
     	File parentParent = parent.getParentFile();
-    	if (!parentParent.canWrite()) {
+    	if (!parentParent.canWrite()) 
+    	{
 			if (!parentParent.setWritable(true)) throw new IOException("Failed to set readonly-folder: " + parentParent + " to writeable");
     	}
       if(parent.exists()) {
@@ -793,8 +851,8 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		    }
 		  }
 		  // Check if that no remaining files are left in the list of found files, i.e. unwanted found files
-		  assertTrue("The following file(s) was found but not expected: " + foundFileList + " on path " + path, foundFileList.size() == 0);
-		  assertTrue("Expected files not found on path " + path + ". File(s):" + missingExpectedFiles, missingExpectedFiles.size() == 0);
+        assertTrue("Expected files not found on path " + path + ". File(s):" + missingExpectedFiles, missingExpectedFiles.size() == 0);
+		assertTrue("The following file(s) was found but not expected: " + foundFileList + " on path " + path, foundFileList.size() == 0);
 	}
 
     /**
@@ -936,4 +994,42 @@ public abstract class AbstractSftpTestCase extends FunctionalTestCase
 		}
 	}
 
+	/**
+     * Check that all of the connectors are running. I don't know if this makes a
+     * difference in test reliability per se; it may just delay the start of the test
+     * long enough for the MuleContext to be usable.
+     * 
+     */
+    public void checkConnectors()
+    {
+        assertTrue("context is not started", muleContext.getLifecycleManager().getState().isStarted());
+        Map<String, Connector> connectorMap = muleContext.getRegistry().lookupByType(Connector.class);
+        Map<String, InboundEndpoint> inboundMap = muleContext.getRegistry().lookupByType(InboundEndpoint.class);
+        Map<String, Service> serviceMap = muleContext.getRegistry().lookupByType(Service.class);
+        Map<String, Model> modelMap = muleContext.getRegistry().lookupByType(Model.class);
+        Map<String, Component> componentMap = muleContext.getRegistry().lookupByType(Component.class);
+        //Map<String, OutboundEndpoint> outboundMap = muleContext.getRegistry().lookupByType(OutboundEndpoint.class);
+        
+        Iterator it = connectorMap.entrySet().iterator();
+        while(it.hasNext())
+        {
+            Map.Entry<String, Connector> pairs = (Map.Entry<String, Connector>)it.next();
+            logger.debug("checking connector : " + pairs.getKey());
+            assertTrue(pairs.getKey() + " is not started", pairs.getValue().isStarted());
+        }
+
+        it = serviceMap.entrySet().iterator();
+        while(it.hasNext())
+        {
+            Map.Entry<String, Service> pairs = (Map.Entry<String, Service>)it.next();
+            assertTrue(pairs.getKey() + " is not started", pairs.getValue().isStarted());
+        }
+        
+        it = modelMap.entrySet().iterator();
+        while(it.hasNext())
+        {
+            Map.Entry<String, Model> pairs = (Map.Entry<String, Model>)it.next();
+            assertTrue(pairs.getKey() + " is not started", pairs.getValue().getLifecycleState().isStarted());
+        }
+    }
 }

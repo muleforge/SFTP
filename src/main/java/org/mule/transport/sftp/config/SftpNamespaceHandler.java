@@ -10,8 +10,10 @@
 package org.mule.transport.sftp.config;
 
 import org.mule.config.spring.handlers.AbstractMuleNamespaceHandler;
+import org.mule.config.spring.parsers.generic.ChildDefinitionParser;
 import org.mule.config.spring.parsers.generic.OrphanDefinitionParser;
 import org.mule.endpoint.URIBuilder;
+import org.mule.transport.file.ExpressionFilenameParser;
 import org.mule.transport.sftp.SftpConnector;
 
 /**
@@ -23,6 +25,7 @@ public class SftpNamespaceHandler extends AbstractMuleNamespaceHandler
     public void init()
     {
         registerBeanDefinitionParser("connector", new OrphanDefinitionParser(SftpConnector.class, true));
+        registerBeanDefinitionParser("expression-filename-parser", new ChildDefinitionParser("filenameParser", ExpressionFilenameParser.class));
         registerStandardTransportEndpoints("sftp", URIBuilder.SOCKET_ATTRIBUTES);
         registerConnectorDefinitionParser(SftpConnector.class);
     }

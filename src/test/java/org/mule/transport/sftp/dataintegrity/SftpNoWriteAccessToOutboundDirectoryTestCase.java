@@ -2,6 +2,7 @@ package org.mule.transport.sftp.dataintegrity;
 
 import java.io.IOException;
 
+import org.mule.api.transport.DispatchException;
 import org.mule.module.client.MuleClient;
 import org.mule.transport.sftp.SftpClient;
 
@@ -31,7 +32,7 @@ public class SftpNoWriteAccessToOutboundDirectoryTestCase extends AbstractSftpDa
 	/** No write access on the outbound directory. The source file should still exist */
 	public void testNoWriteAccessToOutboundDirectory() throws Exception
 	{
-		MuleClient muleClient = new MuleClient();
+		MuleClient muleClient = new MuleClient(muleContext);
 
         SftpClient sftpClient = getSftpClient(muleClient, OUTBOUND_ENDPOINT_NAME);
 
@@ -40,10 +41,11 @@ public class SftpNoWriteAccessToOutboundDirectoryTestCase extends AbstractSftpDa
             remoteChmod(muleClient, sftpClient, OUTBOUND_ENDPOINT_NAME, 00500);
 
             // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-      	    Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME), "sftp");
+      	    Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME), "sftp", "service");
             assertNotNull(exception);
-            assertTrue(exception instanceof IOException);
-            assertEquals("Permission denied", exception.getMessage());
+            assertTrue("expected DispatchException, but got : " + exception.getClass().toString(), exception instanceof DispatchException);
+            assertTrue("expected IOException, but got : " + exception.getCause().getClass().toString(), exception.getCause() instanceof IOException);
+            assertEquals("Permission denied", exception.getCause().getMessage());
 
             verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
         } finally {

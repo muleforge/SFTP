@@ -10,12 +10,10 @@
 package org.mule.transport.sftp;
 
 
-import org.mule.DefaultMuleMessage;
 import org.mule.api.MuleMessage;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.lifecycle.CreateException;
 import org.mule.api.service.Service;
-import org.mule.api.transport.MessageAdapter;
 import org.mule.transport.AbstractPollingMessageReceiver;
 import org.mule.transport.sftp.notification.SftpNotifier;
 
@@ -42,6 +40,13 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver
 		sftpRRUtil = new SftpReceiverRequesterUtil(endpoint);
 	}
 
+    public SftpMessageReceiver(SftpConnector connector, Service component,
+                               InboundEndpoint endpoint) throws CreateException
+    {
+        super(connector, component, endpoint);
+        sftpRRUtil = new SftpReceiverRequesterUtil(endpoint);
+    }	
+	
   public void poll() throws Exception {
     if (logger.isDebugEnabled()) {
       logger.debug("Pooling. Called at endpoint " + endpoint.getEndpointURI());
@@ -72,8 +77,8 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver
 
 	protected void routeFile(String path) throws Exception
 	{
-		// A bit tricky initialization of the notifier in this case since we don't have access to the message yet...
-		SftpNotifier notifier = new SftpNotifier((SftpConnector) connector, new DefaultMuleMessage(null), endpoint, service.getName());
+		// A bit tricky initialization of the notifier in this case since we don't have access to the message yet...	    
+		SftpNotifier notifier = new SftpNotifier((SftpConnector) connector, createNullMuleMessage(), endpoint, flowConstruct.getName());
 
 		InputStream inputStream = sftpRRUtil.retrieveFile(path, notifier);
 
@@ -82,14 +87,14 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver
 			logger.debug("Routing file: " + path);
 		}
 
-		MessageAdapter msgAdapter = connector.getMessageAdapter(inputStream);
-		msgAdapter.setProperty(SftpConnector.PROPERTY_ORIGINAL_FILENAME, path);
-		MuleMessage message = new DefaultMuleMessage(msgAdapter);
+		MuleMessage message = createMuleMessage(inputStream);
+
+		message.setOutboundProperty(SftpConnector.PROPERTY_FILENAME, path);
+		message.setOutboundProperty(SftpConnector.PROPERTY_ORIGINAL_FILENAME, path);
 
 		// Now we have access to the message, update the notifier with the message
 		notifier.setMessage(message);
-
-		routeMessage(message, endpoint.isSynchronous());
+		routeMessage(message);
 
     if (logger.isDebugEnabled())
 		{

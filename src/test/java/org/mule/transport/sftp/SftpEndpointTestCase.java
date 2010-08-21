@@ -29,7 +29,7 @@ public class SftpEndpointTestCase extends AbstractSftpTestCase {
     public void testValidEndpointURI() throws Exception {
         // TODO test creating and asserting Endpoint values eg
 
-        EndpointURI url = new MuleEndpointURI("sftp://ms/data");
+        EndpointURI url = new MuleEndpointURI("sftp://ms/data", muleContext);
         assertEquals("sftp", url.getScheme());
         assertEquals("ms", url.getHost());
         assertEquals(0, url.getParams().size());
@@ -38,7 +38,7 @@ public class SftpEndpointTestCase extends AbstractSftpTestCase {
     }
 
     public void testValidEndpointURIWithUserAndPasswd() throws Exception {
-        EndpointURI url = new MuleEndpointURI("sftp://user1:passwd1@localhost:4242/data2");
+        EndpointURI url = new MuleEndpointURI("sftp://user1:passwd1@localhost:4242/data2", muleContext);
         assertEquals("sftp", url.getScheme());
         assertEquals("localhost", url.getHost());
         assertEquals(4242, url.getPort());
@@ -50,7 +50,7 @@ public class SftpEndpointTestCase extends AbstractSftpTestCase {
     }
 
     public void testEndpointConfig() throws MuleException {
-        MuleClient muleClient = new MuleClient();
+        MuleClient muleClient = new MuleClient(muleContext);
         ImmutableEndpoint endpoint1 = (ImmutableEndpoint) muleClient.getProperty("inboundEndpoint1");
 
         EndpointURI url1 = endpoint1.getEndpointURI();

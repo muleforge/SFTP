@@ -83,7 +83,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		assertFilesInLocalFilesystem(archive, FILE1_TXT);
 
 		// And that the file is gone from the inbound endpoint
-		assertNoFilesInEndpoint(new MuleClient(), INBOUND_ENDPOINT1);
+		assertNoFilesInEndpoint(new MuleClient(muleContext), INBOUND_ENDPOINT1);
 	}
 
 	/**
@@ -102,10 +102,10 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 
 		// Assert that the file is gone from the inbound endpoint (including its tmp-folders)
 		// Note that directories are not returned in this listing
-		MuleClient mc = new MuleClient();
+		MuleClient mc = new MuleClient(muleContext);
 		assertNoFilesInEndpoint(mc, INBOUND_ENDPOINT2);
-		assertNoFilesInEndpoint(new MuleClient(), INBOUND_ENDPOINT2, TMP_RECEIVING);
-		assertNoFilesInEndpoint(new MuleClient(), INBOUND_ENDPOINT2, TMP_SENDING);
+		assertNoFilesInEndpoint(new MuleClient(muleContext), INBOUND_ENDPOINT2, TMP_RECEIVING);
+		assertNoFilesInEndpoint(new MuleClient(muleContext), INBOUND_ENDPOINT2, TMP_SENDING);
 	}
 
 
@@ -122,10 +122,10 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 	
 		// Assert that the file is gone from the inbound endpoint (including its tmp-folders)
 		// Note that directories are not returned in this listing
-		MuleClient mc = new MuleClient();
+		MuleClient mc = new MuleClient(muleContext);
 		assertNoFilesInEndpoint(mc, INBOUND_ENDPOINT3);
-		assertNoFilesInEndpoint(new MuleClient(), INBOUND_ENDPOINT3, TMP_RECEIVING);
-		assertNoFilesInEndpoint(new MuleClient(), INBOUND_ENDPOINT3, TMP_SENDING);
+		assertNoFilesInEndpoint(new MuleClient(muleContext), INBOUND_ENDPOINT3, TMP_RECEIVING);
+		assertNoFilesInEndpoint(new MuleClient(muleContext), INBOUND_ENDPOINT3, TMP_SENDING);
 	}
 
 	/**
@@ -142,7 +142,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		assertNoFilesInLocalFilesystem(archive + File.separatorChar + TMP_SENDING);		
 		
 		// Assert that the file is gone from the inbound endpoint
-		MuleClient mc = new MuleClient();
+		MuleClient mc = new MuleClient(muleContext);
 		assertNoFilesInEndpoint(mc, INBOUND_ENDPOINT4);
 	}
 	
@@ -162,7 +162,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		}
 		
 		// Assert that file still exists in the inbound endpoint after the failure
-		assertFilesInEndpoint(new MuleClient(), INBOUND_ENDPOINT1, FILE1_TXT);
+		assertFilesInEndpoint(new MuleClient(muleContext), INBOUND_ENDPOINT1, FILE1_TXT);
 
 		// Assert that no files exists in the archive after the error
 		assertNoFilesInLocalFilesystem(archive);
@@ -187,7 +187,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		// Assert that the file still exists in the inbound endpoint's tmp-folder after the failure
 		// (with some unknown timestamp in the filename)
 		// Note that directories are not returned in this listing
-		MuleClient mc = new MuleClient();
+		MuleClient mc = new MuleClient(muleContext);
 		assertNoFilesInEndpoint(mc, INBOUND_ENDPOINT2);
 		assertNoFilesInEndpoint(mc, INBOUND_ENDPOINT2, TMP_RECEIVING);
 		assertFilesInEndpoint(mc, INBOUND_ENDPOINT2, TMP_SENDING, FILE2_TMP_REGEXP);
@@ -214,7 +214,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		// Assert that the file still exists in the inbound endpoint's tmp-folder after the failure
 		// (with some unknown timestamp in the filename)
 		// Note that directories are not returned in this listing
-		MuleClient mc = new MuleClient();
+		MuleClient mc = new MuleClient(muleContext);
 		assertNoFilesInEndpoint(mc, INBOUND_ENDPOINT3);
 		assertNoFilesInEndpoint(mc, INBOUND_ENDPOINT3, TMP_RECEIVING);
 		assertFilesInEndpoint(mc, INBOUND_ENDPOINT3, TMP_SENDING, FILE3_TMP_REGEXP);
@@ -240,7 +240,7 @@ public class SftpArchiveFunctionalTestCase extends AbstractSftpTestCase
 		}
 
 		// Assert that file still exists in the inbound endpoint after the failure
-		assertFilesInEndpoint(new MuleClient(), INBOUND_ENDPOINT4, FILE4_TXT);
+		assertFilesInEndpoint(new MuleClient(muleContext), INBOUND_ENDPOINT4, FILE4_TXT);
 
 		// Assert that no files exists in the archive after the error except from the temp-folders 
 		assertFilesInLocalFilesystem(archive, new String[] {TMP_RECEIVING, TMP_SENDING});

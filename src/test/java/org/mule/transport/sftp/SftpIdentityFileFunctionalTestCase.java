@@ -83,7 +83,7 @@ public class SftpIdentityFileFunctionalTestCase extends AbstractSftpTestCase
 			}
 		};
 
-		MuleClient client = new MuleClient();
+		MuleClient client = new MuleClient(muleContext);
 
 		// Ensure that no other files exists
 //		cleanupRemoteFtpDirectory(client, INBOUND_ENDPOINT_NAME);

@@ -23,7 +23,7 @@ package org.mule.transport.sftp;
  */
 public class SftpSendReceiveLargeFileFunctionalTestCase extends AbstractSftpTestCase
 {
-	private static final long TIMEOUT = 300000;
+	private static final long TIMEOUT = 600000;
 
 	// Size of the generated stream - 200 Mb
 	final static int SEND_SIZE = 1024 * 1024 * 200;
@@ -31,7 +31,7 @@ public class SftpSendReceiveLargeFileFunctionalTestCase extends AbstractSftpTest
 	public SftpSendReceiveLargeFileFunctionalTestCase() {
 		// Increase the timeout of the test to 300 s
 		logger.info("Timeout was set to: " + System.getProperty(PROPERTY_MULE_TEST_TIMEOUT, "-1"));
-		System.setProperty(PROPERTY_MULE_TEST_TIMEOUT, "300000");
+		System.setProperty(PROPERTY_MULE_TEST_TIMEOUT, "600000");
 		logger.info("Timeout is now set to: " + System.getProperty(PROPERTY_MULE_TEST_TIMEOUT, "-1"));
 	}
 

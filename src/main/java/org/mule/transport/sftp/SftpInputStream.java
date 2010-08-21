@@ -29,7 +29,19 @@ public class SftpInputStream extends BufferedInputStream implements ErrorOccurre
 	private SftpClient client;
 	private boolean autoDelete = true;
 	private String fileName;
-	private boolean errorOccured = false;
+	
+	public String getFileName()
+    {
+        return fileName;
+    }
+
+
+    public void setFileName(String fileName)
+    {
+        this.fileName = fileName;
+    }
+
+    private boolean errorOccured = false;
 	private ImmutableEndpoint endpoint;
 
     // Log every 10 000 000 bytes read at debug-level

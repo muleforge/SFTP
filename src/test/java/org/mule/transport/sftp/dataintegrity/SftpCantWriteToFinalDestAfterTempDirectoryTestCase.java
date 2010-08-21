@@ -2,7 +2,9 @@ package org.mule.transport.sftp.dataintegrity;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.api.transport.DispatchException;
 import org.mule.module.client.MuleClient;
 import org.mule.transport.sftp.SftpClient;
 
@@ -37,7 +39,7 @@ public class SftpCantWriteToFinalDestAfterTempDirectoryTestCase extends Abstract
 	 */
 	public void testCantWriteToFinalDestAfterTempDirectory() throws Exception
 	{
-		MuleClient muleClient = new MuleClient();
+		MuleClient muleClient = new MuleClient(muleContext);
 
 		// Must create the temp directory before we change the access rights
 		createRemoteDirectory(muleClient, OUTBOUND_ENDPOINT_NAME, "uploading");
@@ -50,10 +52,13 @@ public class SftpCantWriteToFinalDestAfterTempDirectoryTestCase extends Abstract
 	
 	        // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
 	        // Expect an error, permission denied
-	    	Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME), "sftp");
+	    	Exception exception = dispatchAndWaitForException(new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME), "sftp", "service");
 	        assertNotNull(exception);
-	        assertTrue(exception instanceof IOException);
-	        assertEquals("Permission denied", exception.getMessage());
+			assertTrue("did not receive DispatchException, got : " + exception.getClass().toString(), exception instanceof DispatchException);
+			assertTrue("did not receive IOException, got : " + exception.getCause().getClass().toString(), exception.getCause() instanceof IOException);	        
+	        
+	        
+	        assertEquals("Permission denied", exception.getCause().getMessage());
 	
 			verifyInAndOutFiles(muleClient, INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME, true, false);
 

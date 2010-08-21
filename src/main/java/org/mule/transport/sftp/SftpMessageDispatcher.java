@@ -79,11 +79,12 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 	protected void doDispatch(MuleEvent event) throws Exception
 	{
-		Object data = event.transformMessage();
-		String filename = (String) event.getProperty(SftpConnector.PROPERTY_FILENAME);
-
+		Object data = event.getMessage().getPayload(); 
+		// this is outbound because the props are copied into the outbound scope during processing
+		String filename = (String)event.getMessage().findPropertyInAnyScope(SftpConnector.PROPERTY_FILENAME, null);
 		//If no name specified, set filename according to output pattern specified on
 		//endpoint or connector
+		
 		if (filename == null)
 		{
 			MuleMessage message = event.getMessage();
@@ -91,7 +92,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			String outPattern = (String) endpoint.getProperty(SftpConnector.PROPERTY_OUTPUT_PATTERN);
 			if (outPattern == null)
 			{
-				outPattern = message.getStringProperty(
+				outPattern = (String)message.getProperty(
 					SftpConnector.PROPERTY_OUTPUT_PATTERN, connector.getOutputPattern());
 			}
 			filename = generateFilename(message, outPattern);
@@ -107,21 +108,21 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 			buf = (byte[]) data;
 			inputStream = new ByteArrayInputStream(buf);
 		} else if (data instanceof InputStream)
-		{
-			inputStream = (InputStream) data;
-
+		{		    
+			inputStream = (InputStream) data;		    
 		} else if (data instanceof String)
 		{
 			inputStream = new ByteArrayInputStream(((String) data).getBytes());
 
 		} else
 		{
-			throw new IllegalArgumentException("Unexpected message type: java.io.InputStream or byte[] expected. Got " + data.getClass().getName() );
+			throw new IllegalArgumentException("Unexpected message type: java.io.InputStream, byte[], or String expected. Got " + data.getClass().getName() );
 		}
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("Writing file to: " + endpoint.getEndpointURI());
+			logger.debug("Writing file to: " + endpoint.getEndpointURI() + " [" + filename + "]");
+			
 		}
 
 		SftpClient client = null;
@@ -130,7 +131,7 @@ public class SftpMessageDispatcher extends AbstractMessageDispatcher
 
 		try
 		{
-			String serviceName = (event.getService() == null) ? "UNKNOWN SERVICE" : event.getService().getName();
+			String serviceName = (event.getFlowConstruct() == null) ? "UNKNOWN SERVICE" : event.getFlowConstruct().getName();
 			SftpNotifier notifier = new SftpNotifier(connector, event.getMessage(), endpoint, serviceName);
 			client = connector.createSftpClient(endpoint, notifier);
 			String destDir = endpoint.getEndpointURI().getPath();

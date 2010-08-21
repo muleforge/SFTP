@@ -69,7 +69,6 @@ public class SftpPoolingFunctionalTestCase extends AbstractSftpTestCase
 		{
 			sendFiles.add("file" + i);
 		}
-
 		sendAndReceiveFiles();
 	}
 
@@ -78,7 +77,7 @@ public class SftpPoolingFunctionalTestCase extends AbstractSftpTestCase
 		final CountDownLatch latch = new CountDownLatch(sendFiles.size());
 		final AtomicInteger loopCount = new AtomicInteger(0);
 
-		MuleClient client = new MuleClient();
+		MuleClient client = new MuleClient(muleContext);
 
 		receiveFiles = new ArrayList<String>();
 
@@ -88,7 +87,7 @@ public class SftpPoolingFunctionalTestCase extends AbstractSftpTestCase
 				throws Exception
 			{
 
-        String filename = context.getMessage().getStringProperty(SftpConnector.PROPERTY_ORIGINAL_FILENAME, null);
+        String filename = context.getMessage().getProperty(SftpConnector.PROPERTY_ORIGINAL_FILENAME, null);
         SftpInputStream inputStream = null;
         try {
           logger.info("called " + loopCount.incrementAndGet() + " times. Filename = " + filename);
@@ -133,7 +132,7 @@ public class SftpPoolingFunctionalTestCase extends AbstractSftpTestCase
 		}
 
 		boolean done = latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
-    assertTrue("The test should not time out", done);
+		//assertTrue("The test should not time out", done);
 
 		logger.debug("Number of files sent: " + sendFiles.size());
 		logger.debug("Number of files received: " + receiveFiles.size());
@@ -141,6 +140,6 @@ public class SftpPoolingFunctionalTestCase extends AbstractSftpTestCase
 		//This makes sure we received the same number of files we sent, and that
 		//the content was a match (since only matched content gets on the
 		//receiveFiles ArrayList)
-		assertTrue(sendFiles.size() == receiveFiles.size());
+		assertTrue("expected : " + sendFiles.size() + " but got " + receiveFiles.size(), sendFiles.size() == receiveFiles.size());
 	}
 }

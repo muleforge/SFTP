@@ -84,8 +84,9 @@ public class SftpClient
 			channelSftp.cd(wd);
 		}
 		catch (SftpException e)
-		{
+		{		    
 			String message = "Error '" + e.getMessage() + "' occurred when trying to CDW to '" + wd + "'.";
+			logger.error(message);
 			throw new IOException(message);
 		}
 	}

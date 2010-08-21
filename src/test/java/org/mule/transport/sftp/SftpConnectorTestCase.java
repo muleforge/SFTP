@@ -26,7 +26,7 @@ public class SftpConnectorTestCase extends AbstractConnectorTestCase
         /* IMPLEMENTATION NOTE: Create and initialise an instance of your
            connector here. Do not actually call the connect method. */
 
-        SftpConnector c = new SftpConnector();
+        SftpConnector c = new SftpConnector(muleContext);
         c.setName("Test");
         // TODO Set any additional properties on the connector here
         return c;

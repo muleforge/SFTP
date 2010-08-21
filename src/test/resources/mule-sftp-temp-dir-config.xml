@@ -1,22 +1,26 @@
-<mule xmlns="http://www.mulesource.org/schema/mule/core/2.2"
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns:spring="http://www.springframework.org/schema/beans"
-      xmlns:sftp="http://www.mulesource.org/schema/mule/sftp/2.2"
-      xmlns:vm="http://www.mulesource.org/schema/mule/vm/2.2"
+      xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+      xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
       xsi:schemaLocation="
                http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-               http://www.mulesource.org/schema/mule/core/2.2 http://www.mulesource.org/schema/mule/core/2.2/mule.xsd
-               http://www.mulesource.org/schema/mule/sftp/2.2 http://www.mulesource.org/schema/mule/sftp/2.2/mule-sftp.xsd
-               http://www.mulesource.org/schema/mule/vm/2.2 http://www.mulesource.org/schema/mule/vm/2.2/mule-vm.xsd">
+               http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.0/mule.xsd
+               http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/3.0/mule-sftp.xsd
+               http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/3.0/mule-vm.xsd">
 
-    <sftp:connector name="sftpCustomConnector" pollingFrequency="500" autoDelete="true" outputPattern="#[ORIGINALNAME]"
+    <spring:beans>
+        <spring:import resource="sftp-properties.xml"/>
+    </spring:beans>
+
+    <sftp:connector name="sftpCustomConnector" pollingFrequency="500" autoDelete="true" outputPattern="#[header:originalFilename]"
 					identityFile="${USER1_IDENTITYFILE}" passphrase="${USER1_IDENTITYFILE_PASSPHRASE}"/>
 
-    <sftp:connector name="sftpCustomConnectorTempDirOutbound" outputPattern="#[ORIGINALNAME]"
+    <sftp:connector name="sftpCustomConnectorTempDirOutbound" outputPattern="#[header:originalFilename]"
                     identityFile="${USER1_IDENTITYFILE}" passphrase="${USER1_IDENTITYFILE_PASSPHRASE}"
                     tempDirOutbound="uploading"/>
 
-	<sftp:connector name="sftpCustomConnectorTempDirInbound" outputPattern="#[ORIGINALNAME]"
+	<sftp:connector name="sftpCustomConnectorTempDirInbound" outputPattern="#[header:originalFilename]"
                     identityFile="${USER1_IDENTITYFILE}" passphrase="${USER1_IDENTITYFILE_PASSPHRASE}"
                     tempDirInbound="uploading"/>
 
@@ -61,13 +65,8 @@
 					</sftp:outbound-endpoint>
 				</pass-through-router>
 			</outbound>
-
-
 		</service>
 	</model>
-
-
-
 </mule>
 
 

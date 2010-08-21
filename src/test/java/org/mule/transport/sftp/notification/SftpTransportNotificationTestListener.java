@@ -60,7 +60,7 @@ public class SftpTransportNotificationTestListener implements SftpTransportNotif
 		if (notification.getSource() instanceof MuleMessage) {
 			MuleMessage message     = (MuleMessage)notification.getSource();
 			msgType       = message.getPayload().getClass().getName();
-			correlationId = message.getStringProperty("MULE_CORRELATION_ID", "?");
+			correlationId = (String)message.getProperty("MULE_CORRELATION_ID", "?");
 		}
 
 		if (logger.isDebugEnabled()) {

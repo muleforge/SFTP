@@ -14,9 +14,16 @@ package org.mule.transport.sftp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.mule.api.MuleEventContext;
+import org.mule.api.MuleMessage;
+import org.mule.api.endpoint.EndpointFactory;
+import org.mule.api.endpoint.InboundEndpoint;
+import org.mule.api.endpoint.OutboundEndpoint;
+import org.mule.api.transport.Connector;
 import org.mule.module.client.MuleClient;
 import org.mule.tck.functional.EventCallback;
 import org.mule.tck.functional.FunctionalTestComponent;
@@ -93,8 +100,8 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
 		final CountDownLatch latch = new CountDownLatch(sendFiles.size());
 		final AtomicInteger loopCount = new AtomicInteger(0);
 
-        MuleClient client = new MuleClient();
-
+        MuleClient client = new MuleClient(muleContext);
+        assertTrue("muleContext is not started", muleContext.isStarted());
 		receiveFiles = new ArrayList<String>();
 
 		EventCallback callback = new EventCallback()
@@ -120,16 +127,14 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
 		};
 
 		getFunctionalTestComponent("receiving").setEventCallback(callback);
-
-
+		
 		for (String sendFile : sendFiles)
 		{
 			HashMap<String, String> props = new HashMap<String, String>(1);
 			props.put(SftpConnector.PROPERTY_FILENAME, sendFile + ".txt");
-
 			client.dispatch("vm://test.upload", sendFile, props);
 		}
-
+		
 		latch.await(TIMEOUT, TimeUnit.MILLISECONDS);
 
         logger.debug("Number of files sent: " + sendFiles.size());
@@ -138,6 +143,6 @@ public class SftpSendReceiveFunctionalTestCase extends AbstractSftpTestCase
         //This makes sure we received the same number of files we sent, and that
         //the content was a match (since only matched content gets on the
         //receiveFiles ArrayList)
-        assertTrue( sendFiles.size() == receiveFiles.size() );
+        assertTrue("expected " + sendFiles.size() + " but got " + receiveFiles.size(), sendFiles.size() == receiveFiles.size() );
     }
 }

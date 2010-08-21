@@ -3,6 +3,7 @@ package org.mule.transport.sftp.dataintegrity;
 import java.io.IOException;
 
 import org.mule.api.endpoint.ImmutableEndpoint;
+import org.mule.api.transport.DispatchException;
 import org.mule.module.client.MuleClient;
 import org.mule.transport.sftp.SftpClient;
 
@@ -31,15 +32,17 @@ public class SftpNoOutboundDirectoryTestCase extends AbstractSftpDataIntegrityTe
      * The source file should still exist
      */
     public void testNoOutboundDirectory() throws Exception {
-        MuleClient muleClient = new MuleClient();
+        MuleClient muleClient = new MuleClient(muleContext);
 
         // Send an file to the SFTP server, which the inbound-outboundEndpoint then can pick up
-    	Exception exception = dispatchAndWaitForException(new DispatchParameters(ENDPOINT_NAME, null), "sftp");
+    	Exception exception = dispatchAndWaitForException(new DispatchParameters(ENDPOINT_NAME, null), "sftp", "service");
         assertNotNull(exception);
-        assertTrue(exception instanceof IOException);
-        assertTrue(exception.getMessage().startsWith("Error 'No such file' occurred when trying to CDW to '"));
-        assertTrue(exception.getMessage().endsWith("/DIRECTORY-MISSING'."));
-          
+
+        assertTrue("expected DispatchException, but got " + exception.getClass().toString(), exception instanceof DispatchException);
+        assertTrue("expected IOException, but got " + exception.getCause().getClass().toString(),exception.getCause() instanceof IOException);
+        assertTrue("wrong starting message : " + exception.getCause().getMessage(), exception.getCause().getMessage().startsWith("Error 'No such file' occurred when trying to CDW to '"));
+        assertTrue("wrong ending message : " + exception.getCause().getMessage(), exception.getCause().getMessage().endsWith("/DIRECTORY-MISSING'."));
+                
         SftpClient sftpClient = getSftpClient(muleClient, ENDPOINT_NAME);
         try {
             ImmutableEndpoint endpoint = (ImmutableEndpoint) muleClient.getProperty(ENDPOINT_NAME);

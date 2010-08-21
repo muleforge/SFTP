@@ -9,7 +9,7 @@ import org.mule.transport.sftp.SftpConnector;
 
 public class SftpInvalidInboundEndpointTestCase extends AbstractSftpDataIntegrityTestCase {
 
-	private static final int NO_OF_INVALID_ATTEMPTS = 150;
+	private static final int NO_OF_INVALID_ATTEMPTS = 50;
 	
 	@Override
 	protected String getConfigResources() {

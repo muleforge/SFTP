@@ -73,6 +73,8 @@ public class SftpReceiverRequesterUtil
 				fileAge = Long.valueOf((String) endpoint.getProperty(SftpConnector.PROPERTY_FILE_AGE));
 			}
 
+			logger.debug("fileAge : " + fileAge);
+			
 			// Get size check parameter
 			long sizeCheckDelayMs = sftpUtil.getSizeCheckWaitTime();
 
@@ -137,7 +139,7 @@ public class SftpReceiverRequesterUtil
 			// Check usage of unique names of files during transfer
 			boolean addUniqueSuffix = sftpUtil.isUseTempFileTimestampSuffix();
 
-      // TODO: is it possibly to move this to somekind of init method?
+      // TODO: is it possibly to move this to some kind of init method?
 			client.createSftpDirIfNotExists(endpoint, tmpSendingDir);
 			String tmpSendingFileName = tmpSendingDir + "/" + fileName;
 
@@ -284,7 +286,7 @@ public class SftpReceiverRequesterUtil
 	{
 		// Perform fileAge test if configured
 		// Note that for this to work it is required that the system clock on the mule server
-		// is synchronised with the system clock on the sftp server
+		// is synchronized with the system clock on the sftp server
 		if (fileAge > 0)
 		{
 			long lastModifiedTime = client.getLastModifiedTime(fileName);

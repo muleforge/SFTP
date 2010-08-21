@@ -38,7 +38,7 @@ public class SftpFileAgeFunctionalTestCase extends AbstractSftpTestCase
 
 	private static final String INBOUND_ENDPOINT_NAME = "inboundEndpoint";
 
-    protected static final long TIMEOUT = 10000*3;
+    protected static final long TIMEOUT = 10000*6;
 
     protected String getConfigResources()
     {
@@ -80,7 +80,7 @@ public class SftpFileAgeFunctionalTestCase extends AbstractSftpTestCase
             }
         };
 
-        MuleClient client = new MuleClient();
+        MuleClient client = new MuleClient(muleContext);
 
 		// Ensure that no other files exists
 //		cleanupRemoteFtpDirectory(client, INBOUND_ENDPOINT_NAME);

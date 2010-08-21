@@ -25,9 +25,9 @@ public class EndpointMessageNotificationTestListener implements EndpointMessageN
 
 		MuleMessage message  = (MuleMessage)endpointNotification.getSource();
 		String msgType       = message.getPayload().getClass().getName();
-		String correlationId = message.getStringProperty("MULE_CORRELATION_ID", "?");
-		String endpointUri   = endpointNotification.getEndpoint().getEndpointURI().toString();
-		String endpointName  = endpointNotification.getEndpoint().getName();
+		String correlationId = (String)message.getProperty("MULE_CORRELATION_ID", "?");
+		//String endpointUri   = endpointNotification.getEndpoint().getEndpointURI().toString();
+		String endpointName  = endpointNotification.getEndpoint();
 		String action        = notification.getActionName();
 		String resourceId    = notification.getResourceIdentifier();
 		String timestamp     = new Date(notification.getTimestamp()).toString();
@@ -39,7 +39,7 @@ public class EndpointMessageNotificationTestListener implements EndpointMessageN
 				"\nAction=" + action + 
 				"\nResourceId=" + resourceId + 
 				"\nEndpointName=" + endpointName + 
-				"\nEndpointUri=" + endpointUri + 
+				//"\nEndpointUri=" + endpointUri + 
 				"\nCorrelationId=" + correlationId + "");
 		}
 	}

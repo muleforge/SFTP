@@ -18,6 +18,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
+import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.api.endpoint.EndpointURI;
 import org.mule.api.endpoint.ImmutableEndpoint;
@@ -29,7 +30,7 @@ import org.mule.api.transport.MessageReceiver;
 import org.mule.config.i18n.CoreMessages;
 import org.mule.transport.AbstractConnector;
 import org.mule.transport.file.FilenameParser;
-import org.mule.transport.file.SimpleFilenameParser;
+import org.mule.transport.file.ExpressionFilenameParser;
 import org.mule.transport.sftp.notification.SftpNotifier;
 
 
@@ -77,7 +78,7 @@ public class SftpConnector extends AbstractConnector
      */
     protected final static Log logger = LogFactory.getLog(SftpConnector.class);
 
-	private FilenameParser filenameParser = new SimpleFilenameParser();
+	private FilenameParser filenameParser = new ExpressionFilenameParser();
 
 	private long pollingFrequency;
 	private boolean autoDelete = true;
@@ -123,9 +124,10 @@ public class SftpConnector extends AbstractConnector
 		}
 	}
 
-	public SftpConnector()
+	public SftpConnector(MuleContext context)
 	{
-		super();
+		super(context);
+		filenameParser = new ExpressionFilenameParser();
 	}
 
 	public String getProtocol()
@@ -299,7 +301,10 @@ public class SftpConnector extends AbstractConnector
 	  */
 	protected void doInitialise() throws InitialisationException
 	{
-		// Do nothing!
+        if (filenameParser != null)
+        {
+            filenameParser.setMuleContext(muleContext);
+        }
 	}
 
 	/* (non-Javadoc)
@@ -354,7 +359,11 @@ public class SftpConnector extends AbstractConnector
 
 	public void setFilenameParser(FilenameParser filenameParser)
 	{
-		this.filenameParser = filenameParser;
+        this.filenameParser = filenameParser;
+        if (filenameParser != null)
+        {
+            filenameParser.setMuleContext(muleContext);
+        }
 	}
 
 	public String getOutputPattern()

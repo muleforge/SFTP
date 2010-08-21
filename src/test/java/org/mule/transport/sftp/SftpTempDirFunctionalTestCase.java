@@ -47,7 +47,7 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
 
 	public void testTempDirInbound() throws Exception
 	{
-		MuleClient muleClient = new MuleClient();
+		MuleClient muleClient = new MuleClient(muleContext);
 
 		DispatchParameters p = new DispatchParameters(INBOUND_ENDPOINT_NAME2, OUTBOUND_ENDPOINT_NAME2);
 		p.setSftpConnector("sftpCustomConnectorTempDirInbound");
@@ -70,7 +70,7 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
 		ImmutableEndpoint endpointOutbound = (ImmutableEndpoint) muleClient.getProperty(OUTBOUND_ENDPOINT_NAME2);
         try {
 			assertFalse("The temp directory should not have been created", tempDirectoryExists(sftpClientOutbound, muleClient, OUTBOUND_ENDPOINT_NAME2));
-            assertTrue("The file should exist in the final destination", super.verifyFileExists(sftpClientOutbound, endpointOutbound.getEndpointURI(), FILE_NAME));
+            assertTrue("The file should exist in the final destination : " + FILE_NAME, super.verifyFileExists(sftpClientOutbound, endpointOutbound.getEndpointURI(), FILE_NAME));
         } finally {
             sftpClientOutbound.disconnect();
         }
@@ -80,7 +80,7 @@ public class SftpTempDirFunctionalTestCase extends AbstractSftpTestCase
 
 	public void testTempDirOutbound() throws Exception
 	{
-		MuleClient muleClient = new MuleClient();
+		MuleClient muleClient = new MuleClient(muleContext);
 
 		DispatchParameters p = new DispatchParameters(INBOUND_ENDPOINT_NAME, OUTBOUND_ENDPOINT_NAME);
 		p.setSftpConnector("sftpCustomConnector");

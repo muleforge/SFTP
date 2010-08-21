@@ -1,20 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xsd:schema xmlns="http://www.mulesource.org/schema/mule/sftp/2.2"
+<xsd:schema xmlns="http://www.mulesoft.org/schema/mule/sftp"
 			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			xmlns:mule="http://www.mulesource.org/schema/mule/core/2.2"
-			xmlns:file="http://www.mulesource.org/schema/mule/file/2.2"
-			xmlns:schemadoc="http://www.mulesource.org/schema/mule/schemadoc/2.2"
-			targetNamespace="http://www.mulesource.org/schema/mule/sftp/2.2"
+			xmlns:mule="http://www.mulesoft.org/schema/mule/core"
+			xmlns:file="http://www.mulesoft.org/schema/mule/file"
+			xmlns:schemadoc="http://www.mulesoft.org/schema/mule/schemadoc"
+			targetNamespace="http://www.mulesoft.org/schema/mule/sftp"
 			elementFormDefault="qualified"
 			attributeFormDefault="unqualified">
 
 	<xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
-	<xsd:import namespace="http://www.mulesource.org/schema/mule/file/2.2"
-				schemaLocation="http://www.mulesource.org/schema/mule/file/2.2/mule-file.xsd"/>
-	<xsd:import namespace="http://www.mulesource.org/schema/mule/core/2.2"
-				schemaLocation="http://www.mulesource.org/schema/mule/core/2.2/mule.xsd"/>
-	<xsd:import namespace="http://www.mulesource.org/schema/mule/schemadoc/2.2"
-				schemaLocation="http://www.mulesource.org/schema/mule/schemadoc/2.2/mule-schemadoc.xsd"/>
+	<xsd:import namespace="http://www.mulesoft.org/schema/mule/file"
+				schemaLocation="http://www.mulesoft.org/schema/mule/file/3.0/mule-file.xsd"/>
+	<xsd:import namespace="http://www.mulesoft.org/schema/mule/core"
+				schemaLocation="http://www.mulesoft.org/schema/mule/core/3.0/mule.xsd"/>
+	<xsd:import namespace="http://www.mulesoft.org/schema/mule/schemadoc"
+				schemaLocation="http://www.mulesoft.org/schema/mule/schemadoc/3.0/mule-schemadoc.xsd"/>
+
+    <xsd:annotation>
+        <xsd:documentation>
+            The SFTP transport provides connectivity to SFTP servers to allow files to be read and written as messages in Mule.
+        </xsd:documentation>
+        <xsd:appinfo>
+            <schemadoc:short-name>SFTP</schemadoc:short-name>
+            <schemadoc:page-title>SFTP Transport</schemadoc:page-title>
+            <schemadoc:transport-features receiveEvents="true" dispatchEvents="true"
+                                          requestEvents="true" retries="false"
+                                          transactions="false" streaming="true">
+                <schemadoc:MEPs supported="one-way, request-response" default="one-way"/>
+            </schemadoc:transport-features>
+        </xsd:appinfo>
+    </xsd:annotation>
 
 	<xsd:element name="connector" type="sftpConnectorType" substitutionGroup="mule:abstract-connector">
 		<xsd:annotation>
@@ -43,21 +58,24 @@
 
 	<xsd:element name="inbound-endpoint" type="inboundEndpointType" substitutionGroup="mule:abstract-inbound-endpoint"/>
 	<xsd:complexType name="inboundEndpointType">
-		<xsd:complexContent>
-			<xsd:extension base="mule:inboundEndpointType">
-				<xsd:attributeGroup ref="addressAttributes"/>
-				<xsd:attributeGroup ref="inboundAttributes"/>
-				<xsd:attributeGroup ref="commonKeyAuthenticationAttributes"/>
-				<xsd:attributeGroup ref="commonEndpointAttributes"/>
-				<xsd:attributeGroup ref="commonEndpointAndConnectorAttributes"/>
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
+        <xsd:complexContent>
+            <xsd:extension base="mule:inboundEndpointType">
+<!--
+                <xsd:attributeGroup ref="commonAttributes"/>
+ -->
+                <xsd:attributeGroup ref="addressAttributes"/>
+                <xsd:attributeGroup ref="inboundAttributes"/>
+                <xsd:attributeGroup ref="commonKeyAuthenticationAttributes"/>
+                <xsd:attributeGroup ref="commonEndpointAttributes"/>
+                <xsd:attributeGroup ref="commonEndpointAndConnectorAttributes"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
 
-	<xsd:element name="outbound-endpoint" type="outboundEndpointType" substitutionGroup="mule:abstract-outbound-endpoint"/>
+	<xsd:element name="outbound-endpoint" type="outboundEndpointType" substitutionGroup="mule:abstract-outbound-endpoint"/>	
 	<xsd:complexType name="outboundEndpointType">
 		<xsd:complexContent>
-			<xsd:extension base="mule:outboundEndpointType">
+            <xsd:extension base="mule:outboundEndpointType">		
 				<xsd:attributeGroup ref="addressAttributes"/>
 				<xsd:attributeGroup ref="outboundAttributes"/>
 				<xsd:attributeGroup ref="commonKeyAuthenticationAttributes"/>
@@ -70,7 +88,11 @@
 	<xsd:element name="endpoint" type="globalEndpointType" substitutionGroup="mule:abstract-global-endpoint"/>
 	<xsd:complexType name="globalEndpointType">
 		<xsd:complexContent>
-			<xsd:extension base="mule:globalEndpointType">
+            <!-- 
+                The only valid exchange-pattern is one-way which is the default. No need to make 
+                the exchange-pattern attribute configurable.  
+            -->
+            <xsd:extension base="mule:globalEndpointType">
 				<xsd:attributeGroup ref="addressAttributes"/>
 				<xsd:attributeGroup ref="inboundAttributes"/>
 				<xsd:attributeGroup ref="outboundAttributes"/>
@@ -304,7 +326,7 @@
 		<xsd:attribute name="host" type="xsd:string">
 			<xsd:annotation>
 				<xsd:documentation>
-					An IP address (eg www.mulesource.com, localhost, 127.0.0.1).
+					An IP address (eg www.mulesoft.com, localhost, 127.0.0.1).
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
