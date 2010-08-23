@@ -25,5 +25,5 @@ public class SftpMessageDispatcherFactory extends AbstractMessageDispatcherFacto
     {
         return new SftpMessageDispatcher(endpoint);
     }
-    
+
 }

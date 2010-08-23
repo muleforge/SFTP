@@ -16,17 +16,21 @@ import org.mule.endpoint.MuleEndpointURI;
 import org.mule.module.client.MuleClient;
 import org.mule.api.endpoint.EndpointURI;
 
+public class SftpEndpointTestCase extends AbstractSftpTestCase
+{
 
-public class SftpEndpointTestCase extends AbstractSftpTestCase {
-
-    protected String getConfigResources() {
+    protected String getConfigResources()
+    {
         return "mule-sftp-endpoint-config.xml";
     }
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+    /*
+     * For general guidelines on writing transports see
+     * http://mule.mulesource.org/display/MULE/Writing+Transports
+     */
 
-    public void testValidEndpointURI() throws Exception {
+    public void testValidEndpointURI() throws Exception
+    {
         // TODO test creating and asserting Endpoint values eg
 
         EndpointURI url = new MuleEndpointURI("sftp://ms/data", muleContext);
@@ -37,7 +41,8 @@ public class SftpEndpointTestCase extends AbstractSftpTestCase {
 
     }
 
-    public void testValidEndpointURIWithUserAndPasswd() throws Exception {
+    public void testValidEndpointURIWithUserAndPasswd() throws Exception
+    {
         EndpointURI url = new MuleEndpointURI("sftp://user1:passwd1@localhost:4242/data2", muleContext);
         assertEquals("sftp", url.getScheme());
         assertEquals("localhost", url.getHost());
@@ -49,7 +54,8 @@ public class SftpEndpointTestCase extends AbstractSftpTestCase {
 
     }
 
-    public void testEndpointConfig() throws MuleException {
+    public void testEndpointConfig() throws MuleException
+    {
         MuleClient muleClient = new MuleClient(muleContext);
         ImmutableEndpoint endpoint1 = (ImmutableEndpoint) muleClient.getProperty("inboundEndpoint1");
 
@@ -83,6 +89,5 @@ public class SftpEndpointTestCase extends AbstractSftpTestCase {
         assertTrue("'keepFileOnError' should be on by default", oUtil1.isKeepFileOnError());
         assertFalse("'keepFileOnError' should be false", oUtil2.isKeepFileOnError());
     }
-
 
 }

@@ -28,7 +28,7 @@ public class InputStreamToByteArray extends AbstractTransformer
      * Serial version
      */
     private static final long serialVersionUID = -7444711427779720031L;
-    
+
     public InputStreamToByteArray()
     {
         registerSourceType(InputStream.class);
@@ -39,22 +39,20 @@ public class InputStreamToByteArray extends AbstractTransformer
     {
         if (msg instanceof InputStream)
         {
-        	InputStream inputStream = null;
-
+            InputStream inputStream = null;
 
             try
             {
-            	inputStream = (InputStream) msg;
-            	
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                	
-                    byte [] buffer = new byte[1024];
-                    int len;
-                    while( (len = inputStream.read(buffer)) > 0) 
-                    {
-                    	baos.write(buffer,0,len);
-                    } 
+                inputStream = (InputStream) msg;
 
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = inputStream.read(buffer)) > 0)
+                {
+                    baos.write(buffer, 0, len);
+                }
 
                 return baos.toByteArray();
             }
@@ -67,12 +65,12 @@ public class InputStreamToByteArray extends AbstractTransformer
                 IOUtils.closeQuietly(inputStream);
             }
 
-
-        } 
+        }
         else
         {
-            throw new TransformerException(MessageFactory.createStaticMessage("Message is not an instance of java.io.InputStream"), this);
+            throw new TransformerException(
+                MessageFactory.createStaticMessage("Message is not an instance of java.io.InputStream"), this);
         }
     }
- 
+
 }

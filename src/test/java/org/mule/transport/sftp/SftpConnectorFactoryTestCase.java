@@ -13,24 +13,25 @@ package org.mule.transport.sftp;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.tck.AbstractMuleTestCase;
 
-
 public class SftpConnectorFactoryTestCase extends AbstractMuleTestCase
 {
 
-    /* For general guidelines on writing transports see
-       http://mule.mulesource.org/display/MULE/Writing+Transports */
+    /*
+     * For general guidelines on writing transports see
+     * http://mule.mulesource.org/display/MULE/Writing+Transports
+     */
 
     public void testCreateFromFactory() throws Exception
     {
-        InboundEndpoint endpoint = muleContext.getRegistry()
-                .lookupEndpointFactory().getInboundEndpoint(getEndpointURI());
+        InboundEndpoint endpoint = muleContext.getRegistry().lookupEndpointFactory().getInboundEndpoint(
+            getEndpointURI());
         assertNotNull(endpoint);
         assertNotNull(endpoint.getConnector());
         assertTrue(endpoint.getConnector() instanceof SftpConnector);
         assertEquals(getEndpointURI(), endpoint.getEndpointURI().getAddress());
     }
-    
-    public String getEndpointURI() 
+
+    public String getEndpointURI()
     {
         return "sftp://ms/data";
     }

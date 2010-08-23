@@ -17,14 +17,17 @@ import org.mule.api.transport.Connector;
 public class SftpConnectorTestCase extends AbstractConnectorTestCase
 {
 
-    /* For general guidelines on writing transports see
-       http://www.mulesource.org/display/MULE2USER/Creating+Transports
+    /*
+     * For general guidelines on writing transports see
+     * http://www.mulesource.org/display/MULE2USER/Creating+Transports
      */
 
     public Connector createConnector() throws Exception
     {
-        /* IMPLEMENTATION NOTE: Create and initialise an instance of your
-           connector here. Do not actually call the connect method. */
+        /*
+         * IMPLEMENTATION NOTE: Create and initialise an instance of your connector
+         * here. Do not actually call the connect method.
+         */
 
         SftpConnector c = new SftpConnector(muleContext);
         c.setName("Test");
@@ -42,7 +45,6 @@ public class SftpConnectorTestCase extends AbstractConnectorTestCase
         return "payload";
     }
 
-
     public void testProperties() throws Exception
     {
         // TODO test setting and retrieving any custom properties on the
@@ -51,7 +53,7 @@ public class SftpConnectorTestCase extends AbstractConnectorTestCase
 
     public void testConnectorMessageRequesterFactory()
     {
-        //No MessageRequesterFactory
+        // No MessageRequesterFactory
     }
 
 }

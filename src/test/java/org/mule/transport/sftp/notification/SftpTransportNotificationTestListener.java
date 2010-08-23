@@ -1,3 +1,4 @@
+
 package org.mule.transport.sftp.notification;
 
 import java.util.Date;
@@ -14,81 +15,103 @@ import static org.mule.transport.sftp.notification.SftpTransportNotification.SFT
 import static org.mule.transport.sftp.notification.SftpTransportNotification.SFTP_RENAME_ACTION_MSG;
 import static org.mule.transport.sftp.notification.SftpTransportNotification.SFTP_DELETE_ACTION_MSG;
 
-public class SftpTransportNotificationTestListener implements SftpTransportNotificationListener {
+public class SftpTransportNotificationTestListener implements SftpTransportNotificationListener
+{
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	private static boolean gotSftpPutNotification    = false;
-	private static boolean gotSftpRenameNotification = false;
-	private static boolean gotSftpGetNotification    = false;
-	private static boolean gotSftpDeleteNotification = false;
+    private static boolean gotSftpPutNotification = false;
+    private static boolean gotSftpRenameNotification = false;
+    private static boolean gotSftpGetNotification = false;
+    private static boolean gotSftpDeleteNotification = false;
 
-	public void onNotification(ServerNotification notification) {
+    public void onNotification(ServerNotification notification)
+    {
 
-		SftpTransportNotification sftpNotification;
-		if (notification instanceof SftpTransportNotification) {
-			sftpNotification = (SftpTransportNotification)notification;
-		} else {
-			logger.debug("SftpTransportNotificationTestListener RECEIVED UNKNOWN NOTIFICATION OF TYPE {}", notification.getClass().getName());
-			return;
-		}
+        SftpTransportNotification sftpNotification;
+        if (notification instanceof SftpTransportNotification)
+        {
+            sftpNotification = (SftpTransportNotification) notification;
+        }
+        else
+        {
+            logger.debug("SftpTransportNotificationTestListener RECEIVED UNKNOWN NOTIFICATION OF TYPE {}",
+                notification.getClass().getName());
+            return;
+        }
 
-		String action     = notification.getActionName();
+        String action = notification.getActionName();
 
-		if (action.equals(SFTP_GET_ACTION_MSG)) {
-			gotSftpGetNotification = true;
+        if (action.equals(SFTP_GET_ACTION_MSG))
+        {
+            gotSftpGetNotification = true;
 
-		} else if (action.equals(SFTP_PUT_ACTION_MSG)) {
-			gotSftpPutNotification = true;
+        }
+        else if (action.equals(SFTP_PUT_ACTION_MSG))
+        {
+            gotSftpPutNotification = true;
 
-		} else if (action.equals(SFTP_RENAME_ACTION_MSG)) {
-			gotSftpRenameNotification = true;
+        }
+        else if (action.equals(SFTP_RENAME_ACTION_MSG))
+        {
+            gotSftpRenameNotification = true;
 
-		} else if (action.equals(SFTP_DELETE_ACTION_MSG)) {
-			gotSftpDeleteNotification = true;
-		}
+        }
+        else if (action.equals(SFTP_DELETE_ACTION_MSG))
+        {
+            gotSftpDeleteNotification = true;
+        }
 
-		String resourceId = notification.getResourceIdentifier();
-		String timestamp  = new Date(notification.getTimestamp()).toString();
+        String resourceId = notification.getResourceIdentifier();
+        String timestamp = new Date(notification.getTimestamp()).toString();
 
-		String endpoint   = sftpNotification.getEndpoint().getEndpointURI().toString();
-		String info       = sftpNotification.getInfo();
-		long   size       = sftpNotification.getSize();
+        String endpoint = sftpNotification.getEndpoint().getEndpointURI().toString();
+        String info = sftpNotification.getInfo();
+        long size = sftpNotification.getSize();
 
-		String msgType = "???";
-		String correlationId    = "???";
-		if (notification.getSource() instanceof MuleMessage) {
-			MuleMessage message     = (MuleMessage)notification.getSource();
-			msgType       = message.getPayload().getClass().getName();
-			correlationId = (String)message.getProperty("MULE_CORRELATION_ID", "?");
-		}
+        String msgType = "???";
+        String correlationId = "???";
+        if (notification.getSource() instanceof MuleMessage)
+        {
+            MuleMessage message = (MuleMessage) notification.getSource();
+            msgType = message.getPayload().getClass().getName();
+            correlationId = (String) message.getProperty("MULE_CORRELATION_ID", "?");
+        }
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("OnNotification: " + notification.EVENT_NAME + "\nAction=" + action + " " + info + " " + size + "\nEndpoint=" + endpoint + "\nTimestamp=" + timestamp + "\nMsgType=" + msgType + "\nResourceId=" + resourceId + "\nCorrelationId=" + correlationId + "");
-		}
-	}
-
-    public static void reset() {
-    	gotSftpPutNotification    = false;
-    	gotSftpRenameNotification = false;
-    	gotSftpGetNotification    = false;
-    	gotSftpDeleteNotification = false;
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("OnNotification: " + notification.EVENT_NAME + "\nAction=" + action + " " + info
+                         + " " + size + "\nEndpoint=" + endpoint + "\nTimestamp=" + timestamp + "\nMsgType="
+                         + msgType + "\nResourceId=" + resourceId + "\nCorrelationId=" + correlationId + "");
+        }
     }
 
-    public static boolean gotSftpPutNotification() {
-		return gotSftpPutNotification;
-	}
+    public static void reset()
+    {
+        gotSftpPutNotification = false;
+        gotSftpRenameNotification = false;
+        gotSftpGetNotification = false;
+        gotSftpDeleteNotification = false;
+    }
 
-	public static boolean gotSftpRenameNotification() {
-		return gotSftpRenameNotification;
-	}
+    public static boolean gotSftpPutNotification()
+    {
+        return gotSftpPutNotification;
+    }
 
-	public static boolean gotSftpGetNotification() {
-		return gotSftpGetNotification;
-	}
+    public static boolean gotSftpRenameNotification()
+    {
+        return gotSftpRenameNotification;
+    }
 
-	public static boolean gotSftpDeleteNotification() {
-		return gotSftpDeleteNotification;
-	}
+    public static boolean gotSftpGetNotification()
+    {
+        return gotSftpGetNotification;
+    }
+
+    public static boolean gotSftpDeleteNotification()
+    {
+        return gotSftpDeleteNotification;
+    }
 
 }

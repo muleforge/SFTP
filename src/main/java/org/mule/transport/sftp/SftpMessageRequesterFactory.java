@@ -1,3 +1,4 @@
+
 package org.mule.transport.sftp;
 
 import org.mule.api.MuleException;
@@ -5,10 +6,12 @@ import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.transport.MessageRequester;
 import org.mule.transport.AbstractMessageRequesterFactory;
 
-public class SftpMessageRequesterFactory extends AbstractMessageRequesterFactory{
+public class SftpMessageRequesterFactory extends AbstractMessageRequesterFactory
+{
 
     /** {@inheritDoc} */
-    public MessageRequester create(InboundEndpoint endpoint) throws MuleException {
+    public MessageRequester create(InboundEndpoint endpoint) throws MuleException
+    {
         return new SftpMessageRequester(endpoint);
     }
 }

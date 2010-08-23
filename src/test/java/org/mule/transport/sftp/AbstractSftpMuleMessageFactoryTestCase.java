@@ -20,7 +20,7 @@ public abstract class AbstractSftpMuleMessageFactoryTestCase extends AbstractMul
 {
     protected File tempFile;
     private File tmpDirectory;
-    
+
     protected byte[] testBytes;
     protected String testString;
     protected InputStream testInputstream;
@@ -33,19 +33,20 @@ public abstract class AbstractSftpMuleMessageFactoryTestCase extends AbstractMul
         createWorkDirectory();
         tempFile = File.createTempFile("simple", ".mule", tmpDirectory);
         testBytes = "testing bytes".getBytes();
-        testString = "testing string";                
+        testString = "testing string";
     }
 
     private void createWorkDirectory()
     {
-        // The working directory is deleted on tearDown (see AbstractMuleTestCase.disposeManager)
+        // The working directory is deleted on tearDown (see
+        // AbstractMuleTestCase.disposeManager)
         tmpDirectory = FileUtils.newFile(muleContext.getConfiguration().getWorkingDirectory(), "tmp");
         if (!tmpDirectory.exists())
         {
             assertTrue(tmpDirectory.mkdirs());
         }
     }
-    
+
     @Override
     protected Object getValidTransportMessage()
     {

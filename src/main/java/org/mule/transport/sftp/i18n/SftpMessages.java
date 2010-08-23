@@ -16,11 +16,9 @@ import org.mule.config.i18n.MessageFactory;
 public class SftpMessages extends MessageFactory
 {
     private static final String BUNDLE_PATH = getBundlePath("sftp");
-	
+
     /*
-    public static Message exampleMessage()
-    {
-        return createMessage(BUNDLE_PATH, 1);
-    }
-    */
+     * public static Message exampleMessage() { return createMessage(BUNDLE_PATH, 1);
+     * }
+     */
 }

@@ -7,27 +7,28 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
+
 package org.mule.transport.sftp;
 
 import org.mule.tck.FunctionalTestCase;
 
 public class SftpNamespaceHandlerTestCase extends FunctionalTestCase
 {
-	protected String getConfigResources()
-	{
-		return "sftp-namespace-config.xml";
-	}
+    protected String getConfigResources()
+    {
+        return "sftp-namespace-config.xml";
+    }
 
-	public void testSftpConfig() throws Exception
-	{
-		SftpConnector c = (SftpConnector) muleContext.getRegistry().lookupConnector("sftpConnector");
-		assertNotNull(c);
-		assertTrue(c.isConnected());
-		assertTrue(c.isStarted());
-		assertTrue(c.isAutoDelete());
-		assertEquals(c.getPollingFrequency(), 15000);
-		assertEquals(1234, c.getFileAge());
-		assertEquals("uploading", c.getTempDirOutbound());
-		assertEquals(42, c.getMaxConnectionPoolSize());
-	}
+    public void testSftpConfig() throws Exception
+    {
+        SftpConnector c = (SftpConnector) muleContext.getRegistry().lookupConnector("sftpConnector");
+        assertNotNull(c);
+        assertTrue(c.isConnected());
+        assertTrue(c.isStarted());
+        assertTrue(c.isAutoDelete());
+        assertEquals(c.getPollingFrequency(), 15000);
+        assertEquals(1234, c.getFileAge());
+        assertEquals("uploading", c.getTempDirOutbound());
+        assertEquals(42, c.getMaxConnectionPoolSize());
+    }
 }

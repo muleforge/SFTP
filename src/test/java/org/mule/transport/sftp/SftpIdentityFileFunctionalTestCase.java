@@ -8,7 +8,6 @@
  * LICENSE.txt file.
  */
 
-
 package org.mule.transport.sftp;
 
 import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
@@ -27,86 +26,86 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <code>LargeFileReceiveFunctionalTestCase</code> tests receiving a large file message
- * from an sftp service.
- *
+ * <code>LargeFileReceiveFunctionalTestCase</code> tests receiving a large file
+ * message from an sftp service.
+ * 
  * @author Lennart Häggkvist
  */
 public class SftpIdentityFileFunctionalTestCase extends AbstractSftpTestCase
 {
-	private static final Log logger = LogFactory.getLog(SftpIdentityFileFunctionalTestCase.class);
+    private static final Log logger = LogFactory.getLog(SftpIdentityFileFunctionalTestCase.class);
 
-	private static final int DEFAULT_TIMEOUT = 10000;
+    private static final int DEFAULT_TIMEOUT = 10000;
 
-	//Increase this to be a little larger than expected download time
-	private static final String INBOUND_ENDPOINT_NAME = "inboundEndpoint";
+    // Increase this to be a little larger than expected download time
+    private static final String INBOUND_ENDPOINT_NAME = "inboundEndpoint";
 
-	protected String getConfigResources()
-	{
-		return "mule-sftp-identity-file-config.xml";
-	}
+    protected String getConfigResources()
+    {
+        return "mule-sftp-identity-file-config.xml";
+    }
 
-     @Override
-    protected void doSetUp() throws Exception {
+    @Override
+    protected void doSetUp() throws Exception
+    {
         super.doSetUp();
 
         initEndpointDirectory(INBOUND_ENDPOINT_NAME);
     }
 
+    // Downloads large file in the remote directory specified in config
+    public void testIdentityFile() throws Exception
+    {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicReference message = new AtomicReference();
+        final AtomicInteger loopCount = new AtomicInteger(0);
 
-	//Downloads large file in the remote directory specified in config
-	public void testIdentityFile() throws Exception
-	{
-		final CountDownLatch latch = new CountDownLatch(1);
-		final AtomicReference message = new AtomicReference();
-		final AtomicInteger loopCount = new AtomicInteger(0);
+        EventCallback callback = new EventCallback()
+        {
+            public synchronized void eventReceived(MuleEventContext context, Object component)
+            {
+                try
+                {
+                    logger.info("called " + loopCount.incrementAndGet() + " times");
+                    // without this we may have problems with the many repeats
+                    if (1 == latch.getCount())
+                    {
+                        String o = IOUtils.toString((SftpInputStream) context.getMessage().getPayload());
+                        message.set(o);
+                        latch.countDown();
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        };
 
-		EventCallback callback = new EventCallback()
-		{
-			public synchronized void eventReceived(MuleEventContext context, Object component)
-			{
-				try
-				{
-					logger.info("called " + loopCount.incrementAndGet() + " times");
-					// without this we may have problems with the many repeats
-					if (1 == latch.getCount())
-					{
-						String o = IOUtils.toString((SftpInputStream) context.getMessage().getPayload());
-						message.set(o);
-						latch.countDown();
-					}
-				}
-				catch (Exception e)
-				{
-					logger.error(e.getMessage(), e);
-				}
-			}
-		};
+        MuleClient client = new MuleClient(muleContext);
 
-		MuleClient client = new MuleClient(muleContext);
+        // Ensure that no other files exists
+        // cleanupRemoteFtpDirectory(client, INBOUND_ENDPOINT_NAME);
 
-		// Ensure that no other files exists
-//		cleanupRemoteFtpDirectory(client, INBOUND_ENDPOINT_NAME);
+        Map properties = new HashMap();
+        // properties.put("filename", "foo.bar");
 
-		Map properties = new HashMap();
-//		properties.put("filename", "foo.bar");
+        Object component = getComponent("testComponent");
+        assertTrue("FunctionalTestComponent expected", component instanceof FunctionalTestComponent);
+        FunctionalTestComponent ftc = (FunctionalTestComponent) component;
+        assertNotNull(ftc);
 
-		Object component = getComponent("testComponent");
-		assertTrue("FunctionalTestComponent expected", component instanceof FunctionalTestComponent);
-		FunctionalTestComponent ftc = (FunctionalTestComponent) component;
-		assertNotNull(ftc);
+        ftc.setEventCallback(callback);
 
-		ftc.setEventCallback(callback);
+        logger.debug("before dispatch");
+        // Send an file to the SFTP server, which the inbound-endpoint then can pick
+        // up
+        client.dispatch(getAddressByEndpoint(client, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, properties);
+        logger.debug("before retrieve");
 
-		logger.debug("before dispatch");
-		// Send an file to the SFTP server, which the inbound-endpoint then can pick up
-		client.dispatch(getAddressByEndpoint(client, INBOUND_ENDPOINT_NAME), TEST_MESSAGE, properties);
-		logger.debug("before retrieve");
+        latch.await(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
 
-		latch.await(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
-
-		assertEquals(TEST_MESSAGE, message.get());
-	}
-
+        assertEquals(TEST_MESSAGE, message.get());
+    }
 
 }

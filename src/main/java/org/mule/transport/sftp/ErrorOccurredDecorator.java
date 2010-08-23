@@ -1,11 +1,13 @@
+
 package org.mule.transport.sftp;
 
 /**
  * Decorator for the ErrorOccured method
- *
+ * 
  * @author lenhag
- * @version $Id:  $
+ * @version $Id: $
  */
-public interface ErrorOccurredDecorator {
-  public void setErrorOccurred();
+public interface ErrorOccurredDecorator
+{
+    public void setErrorOccurred();
 }
