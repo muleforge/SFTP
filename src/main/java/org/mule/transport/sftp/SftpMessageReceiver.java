@@ -120,6 +120,24 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver
         }
     }
 
+    /**
+     * SFTP-35
+     * @param message
+     * @return
+     */
+    @Override    
+    protected MuleMessage handleUnacceptedFilter(MuleMessage message) {
+        logger.debug("the filter said no, now trying to close the payload stream");
+        try {
+            final SftpInputStream payload = (SftpInputStream) message.getPayload();
+            payload.close();
+        }
+        catch (Exception e) {
+            logger.debug("unable to close payload stream", e);
+        }
+        return super.handleUnacceptedFilter(message);
+    }
+    
     public void doConnect() throws Exception
     {
         // no op
