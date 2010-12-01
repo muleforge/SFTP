@@ -11,9 +11,10 @@
 package org.mule.transport.sftp;
 
 import org.mule.api.MuleMessage;
+import org.mule.api.construct.FlowConstruct;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.lifecycle.CreateException;
-import org.mule.api.service.Service;
+import org.mule.construct.SimpleFlowConstruct;
 import org.mule.transport.AbstractPollingMessageReceiver;
 import org.mule.transport.sftp.notification.SftpNotifier;
 
@@ -31,21 +32,21 @@ public class SftpMessageReceiver extends AbstractPollingMessageReceiver
     private SftpReceiverRequesterUtil sftpRRUtil = null;
 
     public SftpMessageReceiver(SftpConnector connector,
-                               Service component,
+                               SimpleFlowConstruct flow,
                                InboundEndpoint endpoint,
                                long frequency) throws CreateException
     {
-        super(connector, component, endpoint);
+        super(connector, flow, endpoint);
 
         this.setFrequency(frequency);
 
         sftpRRUtil = new SftpReceiverRequesterUtil(endpoint);
     }
 
-    public SftpMessageReceiver(SftpConnector connector, Service component, InboundEndpoint endpoint)
+    public SftpMessageReceiver(SftpConnector connector, FlowConstruct flow, InboundEndpoint endpoint)
         throws CreateException
     {
-        super(connector, component, endpoint);
+        super(connector, flow, endpoint);
         sftpRRUtil = new SftpReceiverRequesterUtil(endpoint);
     }
 

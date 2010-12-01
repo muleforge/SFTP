@@ -19,14 +19,15 @@ import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
+import org.mule.api.construct.FlowConstruct;
 import org.mule.api.endpoint.EndpointURI;
 import org.mule.api.endpoint.ImmutableEndpoint;
 import org.mule.api.endpoint.InboundEndpoint;
 import org.mule.api.lifecycle.InitialisationException;
-import org.mule.api.service.Service;
 import org.mule.api.transport.ConnectorException;
 import org.mule.api.transport.MessageReceiver;
 import org.mule.config.i18n.CoreMessages;
+import org.mule.construct.SimpleFlowConstruct;
 import org.mule.transport.AbstractConnector;
 import org.mule.transport.file.FilenameParser;
 import org.mule.transport.file.ExpressionFilenameParser;
@@ -144,7 +145,7 @@ public class SftpConnector extends AbstractConnector
         return "sftp";
     }
 
-    public MessageReceiver createReceiver(Service component, InboundEndpoint endpoint) throws Exception
+    public MessageReceiver createReceiver(SimpleFlowConstruct flow, InboundEndpoint endpoint) throws Exception
     {
         long polling = pollingFrequency;
 
@@ -164,7 +165,7 @@ public class SftpConnector extends AbstractConnector
             logger.debug("Set polling frequency to: " + polling);
         }
 
-        return serviceDescriptor.createMessageReceiver(this, component, endpoint, new Object[]{polling});
+        return serviceDescriptor.createMessageReceiver(this, flow, endpoint, new Object[]{polling});
     }
 
     public SftpClient createSftpClient(ImmutableEndpoint endpoint) throws Exception
