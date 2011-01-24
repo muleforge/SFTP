@@ -8,11 +8,11 @@
 	<artifactId>mule-transport-sftp</artifactId>
 	<packaging>jar</packaging>
 	<name>Mule SFTP Transport</name>
-	<version>3.1.0--SNAPSHOT</version>
+	<version>3.1.0</version>
 	<description>SFTP connectivity</description>
 
 	<properties>
-		<mule.version>3.1.0-SNAPSHOT</mule.version>
+		<mule.version>${version}</mule.version>
 	</properties>
 
 	<!-- Mule Forge Configuration -->
@@ -67,6 +67,11 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+        <repository>
+            <name>jsch</name>
+            <url>http://jsch.sourceforge.net/maven2/</url>
+            <id>jsch</id>
+        </repository>
 	</repositories>
 
 	<build>
@@ -217,7 +222,7 @@
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.1.42</version>
+			<version>0.1.44</version>
 		</dependency>
 	</dependencies>
 
