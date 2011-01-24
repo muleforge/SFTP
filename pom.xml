@@ -8,7 +8,7 @@
 	<artifactId>mule-transport-sftp</artifactId>
 	<packaging>jar</packaging>
 	<name>Mule SFTP Transport</name>
-	<version>3.1.0</version>
+	<version>3.1.1-SNAPSHOT</version>
 	<description>SFTP connectivity</description>
 
 	<properties>
